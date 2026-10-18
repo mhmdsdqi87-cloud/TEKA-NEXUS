@@ -1,0 +1,1425 @@
+# TEKA NEXUS — ULTIMATE MASTER BUILD PROMPT
+## Build a Global Developer Ecosystem, Not Just Another Social Network
+
+You are an elite software engineering team consisting of a principal software architect, senior full-stack developer, native mobile developer, UI/UX designer, database engineer, cybersecurity specialist, QA engineer, DevOps engineer, and startup product strategist.
+
+Your mission is to design, implement, test, and prepare for production a real, scalable technology platform called **TEKA NEXUS**, built under the TEKA brand.
+
+Do not deliver only a plan, static mockup, landing page, or collection of disconnected components. Build a working application with real authentication, persistent database storage, secure authorization, functional interactions, responsive design, and a maintainable architecture.
+
+Work directly inside the available project repository. Inspect existing files and preserve useful code. If the repository contains an existing TEKA project, understand its structure before making changes.
+
+Do not claim a feature, test, build, deployment, or integration is complete unless it has actually been implemented and verified.
+
+# 1. VISION AND MISSION
+
+TEKA NEXUS is a global, developer-first platform where people discover technology projects, find collaborators, build software together, publish products, develop professional reputations, and eventually earn money from their work.
+
+It combines the most useful concepts from developer communities, project management platforms, professional portfolios, collaboration networks, and digital product marketplaces into one connected ecosystem.
+
+The platform must connect:
+
+- Frontend and backend developers.
+- Mobile application developers.
+- AI and machine-learning developers.
+- Open-source contributors.
+- Indie game developers.
+- UI/UX designers.
+- Product designers.
+- Technical writers.
+- Startup founders.
+- Hardware and IoT creators.
+- Students and people learning technology.
+
+Core workflow:
+
+IDEA → DISCOVER → FIND A TEAM → BUILD → COLLABORATE → PUBLISH → GROW → MONETIZE.
+
+Brand name: TEKA NEXUS
+
+Primary slogan: Imagine. Build. Connect.
+
+Secondary message: Where Ideas Become Real Technology.
+
+Long-term mission: Make TEKA NEXUS a trusted global home for technology creators and a central part of the broader TEKA technology ecosystem.
+
+Build a differentiated product that rewards actual creation and meaningful collaboration instead of focusing only on likes, followers, and superficial engagement.
+
+Do not make unsupported claims about becoming the world's leading platform. Validate the product through real usage and measurable outcomes.
+
+# 2. PLATFORM REQUIREMENTS
+
+Build two independent client applications connected to the same backend:
+
+1. Web application: React, TypeScript, and Vite.
+2. Native Android application: React Native, Expo, and TypeScript.
+
+Use a shared Supabase backend for authentication, PostgreSQL data, authorization, and storage.
+
+Both applications must support the same user accounts, projects, teams, permissions, and core business rules.
+
+The Android app must be a genuine React Native application, not merely a WebView wrapping the website.
+
+Create a monorepo with shared domain types, validation schemas, and reusable non-UI logic.
+
+Use compatible stable dependencies and consult current official documentation before selecting package versions.
+
+Initial product language: English.
+
+Design the application so that Persian, Russian, and other languages can be added later through internationalization rather than rewriting interface text.
+
+Initial market: global technology creators.
+
+Initial budget assumption: a bootstrapped startup with limited funds. Prefer free development tools and services with practical free tiers, while documenting limits and future costs. Never promise that third-party services will remain free indefinitely.
+
+# 3. BRAND IDENTITY AND VISUAL DESIGN
+
+Create a distinctive, premium, futuristic, developer-focused identity for TEKA NEXUS.
+
+Design direction:
+- Dark graphite and near-black surfaces.
+- Configurable cyan and violet accent colors as provisional brand tokens.
+- Crisp typography.
+- Excellent spacing and alignment.
+- Subtle borders and controlled shadows.
+- Restrained gradients and animations.
+- High information density without visual clutter.
+- Professional desktop layouts and carefully adapted mobile interfaces.
+
+If official TEKA logo assets exist in the repository, inspect and use them. Never replace the official logo without permission.
+
+If the official logo is unavailable, use a clean TEKA NEXUS text wordmark and a provisional geometric symbol. Do not pretend the invented logo or provisional colors are the official brand identity.
+
+Build a centralized design system with:
+- Color tokens.
+- Typography scale.
+- Spacing scale.
+- Border radii.
+- Shadows.
+- Focus rings.
+- Motion tokens.
+- Responsive breakpoints.
+- Light and dark theme support where practical.
+- Reusable buttons, forms, cards, dialogs, menus, tabs, tooltips, badges, avatars, skeletons, toasts, and empty states.
+
+Provide consistent hover, focus, active, disabled, loading, success, and error states.
+
+Use a coherent icon library rather than relying on emoji as primary interface icons.
+
+Meet practical accessibility requirements, including keyboard navigation, visible focus, semantic HTML, accessible labels, adequate contrast, screen-reader support, reduced-motion preferences, and touch-friendly mobile controls.
+
+Do not sacrifice usability for visual effects.
+
+# 4. PRODUCT ARCHITECTURE AND NAVIGATION
+
+Web navigation:
+- Home.
+- Explore.
+- Projects.
+- Teams.
+- Notifications.
+- Profile.
+- Settings.
+
+Provide a global search field, user menu, and clear create-project action.
+
+Use a three-region desktop layout when useful:
+- Left navigation.
+- Central content.
+- Optional right contextual panel.
+
+Mobile navigation:
+- Compact top bar.
+- Search access.
+- Bottom navigation for primary destinations.
+- Mobile-friendly drawers, sheets, and dialogs.
+- Proper safe-area and keyboard handling.
+
+Create the following routes:
+
+Public:
+- /
+- /explore
+- /projects/:projectSlug
+- /u/:username
+- /login
+- /signup
+- /forgot-password
+- /reset-password
+- /terms
+- /privacy
+- /guidelines
+
+Authenticated:
+- /home
+- /projects
+- /projects/new
+- /projects/:projectId/settings
+- /notifications
+- /settings/profile
+- /settings/account
+- /settings/privacy
+- /settings/security
+
+Teams:
+- /teams
+- /teams/:teamId
+
+Use appropriate route guards, but never rely on route guards alone to secure private data. Every backend query and mutation must enforce authorization.
+
+Provide useful loading screens, error pages, and a proper 404 page.
+
+# 5. LANDING PAGE AND PRODUCT INTRODUCTION
+
+Create a production-quality landing page.
+
+Hero:
+Headline: "Where Ideas Become Real Technology."
+
+Description:
+"Discover projects, find your people, and build what comes next."
+
+Primary CTA: Explore Projects.
+
+Secondary CTA: Start Building.
+
+Include:
+- Product preview.
+- Project discovery explanation.
+- Team collaboration explanation.
+- Project workspace preview.
+- Creator portfolio and reputation.
+- Product release and showcase section.
+- Community safety and trust.
+- Frequently asked questions.
+- Footer with product, company, legal, and support links.
+
+Use realistic, clearly labeled demo content until real users exist.
+
+Never fabricate testimonials, user numbers, partnerships, rankings, revenue, or successful projects.
+
+Ensure that the website explains the actual product instead of making vague promises about revolutionizing technology.
+
+# 6. AUTHENTICATION AND ONBOARDING
+
+Use Supabase Auth.
+
+Implement:
+- Email and password registration.
+- Login and logout.
+- Email verification.
+- Password reset.
+- Session restoration.
+- Protected screens.
+- Clear authentication errors.
+- Account deletion workflow.
+- Optional OAuth providers only when correctly configured.
+
+Onboarding steps:
+1. Choose a unique username.
+2. Enter a display name.
+3. Add a short biography.
+4. Select interests.
+5. Select skills.
+6. Choose goals such as building, contributing, learning, or discovering.
+7. Optionally upload an avatar.
+8. Optionally add a website or portfolio.
+9. Finish onboarding.
+
+Make optional steps skippable.
+
+Normalize and validate usernames. Prevent duplicate usernames and handle concurrent registration safely.
+
+Use supported Supabase session mechanisms on both platforms. Use appropriate secure platform storage for mobile sessions.
+
+Never create an insecure custom password database.
+
+# 7. CORE FEATURE ONE: NEXUS DISCOVERY
+
+Build a global directory of technology projects.
+
+Categories:
+- Web Development.
+- Mobile Development.
+- Artificial Intelligence.
+- Developer Tools.
+- Open Source.
+- Indie Games.
+- Cybersecurity.
+- Blockchain.
+- Hardware and IoT.
+- Data Science.
+- Design Tools.
+- Other Technology.
+
+Project information:
+- Name.
+- Unique slug.
+- Tagline.
+- Description.
+- Category.
+- Tags.
+- Owner.
+- Cover image.
+- Project status.
+- Visibility.
+- Required skills.
+- Team members.
+- Repository URL.
+- Live demo URL.
+- Website URL.
+- Creation date.
+- Last update.
+- Releases and milestones when available.
+
+Project statuses:
+- Idea.
+- Planning.
+- In Development.
+- Beta.
+- Released.
+- Paused.
+- Archived.
+
+Project visibility:
+- Public.
+- Private.
+- Unlisted, only with explicitly defined access rules.
+
+Discovery features:
+- Search by title, description, tags, and skills.
+- Filter by category and status.
+- Sort by recently created and recently updated.
+- Pagination or cursor-based loading.
+- Shareable URLs.
+- Project reporting.
+- Clear loading, empty, and error states.
+
+Never expose private projects in public search results or recommendations.
+
+# 8. CORE FEATURE TWO: PROJECT WORKSPACES
+
+Every project must have a structured workspace, not merely a social post.
+
+Include:
+- Overview.
+- Project status.
+- Owner and collaborators.
+- Required skills.
+- Project updates.
+- Tasks.
+- Milestones.
+- Team membership.
+- Activity history.
+- Public links.
+- Discussion.
+- Contribution information.
+- Release information when implemented.
+
+Project owners can edit project settings and manage membership.
+
+Project administrators can perform explicitly permitted management actions.
+
+Contributors can access and modify permitted project resources.
+
+Viewers can read only resources their role permits.
+
+Ownership transfer must require explicit confirmation and preserve consistent database relationships.
+
+# 9. CORE FEATURE THREE: TASK MANAGEMENT
+
+Implement a useful lightweight project management system.
+
+Task fields:
+- Title.
+- Description.
+- Status.
+- Priority.
+- Assignee.
+- Creator.
+- Optional due date.
+- Position.
+- Creation and update timestamps.
+
+Statuses:
+- Backlog.
+- To Do.
+- In Progress.
+- In Review.
+- Done.
+
+Priorities:
+- Low.
+- Normal.
+- High.
+- Urgent.
+
+Views:
+- Task list.
+- Kanban board.
+- Task detail.
+- Task comments.
+
+Features:
+- Create and edit tasks.
+- Assign tasks to project members.
+- Change status.
+- Filter by status and assignee.
+- Add comments.
+- Show relevant activity.
+- Confirm destructive operations.
+
+Validate task assignments against project membership.
+
+Start with reliable list and board views. Do not overbuild complex enterprise project management before validating demand.
+
+# 10. CORE FEATURE FOUR: TEAM FORMATION
+
+Help users discover and join projects where their skills are needed.
+
+Profile skills:
+- Frontend Development.
+- Backend Development.
+- Mobile Development.
+- Game Development.
+- AI and Data.
+- UI/UX.
+- QA and Testing.
+- DevOps.
+- Technical Writing.
+- Product Management.
+- Other skills.
+
+Implement:
+- Required skill lists.
+- Project role listings.
+- Collaboration requests.
+- Application status.
+- Owner review.
+- Acceptance or rejection.
+- Request withdrawal.
+- Invitation links with expiration and revocation when implemented.
+- Public portfolios.
+- Team member management.
+
+A collaboration request contains:
+- Project ID.
+- Requested role.
+- Short introduction.
+- Relevant skills.
+- Optional portfolio URL.
+
+Prevent duplicate active requests for the same project and applicant.
+
+Only authorized project managers can accept or reject applications.
+
+Accepting an application must create membership safely and atomically, without duplicate membership or privilege escalation.
+
+# 11. CORE FEATURE FIVE: DEVELOPER SOCIAL NETWORK
+
+Build a project-centered social feed.
+
+Feed events:
+- New project.
+- Project update.
+- Milestone completion.
+- New release.
+- Collaboration opportunity.
+- Meaningful project achievement.
+
+Interactions:
+- Like or unlike.
+- Comment.
+- Reply to comments where supported.
+- Follow or unfollow users.
+- Save projects.
+- Share public project URLs.
+- Report inappropriate content.
+
+The feed must use real persisted data.
+
+Implement pagination, deterministic ordering, duplicate prevention, input limits, and safe rendering.
+
+Prevent spam and repeated submissions.
+
+Never render untrusted user HTML as executable content.
+
+Allow users to edit or delete their own comments according to clear rules.
+
+Apply blocking and moderation restrictions consistently to relevant interactions.
+
+# 12. CORE FEATURE SIX: VERIFIED CONTRIBUTIONS AND REPUTATION
+
+Build a transparent system that rewards meaningful contributions.
+
+Separate:
+- XP: optional gamification.
+- Reputation: evidence-based contribution trust.
+- Achievements: rule-based milestones.
+- Followers: social connections.
+
+Potential contribution events:
+- Completing an authorized task.
+- Publishing a release.
+- Contributing to a documented project milestone.
+- Receiving an accepted contribution.
+- Completing a verified collaboration.
+
+Only award verified reputation through trusted logic.
+
+Prevent duplicate rewards using unique event identifiers and idempotent operations.
+
+Never allow a client to award itself arbitrary verified points.
+
+Do not allow users to buy reputation.
+
+Do not equate follower count with technical ability.
+
+Show contribution history and explain how each achievement was earned.
+
+# 13. NOTIFICATIONS
+
+Implement an in-app notification center.
+
+Notification types:
+- New follower.
+- Project comment.
+- Collaboration request.
+- Application accepted or rejected.
+- Task assignment.
+- Team invitation.
+- Mention when implemented.
+- Security and system notices.
+
+Features:
+- Unread count.
+- Mark as read.
+- Mark all as read.
+- Pagination.
+- User notification preferences.
+- Navigation to the relevant authorized resource.
+
+Protect private notification data.
+
+Never include secrets or unauthorized private project content in notification payloads.
+
+Push notifications may be added after the in-app system works reliably.
+
+# 14. GLOBAL SEARCH
+
+Implement search for:
+- Public projects.
+- Users.
+- Public teams.
+- Skills and tags.
+
+Use PostgreSQL full-text search or another appropriate indexed search approach initially.
+
+Implement:
+- Debounced queries.
+- Query length limits.
+- Filters.
+- Pagination.
+- Authorization-aware results.
+- Empty states.
+- Error states.
+- Predictable ranking.
+
+Do not expose private projects through search suggestions.
+
+Do not add a costly external search provider without demonstrated need.
+
+# 15. ADDITIONAL DIFFERENTIATING FEATURES
+
+Design the architecture so the following can be introduced incrementally.
+
+A. Creator Portfolio:
+Automatically assemble public projects, skills, milestones, releases, and verified contribution history into a shareable portfolio.
+
+B. Project Health:
+Show last activity, completed milestones, open tasks, and progress indicators. Do not present arbitrary percentages as factual progress.
+
+C. Smart Team Matching:
+Initially use transparent rules based on skills, project requirements, interests, and availability. Introduce machine-learning recommendations only after collecting sufficient appropriate data and evaluating privacy implications.
+
+D. Open-Source Mode:
+Allow projects to link public repositories and document contribution instructions. Add deeper GitHub integration later.
+
+E. Release Showcase:
+Allow creators to publish version announcements, screenshots, changelogs, demos, and release notes.
+
+F. Community Challenges:
+Support optional technology challenges, contribution goals, and community events with transparent participation rules.
+
+G. Knowledge Sharing:
+Add technical articles, tutorials, and project documentation only after the core project workflow has been validated.
+
+H. AI Assistance:
+Future optional features may summarize project updates, suggest task breakdowns, or help draft documentation. AI functionality must be optional, clearly identified, cost-controlled, and never required for core usage.
+
+I. Organization Workspaces:
+Future organizations can manage multiple projects, memberships, and permissions.
+
+Do not implement all these advanced features in the initial release. Keep the architecture extensible and prioritize the core user journey.
+
+# 16. FUTURE DIGITAL PRODUCT MARKETPLACE
+
+Design for a future marketplace where creators may offer:
+- Website templates.
+- UI kits.
+- Developer utilities.
+- Plugins.
+- Game assets.
+- Indie games.
+- Documentation templates.
+- Digital software products.
+
+Potential features:
+- Product pages.
+- Demo previews.
+- Version history.
+- License terms.
+- Seller profiles.
+- Reviews from verified purchasers.
+- Secure payment integration.
+- Delivery after confirmed payment.
+- Refund and dispute workflows.
+- Seller dashboards.
+
+Do not accept real payments until payment processing, refunds, seller verification, fraud prevention, applicable legal requirements, and webhook verification are implemented.
+
+Never trust a payment-success signal supplied by a client.
+
+Use a trusted payment provider where legally and operationally available.
+
+Treat marketplace functionality as a later phase.
+
+# 17. FUTURE BUSINESS MODEL
+
+The platform should initially be free to use for core collaboration.
+
+Potential revenue streams:
+- Nexus Pro subscriptions.
+- Advanced project analytics.
+- Premium organization workspaces.
+- Marketplace transaction fees.
+- Optional paid creator tools.
+- Clearly labeled sponsored placements.
+- Enterprise collaboration features.
+
+Do not paywall essential community participation at launch.
+
+Do not use deceptive subscription flows.
+
+Clearly disclose prices, renewal terms, cancellation methods, and applicable taxes.
+
+Do not guarantee revenue or assume users will pay before demand has been validated.
+
+# 18. TEKA TOKEN AND CRYPTOCURRENCY BOUNDARIES
+
+TEKA is a broader technology brand with separate blockchain interests.
+
+Do not make the TEKA token mandatory for registration, project creation, collaboration, reputation, or access to essential features.
+
+Do not introduce token payments, staking, speculative rewards, or investment claims into the MVP.
+
+Keep any future token integration isolated from the core product architecture.
+
+Before introducing token-based payments or rewards, obtain appropriate legal, security, accounting, and smart-contract reviews.
+
+Never imply that the token will appreciate or guarantee financial returns.
+
+Core NEXUS functionality must work without cryptocurrency.
+
+# 19. TECHNOLOGY STACK
+
+WEB:
+- React.
+- TypeScript strict mode.
+- Vite.
+- React Router.
+- TanStack Query.
+- React Hook Form.
+- Zod.
+- An accessible component system.
+- Vitest.
+- React Testing Library.
+
+ANDROID:
+- React Native.
+- Expo.
+- TypeScript.
+- Expo Router.
+- TanStack Query where appropriate.
+- React Hook Form.
+- Zod.
+- Supported secure session persistence.
+- Compatible automated testing tools.
+
+BACKEND:
+- Supabase Auth.
+- PostgreSQL.
+- Row Level Security.
+- Supabase Storage.
+- Supabase Realtime for justified use cases.
+- SQL migrations under version control.
+- Trusted server-side functions for privileged operations.
+
+DEVELOPMENT:
+- Git.
+- GitHub.
+- ESLint.
+- Prettier.
+- Type checking.
+- Automated tests.
+- CI.
+- Vercel or another appropriate web hosting service.
+- EAS Build or another reproducible Android build workflow.
+
+Choose compatible stable versions using current official documentation.
+
+Avoid unnecessary dependencies and infrastructure.
+
+# 20. MONOREPO STRUCTURE
+
+Create:
+
+teka-nexus/
+  apps/
+    web/
+      src/
+        app/
+        routes/
+        components/
+        features/
+        lib/
+        styles/
+        tests/
+      public/
+    mobile/
+      app/
+      src/
+        components/
+        features/
+        hooks/
+        lib/
+        theme/
+        tests/
+      assets/
+  packages/
+    shared/
+      src/
+        types/
+        schemas/
+        validation/
+        constants/
+  supabase/
+    migrations/
+    tests/
+    seed.sql
+    config.toml
+  docs/
+    architecture.md
+    database.md
+    security.md
+    deployment.md
+    testing.md
+  .github/
+    workflows/
+  .env.example
+  package.json
+  README.md
+
+Feature modules should include:
+- auth
+- onboarding
+- profiles
+- discovery
+- feed
+- projects
+- teams
+- tasks
+- collaboration-requests
+- notifications
+- search
+- settings
+- moderation
+
+Adapt this structure if the existing repository already has a better working architecture.
+
+# 21. DATABASE ARCHITECTURE
+
+Use PostgreSQL with UUID identifiers, explicit foreign keys, timestamps, unique constraints, check constraints, and indexes.
+
+Create incremental SQL migrations.
+
+Required tables:
+
+1. profiles
+   - id referencing auth.users.
+   - username.
+   - display_name.
+   - bio.
+   - avatar_path.
+   - website_url.
+   - onboarding_completed.
+   - created_at.
+   - updated_at.
+
+2. skills
+   - id.
+   - slug.
+   - name.
+
+3. profile_skills
+   - profile_id.
+   - skill_id.
+   - optional self-reported proficiency.
+
+4. projects
+   - id.
+   - owner_id.
+   - slug.
+   - name.
+   - tagline.
+   - description.
+   - category.
+   - status.
+   - visibility.
+   - cover_image_path.
+   - repository_url.
+   - demo_url.
+   - website_url.
+   - created_at.
+   - updated_at.
+   - archived_at.
+
+5. project_tags
+   - id.
+   - project_id.
+   - tag.
+
+6. project_required_skills
+   - project_id.
+   - skill_id.
+
+7. project_members
+   - project_id.
+   - user_id.
+   - role.
+   - joined_at.
+
+8. collaboration_requests
+   - id.
+   - project_id.
+   - applicant_id.
+   - requested_role.
+   - introduction.
+   - portfolio_url.
+   - status.
+   - reviewed_by.
+   - reviewed_at.
+   - created_at.
+   - updated_at.
+
+9. project_updates
+   - id.
+   - project_id.
+   - author_id.
+   - title.
+   - body.
+   - timestamps.
+
+10. tasks
+    - id.
+    - project_id.
+    - title.
+    - description.
+    - status.
+    - priority.
+    - assignee_id.
+    - created_by.
+    - due_at.
+    - position.
+    - timestamps.
+
+11. task_comments
+    - id.
+    - task_id.
+    - author_id.
+    - body.
+    - timestamps.
+
+12. project_milestones
+    - id.
+    - project_id.
+    - title.
+    - description.
+    - due_at.
+    - completed_at.
+    - created_by.
+
+13. follows
+    - follower_id.
+    - following_id.
+    - created_at.
+
+14. project_likes
+    - user_id.
+    - project_id.
+    - created_at.
+
+15. project_saves
+    - user_id.
+    - project_id.
+    - created_at.
+
+16. project_comments
+    - id.
+    - project_id.
+    - author_id.
+    - parent_comment_id.
+    - body.
+    - created_at.
+    - updated_at.
+    - deleted_at.
+
+17. notifications
+    - id.
+    - recipient_id.
+    - actor_id.
+    - type.
+    - entity_type.
+    - entity_id.
+    - safe_payload.
+    - created_at.
+    - read_at.
+
+18. reports
+    - id.
+    - reporter_id.
+    - target_type.
+    - target_id.
+    - reason.
+    - details.
+    - status.
+    - timestamps.
+
+19. project_activity
+    - id.
+    - project_id.
+    - actor_id.
+    - event_type.
+    - safe_metadata.
+    - created_at.
+
+20. contribution_events
+    - id.
+    - user_id.
+    - project_id.
+    - event_type.
+    - source_type.
+    - source_id.
+    - verified_at.
+    - created_at.
+
+21. user_blocks
+    - blocker_id.
+    - blocked_id.
+    - created_at.
+
+22. user_notification_preferences
+    - user_id.
+    - project_activity.
+    - collaboration_requests.
+    - social_activity.
+    - updated_at.
+
+Define additional tables for organizations, releases, product listings, payments, subscriptions, messages, or moderation actions only when those features are implemented.
+
+Use relational columns for frequently queried information. Use JSONB only for suitable flexible metadata.
+
+Enforce unique usernames, valid status values, unique likes, unique saves, unique follows, and duplicate-request prevention.
+
+Validate project slug uniqueness and ownership rules.
+
+Add indexes for project discovery, feed ordering, membership lookups, task queries, notifications, and search.
+
+Use transactions for multi-step operations that must succeed or fail together.
+
+Do not implement a fake schema that is never connected to the application.
+
+# 22. SECURITY AND ROW LEVEL SECURITY
+
+Enable RLS on every exposed application table.
+
+Write explicit SELECT, INSERT, UPDATE, and DELETE policies where required.
+
+PROFILES:
+- Users can edit only their own permitted profile fields.
+- Public profile views expose only approved fields.
+- Users cannot assign themselves privileged roles.
+
+PROJECTS:
+- Public projects are readable according to public access rules.
+- Private projects are visible only to authorized members.
+- Owners and authorized managers control project settings.
+- Clients cannot assign ownership to another user.
+
+PROJECT MEMBERS:
+- Users cannot make themselves owners or administrators.
+- Role changes require appropriate authorization.
+- The final owner cannot be accidentally removed.
+- Ownership transfer must be explicit and auditable.
+
+TASKS:
+- Access follows project visibility and membership.
+- Task changes require the appropriate project role.
+- Assignment is restricted to eligible members.
+
+COLLABORATION REQUESTS:
+- Applicants access their own requests.
+- Authorized project managers review applications.
+- Requesters cannot approve their own requests as project managers.
+- Membership creation must be safe and atomic.
+
+COMMENTS:
+- Reads follow project visibility.
+- Mutations require authorization.
+- Input must be length-limited and safely rendered.
+
+LIKES AND SAVES:
+- Users manage only their own records.
+- Duplicate actions are prevented by constraints.
+- Private projects remain private.
+
+NOTIFICATIONS:
+- Users can read and update only their own notifications.
+- Trusted event creation cannot be forged by the client.
+
+REPORTS:
+- Users can submit reports under rate limits.
+- Private moderation information is restricted.
+
+CONTRIBUTIONS:
+- Verified awards can only be created through trusted logic.
+- Duplicate awards must be prevented.
+
+BLOCKS:
+- Users manage only their own block records.
+- Blocking restrictions must be applied consistently.
+
+Use SECURITY DEFINER functions only when justified, with a safe search_path and restricted execution permissions.
+
+Never disable RLS to make a feature work.
+
+Never expose a Supabase service-role key in a web bundle, mobile application, public repository, or client-side environment variable.
+
+Use a trusted backend or Edge Function for privileged workflows.
+
+# 23. ENVIRONMENT CONFIGURATION
+
+Create a safe .env.example with placeholders.
+
+Example variables:
+
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_ANON_KEY=
+
+A server-side service-role secret may be configured only in a trusted server environment when needed. Never ship it to clients.
+
+Use the appropriate public Supabase key format supported by the selected project configuration.
+
+Validate required configuration at startup and display clear setup instructions.
+
+Never invent real credentials.
+
+Never commit .env files containing secrets.
+
+# 24. STORAGE AND UPLOADS
+
+Implement authorized uploads for:
+- Profile avatars.
+- Public project covers.
+- Private project attachments when supported.
+
+Requirements:
+- File-size limits.
+- MIME-type validation.
+- Generated storage paths.
+- Ownership and membership authorization.
+- Public versus private bucket separation.
+- Signed URLs where appropriate.
+- Safe replacement and deletion.
+- Orphan cleanup where feasible.
+
+Never assume that a file is safe merely because its extension appears valid.
+
+Never expose private project files through a public bucket.
+
+# 25. PRIVACY AND COMMUNITY SAFETY
+
+Implement:
+- Report functionality.
+- User blocking.
+- Content moderation workflows.
+- Account deletion.
+- Privacy settings.
+- Profile visibility rules.
+- Notification preferences.
+- Community guidelines.
+- Appropriate rate limits.
+- Input length restrictions.
+- Safe rendering.
+- Clear user feedback.
+
+Minimize personal data collection.
+
+Do not request precise location unless a clearly justified feature requires it.
+
+Do not expose private collaboration applications or team content.
+
+Design account deletion and project ownership handling so that deleting an account does not silently destroy other users' work.
+
+Create documentation explaining data retention and known limitations.
+
+Do not claim legal compliance simply because policy pages exist.
+
+# 26. REAL FUNCTIONALITY AND ERROR HANDLING
+
+Every visible button and interactive control must have a defined behavior.
+
+No dead buttons.
+No fake save actions.
+No decorative forms pretending to submit.
+No fabricated live activity.
+No mock authentication presented as real authentication.
+No static fake analytics presented as actual production metrics.
+
+For every asynchronous operation, implement:
+- Loading state.
+- Success state.
+- Error state.
+- Retry where appropriate.
+- Duplicate-submission prevention.
+- Correct cache updates.
+- Unauthorized handling.
+
+Use optimistic UI only when rollback and error recovery are implemented.
+
+Show success messages only after the operation succeeds, or clearly communicate that the operation is pending.
+
+Provide empty states with useful next actions.
+
+# 27. PERFORMANCE AND ACCESSIBILITY
+
+Use:
+- Pagination.
+- Database indexes.
+- Efficient query selection.
+- Image optimization.
+- Lazy loading where appropriate.
+- Sensible server-state caching.
+- Avoidance of unnecessary rerenders.
+- Request cancellation when supported.
+- Clear cache invalidation.
+- Measured performance improvements.
+
+Support:
+- Keyboard navigation.
+- Screen readers.
+- Accessible labels.
+- Visible focus.
+- Reduced motion.
+- Responsive text and layouts.
+- Appropriate touch targets.
+- Clear error announcements.
+
+Do not invent Lighthouse scores or claim perfect performance without testing.
+
+# 28. TESTING AND QUALITY ASSURANCE
+
+Add unit tests, component tests, database tests, and end-to-end tests.
+
+Test:
+- Registration and login.
+- Onboarding.
+- Profile updates.
+- Project creation and editing.
+- Public project discovery.
+- Private project access restrictions.
+- Likes and comments.
+- Collaboration requests.
+- Project membership.
+- Task assignment.
+- Notification privacy.
+- Account switching.
+- Expired sessions.
+- Invalid inputs.
+- Duplicate submissions.
+- Unauthorized requests.
+- Upload restrictions.
+
+Use multiple test identities:
+- Anonymous visitor.
+- Ordinary user.
+- Project owner.
+- Project administrator.
+- Contributor.
+- Viewer.
+- Unauthorized user.
+- Authorized moderator.
+
+Attempt cross-user and cross-project access in automated tests.
+
+Run linting, TypeScript checks, unit tests, and production builds where supported.
+
+Fix errors rather than merely reporting them.
+
+Document any tests that could not be executed.
+
+# 29. GITHUB AND DEVELOPER ECOSYSTEM INTEGRATION
+
+Design future integration points for GitHub.
+
+Potential features:
+- Link a repository to a project.
+- Display repository metadata where permitted.
+- Link releases and commits.
+- Synchronize selected issues.
+- Display verified contribution evidence.
+- Import project information with user consent.
+
+Do not request broad repository permissions unnecessarily.
+
+Use secure OAuth or supported authorization flows when implementing the integration.
+
+Do not store access tokens in publicly accessible database columns.
+
+Do not pretend a repository is connected when only a URL has been entered.
+
+Implement repository integration after the core product works.
+
+# 30. ANALYTICS AND VALIDATION
+
+Add privacy-conscious event tracking only when configured appropriately.
+
+Track meaningful product events:
+- Registration completed.
+- Onboarding completed.
+- Project created.
+- Collaboration request sent.
+- Collaboration request accepted.
+- Task completed.
+- Project updated.
+- User returned.
+
+Measure:
+- Time to first useful project action.
+- Project creation rate.
+- Collaboration conversion.
+- Returning creators.
+- Projects that receive meaningful updates.
+- Retention of activated users.
+
+Do not optimize only for signups, likes, or follower counts.
+
+Do not fabricate analytics data.
+
+Use real usage data to decide which features deserve further investment.
+
+# 31. DEVELOPMENT ROADMAP
+
+PHASE 0 — INSPECT AND PLAN
+- Inspect the repository.
+- Preserve existing working code.
+- Inspect TEKA logo assets.
+- Verify toolchain and dependencies.
+- Create an implementation checklist.
+
+PHASE 1 — FOUNDATION
+- Set up the monorepo.
+- Set up the web app and native Android app.
+- Configure shared types and validation.
+- Build the design system.
+- Create responsive navigation.
+- Build authentication screens.
+
+PHASE 2 — DATABASE AND SECURITY
+- Create SQL migrations.
+- Configure Supabase Auth.
+- Create profiles, projects, and membership tables.
+- Enable and test RLS.
+- Configure initial storage policies.
+- Add seed data clearly labeled as demo content.
+
+PHASE 3 — CORE WEB MVP
+- Implement profiles.
+- Implement project creation.
+- Implement discovery and search.
+- Implement project details.
+- Implement likes, comments, saves, and follows.
+- Implement collaboration requests.
+- Implement tasks and membership permissions.
+
+PHASE 4 — NATIVE ANDROID
+- Implement authentication.
+- Implement onboarding.
+- Implement feed and discovery.
+- Implement project details.
+- Implement profiles and collaboration requests.
+- Implement notifications.
+- Test on Android emulator and physical devices.
+
+PHASE 5 — COMMUNITY AND QUALITY
+- Add moderation.
+- Add reporting and blocking.
+- Improve errors and accessibility.
+- Add authorization tests.
+- Add automated CI.
+- Fix high-impact usability problems.
+
+PHASE 6 — CLOSED BETA
+- Recruit a small group of real creators.
+- Observe how they discover projects and collaborate.
+- Gather feedback.
+- Fix onboarding and usability issues.
+- Validate product demand.
+
+PHASE 7 — PUBLIC LAUNCH
+- Configure production hosting.
+- Configure the production domain and HTTPS.
+- Verify authentication redirects.
+- Apply reviewed production migrations.
+- Configure monitoring and backups.
+- Build a signed Android release.
+- Prepare app-store listing assets.
+- Publish only after required testing and platform requirements are satisfied.
+
+PHASE 8 — GROWTH
+- Real-time messaging.
+- GitHub integration.
+- Releases and advanced contribution tracking.
+- Digital product marketplace.
+- Pro subscriptions.
+- Organization workspaces.
+- Advanced discovery.
+- Optional AI assistance.
+- Additional languages.
+
+Do not attempt every phase simultaneously.
+
+# 32. DEPLOYMENT
+
+WEB:
+- Production build succeeds.
+- HTTPS works.
+- Environment variables are correctly configured.
+- Routes and deep links work.
+- Public and protected pages behave correctly.
+- No privileged secrets appear in client bundles.
+
+SUPABASE:
+- Migrations are applied.
+- RLS policies are tested.
+- Auth redirects are configured.
+- Storage policies are verified.
+- Backup and recovery expectations are documented.
+- Quotas and operational costs are reviewed.
+
+ANDROID:
+- Unique stable application ID.
+- Correct application name and icon.
+- Valid build configuration.
+- Authentication works in the release build.
+- Deep links work.
+- Minimal necessary permissions.
+- No development secrets or test endpoints.
+
+Never claim an APK, website deployment, or store release exists unless the actual build or deployment has completed.
+
+# 33. REQUIRED DELIVERABLES
+
+Deliver:
+- Complete runnable source code.
+- Monorepo configuration.
+- Web application.
+- Native Android application.
+- Shared validation and domain types.
+- Supabase SQL migrations.
+- RLS policies.
+- Seed data.
+- Storage policies.
+- Environment template.
+- Automated tests.
+- README.
+- Architecture documentation.
+- Database documentation.
+- Security documentation.
+- Deployment instructions.
+- Android build instructions.
+- Troubleshooting guide.
+- Feature completion checklist.
+- Known limitations and remaining risks.
+
+Provide exact commands to install dependencies, configure the environment, run the web application, start the Android application, execute tests, and build production artifacts.
+
+Do not invent successful results.
+
+# 34. DEFINITION OF DONE
+
+The first production-minded MVP is complete only when:
+1. The repository can be set up using documented commands.
+2. The web client runs and builds.
+3. The Android client runs and builds.
+4. Both clients use the same configured backend.
+5. Authentication and profiles work.
+6. Project creation and discovery use real database records.
+7. Social interactions persist.
+8. Collaboration requests work.
+9. Team permissions are enforced.
+10. Private data is protected by tested RLS policies.
+11. Forms and asynchronous operations handle errors.
+12. Automated tests pass where the environment supports them.
+13. No privileged server secrets are shipped to clients.
+14. Setup and deployment documentation is accurate.
+15. Unimplemented features are explicitly disclosed.
+
+# 35. EXECUTION MODE
+
+Start by inspecting the actual repository and its files.
+
+Do not respond with only a plan.
+
+Do not generate hundreds of disconnected files without testing them.
+
+Implement a complete vertical slice first:
+- Authentication.
+- Profile.
+- Project creation.
+- Project discovery.
+- Project detail.
+- Secure database access.
+- Basic collaboration.
+
+Then test it and expand incrementally.
+
+For each milestone:
+1. Explain the scope briefly.
+2. Implement the code.
+3. Run the available checks.
+4. Fix errors.
+5. List changed files.
+6. Report actual test and build results.
+7. Document configuration still required.
+8. Continue to the next milestone.
+
+If credentials, official branding assets, or external services are missing, document the requirement and implement the appropriate integration boundary.
+
+Prefer real functionality over mock-only UI.
+
+The goal is to build TEKA NEXUS as a credible, secure, extensible global technology collaboration product—not simply a visually attractive prototype.
+
+Begin implementation now.

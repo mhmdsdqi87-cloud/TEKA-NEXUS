@@ -1,0 +1,67 @@
+// TEKA NEXUS — Arabic dictionary: "projectNew" namespace.
+// Owned by translation agent (Task 2-c).
+
+import type { ProjectNewDict } from "../en/projectNew";
+
+export const projectNew: ProjectNewDict = {
+  auth: {
+    title: "مطلوب تسجيل الدخول",
+    description: "تحتاج إلى حساب TEKA NEXUS لإطلاق مشروع.",
+    goLogin: "الذهاب إلى تسجيل الدخول",
+  },
+  title: "أطلق مشروعًا",
+  subtitle: "أخبر العالم بما تبنيه.",
+  form: {
+    name: "اسم المشروع",
+    namePlaceholder: "مثال: Nexus CLI",
+    slugHint: "سيظهر معرّف الرابط هنا أثناء الكتابة.",
+    tagline: "الجملة التعريفية",
+    taglinePlaceholder: "جملة واحدة تبيع الفكرة",
+    category: "الفئة",
+    status: "الحالة",
+    statusPlaceholder: "اختر حالة",
+    visibility: "الظهور",
+    tags: "الوسوم",
+    maxTagsReached: "بلغت الحد الأقصى 8 وسوم",
+    tagPlaceholder: "اكتب وسمًا واضغط Enter",
+    optional: "(اختياري)",
+    links: "الروابط",
+    description: "الوصف",
+    descriptionPlaceholder: "ماذا تبني؟ ولمن؟ وما الذي يجعله مختلفًا؟",
+    descriptionHint: "نص عادي أو Markdown.",
+    requiredSkills: "المهارات المطلوبة",
+    repoUrl: "رابط المستودع",
+    demoUrl: "رابط العرض التجريبي",
+    websiteUrl: "رابط الموقع",
+  },
+  a11y: {
+    categoryGroup: "فئة المشروع",
+    visibilityGroup: "ظهور المشروع",
+    removeTag: "إزالة الوسم {tag}",
+  },
+  visibilityDesc: {
+    PUBLIC: "يظهر في صفحة الاستكشاف وفي البث المباشر. يمكن لأي شخص مشاهدته.",
+    UNLISTED: "يمكن مشاهدته عبر رابط مباشر. مخفي عن الاستكشاف والبث.",
+    PRIVATE: "يمكنك أنت وأعضاء فريقك فقط مشاهدة هذا المشروع.",
+  },
+  visibilityName: {
+    PUBLIC: "عام",
+    UNLISTED: "غير مدرج",
+    PRIVATE: "خاص",
+  },
+  errors: {
+    name: "يجب أن يتكون الاسم من 3 إلى 80 حرفًا.",
+    taglineRequired: "الجملة التعريفية مطلوبة.",
+    taglineMax: "{n} حرفًا كحد أقصى.",
+    category: "اختر فئة لمشروعك.",
+    url: "يجب أن يبدأ بـ http:// أو https://",
+  },
+  toasts: {
+    maxTags: "{n} وسوم كحد أقصى",
+    fixFields: "صحّح الحقول المميزة قبل الإطلاق.",
+    launched: "تم إطلاق المشروع",
+    createFailed: "تعذّر إنشاء المشروع",
+  },
+  submitting: "جارٍ الإطلاق…",
+  submit: "إطلاق المشروع",
+};

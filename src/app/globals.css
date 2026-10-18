@@ -280,3 +280,43 @@ body {
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* ── i18n / RTL support ─────────────────────────────────────── */
+
+/* Persian gets Vazirmatn, Arabic gets Noto Sans Arabic (loaded in layout). */
+html[lang="fa"] body {
+  font-family: var(--font-vazirmatn), var(--font-geist-sans), system-ui, sans-serif;
+}
+
+html[lang="ar"] body {
+  font-family: var(--font-noto-arabic), var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* letter-spacing breaks Arabic/Persian letter joining — neutralize in RTL. */
+[dir="rtl"] .tracking-tighter,
+[dir="rtl"] .tracking-tight,
+[dir="rtl"] .tracking-normal,
+[dir="rtl"] .tracking-wide,
+[dir="rtl"] .tracking-wider,
+[dir="rtl"] .tracking-widest {
+  letter-spacing: 0;
+}
+
+/* Uppercase is meaningless for Arabic/Persian scripts; drop the transform. */
+[dir="rtl"] .uppercase {
+  text-transform: none;
+}
+
+/* Keep Latin brand marks & numbers LTR inside RTL text flows. */
+[dir="rtl"] .ltr-fix {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* Physical directional utilities used by the chrome — mirror them in RTL. */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+[dir="rtl"] .text-right {
+  text-align: left;
+}

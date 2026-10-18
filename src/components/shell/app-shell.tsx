@@ -35,10 +35,12 @@ import {
   type ProjectCard,
   type SearchResults,
 } from "@/lib/dto";
+import { useT } from "@/lib/i18n";
 
 import { Logo, LogoMark, Wordmark } from "@/components/brand/logo";
 import { ReputationChip, UserAvatar } from "@/components/shared/atoms";
 import { ProjectCardView } from "@/components/shared/project-card";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -60,6 +62,7 @@ import {
 
 // ─── Unread badge ────────────────────────────────────────────
 function UnreadBadge({ count, className }: { count: number; className?: string }) {
+  const t = useT();
   if (count <= 0) return null;
   return (
     <span
@@ -67,7 +70,7 @@ function UnreadBadge({ count, className }: { count: number; className?: string }
         "inline-flex min-w-[18px] h-[18px] px-1 items-center justify-center rounded-full bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 text-[10px] font-semibold leading-none",
         className
       )}
-      aria-label={`${count} unread notifications`}
+      aria-label={t("nav.unreadNotificationsAria", { count })}
     >
       {count > 99 ? "99+" : count}
     </span>
@@ -117,24 +120,25 @@ function LeftNav() {
   const view = useApp((s) => s.view);
   const unreadCount = useApp((s) => s.unreadCount);
   const navigate = useApp((s) => s.navigate);
+  const t = useT();
 
   const go = (v: View) => () => navigate(v);
 
   return (
     <aside
       className="hidden md:flex w-60 shrink-0 flex-col sticky top-0 h-screen glass z-30"
-      aria-label="Primary navigation"
+      aria-label={t("nav.primaryNavAria")}
     >
       <div className="h-14 flex items-center px-4 shrink-0">
         <Logo onClick={() => navigate({ name: "landing" })} />
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-1" aria-label="Main">
-        <NavItem icon={House} label="Home" active={view.name === "home"} onClick={go({ name: "home" })} />
-        <NavItem icon={Compass} label="Explore" active={view.name === "explore"} onClick={go({ name: "explore" })} />
+      <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-1" aria-label={t("nav.mainAria")}>
+        <NavItem icon={House} label={t("common.home")} active={view.name === "home"} onClick={go({ name: "home" })} />
+        <NavItem icon={Compass} label={t("common.explore")} active={view.name === "explore"} onClick={go({ name: "explore" })} />
         <NavItem
           icon={FolderGit2}
-          label="Projects"
+          label={t("common.projects")}
           active={view.name === "project"}
           onClick={go({ name: "explore" })}
         />
@@ -144,20 +148,20 @@ function LeftNav() {
           className="btn-hero inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 min-h-[44px] text-sm mt-3 mb-2 w-full focus-glow"
         >
           <Plus className="h-4 w-4" />
-          New project
+          {t("nav.newProject")}
         </button>
 
         {user && (
           <>
-            <NavItem icon={Users} label="Teams" active={view.name === "teams"} onClick={go({ name: "teams" })} />
+            <NavItem icon={Users} label={t("common.teams")} active={view.name === "teams"} onClick={go({ name: "teams" })} />
             <NavItem
               icon={Bell}
-              label="Notifications"
+              label={t("common.notifications")}
               active={view.name === "notifications"}
               onClick={go({ name: "notifications" })}
               badge={unreadCount}
             />
-            <NavItem icon={Bookmark} label="Saved" active={view.name === "saved"} onClick={go({ name: "saved" })} />
+            <NavItem icon={Bookmark} label={t("common.saved")} active={view.name === "saved"} onClick={go({ name: "saved" })} />
           </>
         )}
       </nav>
@@ -166,11 +170,11 @@ function LeftNav() {
         <div className="px-3 pb-4 flex flex-col gap-1 shrink-0">
           <NavItem
             icon={CircleUserRound}
-            label="Profile"
+            label={t("common.profile")}
             active={view.name === "profile" && view.username === user.username}
             onClick={go({ name: "profile", username: user.username })}
           />
-          <NavItem icon={Settings} label="Settings" active={view.name === "settings"} onClick={go({ name: "settings" })} />
+          <NavItem icon={Settings} label={t("common.settings")} active={view.name === "settings"} onClick={go({ name: "settings" })} />
         </div>
       )}
     </aside>
@@ -185,6 +189,7 @@ function TopBar() {
   const setSearchOpen = useApp((s) => s.setSearchOpen);
   const setUser = useApp((s) => s.setUser);
   const setUnreadCount = useApp((s) => s.setUnreadCount);
+  const t = useT();
 
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -196,9 +201,9 @@ function TopBar() {
       setUnreadCount(0);
       setUser(null);
       navigate({ name: "landing" });
-      toast.success("Logged out. See you soon.");
+      toast.success(t("nav.loggedOutToast"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Logout failed");
+      toast.error(e instanceof Error ? e.message : t("nav.logoutFailed"));
     } finally {
       setLoggingOut(false);
     }
@@ -210,7 +215,7 @@ function TopBar() {
       <button
         onClick={() => navigate({ name: "landing" })}
         className="md:hidden flex items-center gap-2 outline-none focus-glow rounded-lg"
-        aria-label="TEKA NEXUS home"
+        aria-label={t("nav.brandHomeAria")}
       >
         <LogoMark size={24} />
         <Wordmark className="text-base" compact />
@@ -220,10 +225,10 @@ function TopBar() {
       <button
         onClick={() => setSearchOpen(true)}
         className="hidden md:flex items-center gap-2.5 h-9 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-colors w-full max-w-md ml-1 outline-none focus-glow"
-        aria-label="Search projects, people and tags"
+        aria-label={t("search.description")}
       >
         <Search className="h-4 w-4 shrink-0" />
-        <span className="truncate">Search projects, people, tags…</span>
+        <span className="truncate">{t("search.placeholder")}</span>
         <kbd className="ml-auto font-mono text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.05]" aria-hidden="true">
           /
         </kbd>
@@ -231,34 +236,36 @@ function TopBar() {
 
       <div className="flex-1" />
 
-      {/* Mobile actions: search + bell */}
+      {/* Mobile actions: language + search + bell */}
       <div className="flex md:hidden items-center gap-1">
+        <LanguageSwitcher />
         <button
           onClick={() => setSearchOpen(true)}
           className="flex items-center justify-center h-11 w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/[0.05] transition-colors outline-none focus-glow"
-          aria-label="Search"
+          aria-label={t("common.search")}
         >
           <Search className="h-5 w-5" />
         </button>
         <button
           onClick={() => navigate({ name: "notifications" })}
           className="relative flex items-center justify-center h-11 w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/[0.05] transition-colors outline-none focus-glow"
-          aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+          aria-label={unreadCount > 0 ? t("nav.notificationsUnreadAria", { count: unreadCount }) : t("common.notifications")}
         >
           <Bell className="h-5 w-5" />
           <UnreadBadge count={unreadCount} className="absolute top-1.5 right-1.5" />
         </button>
       </div>
 
-      {/* Desktop right side: XP/REP + account */}
+      {/* Desktop right side: language + XP/REP + account */}
       {user ? (
         <div className="hidden md:flex items-center gap-4">
+          <LanguageSwitcher />
           <ReputationChip xp={user.xp} reputation={user.reputation} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 className="flex items-center gap-2.5 rounded-lg pl-1.5 pr-2 py-1.5 min-h-[44px] hover:bg-white/[0.05] transition-colors outline-none focus-glow"
-                aria-label="Account menu"
+                aria-label={t("nav.accountMenuAria")}
               >
                 <UserAvatar user={user} size={30} />
                 <span className="flex flex-col items-start leading-tight">
@@ -268,16 +275,16 @@ function TopBar() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("nav.account")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate({ name: "profile", username: user.username })}>
-                <CircleUserRound className="h-4 w-4" /> View profile
+                <CircleUserRound className="h-4 w-4" /> {t("nav.viewProfile")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate({ name: "saved" })}>
-                <Bookmark className="h-4 w-4" /> Saved projects
+                <Bookmark className="h-4 w-4" /> {t("saved.title")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate({ name: "settings" })}>
-                <Settings className="h-4 w-4" /> Settings
+                <Settings className="h-4 w-4" /> {t("common.settings")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -285,7 +292,7 @@ function TopBar() {
                 onClick={handleLogout}
                 className="text-rose-400 focus:text-rose-300"
               >
-                {loggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />} Log out
+                {loggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />} {t("common.logOut")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -297,7 +304,7 @@ function TopBar() {
           className="hidden md:inline-flex"
           onClick={() => navigate({ name: "login" })}
         >
-          Sign in
+          {t("common.signIn")}
         </Button>
       )}
     </header>
@@ -344,34 +351,35 @@ function MobileNav() {
   const view = useApp((s) => s.view);
   const unreadCount = useApp((s) => s.unreadCount);
   const navigate = useApp((s) => s.navigate);
+  const t = useT();
 
   return (
     <nav
       className="md:hidden fixed bottom-0 inset-x-0 z-40 glass pb-safe"
-      aria-label="Mobile navigation"
+      aria-label={t("nav.mobileNavAria")}
     >
       <div className="grid grid-cols-5 items-stretch h-16">
-        <MobileTab icon={House} label="Home" active={view.name === "home"} onClick={() => navigate({ name: "home" })} />
-        <MobileTab icon={Compass} label="Explore" active={view.name === "explore"} onClick={() => navigate({ name: "explore" })} />
+        <MobileTab icon={House} label={t("common.home")} active={view.name === "home"} onClick={() => navigate({ name: "home" })} />
+        <MobileTab icon={Compass} label={t("common.explore")} active={view.name === "explore"} onClick={() => navigate({ name: "explore" })} />
         <div className="flex items-start justify-center">
           <button
             onClick={() => navigate({ name: "projectNew" })}
             className="btn-hero h-14 w-14 rounded-full flex items-center justify-center -translate-y-3 outline-none focus-glow"
-            aria-label="New project"
+            aria-label={t("nav.newProject")}
           >
             <Plus className="h-6 w-6" />
           </button>
         </div>
         <MobileTab
           icon={Bell}
-          label="Alerts"
+          label={t("nav.alerts")}
           active={view.name === "notifications"}
           onClick={() => navigate({ name: "notifications" })}
           badge={unreadCount}
         />
         <MobileTab
           icon={CircleUserRound}
-          label={user ? "Profile" : "Sign in"}
+          label={user ? t("common.profile") : t("common.signIn")}
           active={view.name === "profile" || view.name === "settings"}
           onClick={() => (user ? navigate({ name: "profile", username: user.username }) : navigate({ name: "login" }))}
         />
@@ -386,6 +394,7 @@ export function SearchDialog() {
   const setSearchOpen = useApp((s) => s.setSearchOpen);
   const navigate = useApp((s) => s.navigate);
 
+  const t = useT();
   const [query, setQuery] = useState("");
   const [data, setData] = useState<{ q: string; results: SearchResults } | null>(null);
   const reqId = useRef(0);
@@ -428,30 +437,30 @@ export function SearchDialog() {
     <CommandDialog
       open={open}
       onOpenChange={handleOpenChange}
-      title="Search TEKA NEXUS"
-      description="Search projects, people and tags"
+      title={t("search.title")}
+      description={t("search.description")}
       showCloseButton={false}
       className="max-w-xl top-[15%] translate-y-0"
     >
       <CommandInput
         value={query}
         onValueChange={setQuery}
-        placeholder="Search projects, people, tags…"
-        aria-label="Search query"
+        placeholder={t("search.placeholder")}
+        aria-label={t("search.inputAria")}
       />
       <CommandList>
         {q.length < 2 ? (
           <div className="py-8 px-4 text-center text-sm text-muted-foreground">
-            Type at least 2 characters to search.
+            {t("search.minChars")}
           </div>
         ) : searching ? (
           <div className="py-8 px-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Searching…
+            <Loader2 className="h-4 w-4 animate-spin" /> {t("search.searching")}
           </div>
         ) : hasResults ? (
           <>
             {results!.projects.length > 0 && (
-              <CommandGroup heading="Projects">
+              <CommandGroup heading={t("common.projects")}>
                 {results!.projects.map((p) => (
                   <CommandItem
                     key={p.id}
@@ -469,7 +478,7 @@ export function SearchDialog() {
               </CommandGroup>
             )}
             {results!.users.length > 0 && (
-              <CommandGroup heading="Users">
+              <CommandGroup heading={t("search.usersHeading")}>
                 {results!.users.map((u) => (
                   <CommandItem
                     key={u.id}
@@ -487,26 +496,28 @@ export function SearchDialog() {
               </CommandGroup>
             )}
             {results!.tags.length > 0 && (
-              <CommandGroup heading="Tags">
-                {results!.tags.map((t) => (
+              <CommandGroup heading={t("search.tagsHeading")}>
+                {results!.tags.map((tag) => (
                   <CommandItem
-                    key={t.tag}
-                    value={`${q} ${t.tag}`}
+                    key={tag.tag}
+                    value={`${q} ${tag.tag}`}
                     onSelect={() => {
                       setSearchOpen(false);
-                      navigate({ name: "explore", query: t.tag });
+                      navigate({ name: "explore", query: tag.tag });
                     }}
                   >
                     <Hash className="text-violet-300" />
-                    <span className="font-mono">#{t.tag}</span>
-                    <span className="ml-auto text-xs text-muted-foreground">{t.count} project{t.count === 1 ? "" : "s"}</span>
+                    <span className="font-mono">#{tag.tag}</span>
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      {t(tag.count === 1 ? "search.tagProjectCount" : "search.tagProjectCountPlural", { count: tag.count })}
+                    </span>
                   </CommandItem>
                 ))}
               </CommandGroup>
             )}
           </>
         ) : (
-          <CommandEmpty>No results for &ldquo;{q}&rdquo;</CommandEmpty>
+          <CommandEmpty>{t("search.noResults", { q })}</CommandEmpty>
         )}
       </CommandList>
     </CommandDialog>
@@ -526,6 +537,7 @@ function RailSectionSkeleton() {
 function RightRail() {
   const user = useApp((s) => s.user);
   const navigate = useApp((s) => s.navigate);
+  const t = useT();
 
   const [trending, setTrending] = useState<ProjectCard[] | null>(null);
   const [requests, setRequests] = useState<{ ownerId: string; received: number; sent: number } | null>(
@@ -544,12 +556,12 @@ function RightRail() {
         if (!cancelled) setTrending(res.projects.slice(0, 3));
       })
       .catch((e) => {
-        if (!cancelled) toast.error(e instanceof Error ? e.message : "Failed to load trending projects");
+        if (!cancelled) toast.error(e instanceof Error ? e.message : t("nav.trendingError"));
       });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   // Pending team invitations & requests (authed only).
   // State is tagged with the owner id so a stale result never leaks to another user.
@@ -567,25 +579,25 @@ function RightRail() {
         }
       })
       .catch((e) => {
-        if (!cancelled) toast.error(e instanceof Error ? e.message : "Failed to load team requests");
+        if (!cancelled) toast.error(e instanceof Error ? e.message : t("nav.requestsError"));
       });
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, t]);
 
   const requestData = requests && user && requests.ownerId === user.id ? requests : null;
 
   return (
     <aside
       className="hidden xl:block w-72 shrink-0 sticky top-0 h-screen glass z-30"
-      aria-label="Sidebar highlights"
+      aria-label={t("nav.railAria")}
     >
       <div className="h-full overflow-y-auto px-4 py-6 flex flex-col gap-6">
         {/* Trending projects */}
-        <section aria-label="Trending projects">
+        <section aria-label={t("nav.trending")}>
           <h2 className="font-display text-sm font-semibold flex items-center gap-2 px-1 mb-3">
-            <TrendingUp className="h-4 w-4 text-cyan-300" /> Trending projects
+            <TrendingUp className="h-4 w-4 text-cyan-300" /> {t("nav.trending")}
           </h2>
           {trending === null ? (
             <div className="flex flex-col gap-3">
@@ -594,7 +606,7 @@ function RightRail() {
               <RailSectionSkeleton />
             </div>
           ) : trending.length === 0 ? (
-            <p className="text-sm text-muted-foreground px-1">No projects yet — be the first to launch one.</p>
+            <p className="text-sm text-muted-foreground px-1">{t("nav.trendingEmpty")}</p>
           ) : (
             <div className="flex flex-col gap-3">
               {trending.map((p) => (
@@ -606,9 +618,9 @@ function RightRail() {
 
         {/* Team invitations & requests */}
         {user && (
-          <section aria-label="Team invitations and requests">
+          <section aria-label={t("nav.requestsAria")}>
             <h2 className="font-display text-sm font-semibold flex items-center gap-2 px-1 mb-3">
-              <Users className="h-4 w-4 text-violet-300" /> Team invitations &amp; requests
+              <Users className="h-4 w-4 text-violet-300" /> {t("nav.requestsSection")}
             </h2>
             <button
               onClick={() => navigate({ name: "teams" })}
@@ -621,15 +633,17 @@ function RightRail() {
                 <div className="min-w-0">
                   <p className="text-sm font-medium">
                     {requestData === null
-                      ? "Loading requests…"
+                      ? t("nav.requestsLoading")
                       : requestData.received === 0
-                        ? "No pending requests"
-                        : `${requestData.received} pending request${requestData.received === 1 ? "" : "s"}`}
+                        ? t("nav.requestsEmpty")
+                        : t(requestData.received === 1 ? "nav.requestsPending" : "nav.requestsPendingPlural", {
+                            count: requestData.received,
+                          })}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
                     {requestData === null
-                      ? "Review in Teams"
-                      : `${requestData.sent} sent by you · Review in Teams`}
+                      ? t("nav.reviewInTeams")
+                      : t("nav.requestsSentSummary", { sent: requestData.sent })}
                   </p>
                 </div>
               </div>
@@ -638,17 +652,17 @@ function RightRail() {
         )}
 
         {/* Preview tip */}
-        <section aria-label="Tip">
+        <section aria-label={t("nav.tipAria")}>
           <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-4">
             <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Lightbulb className="h-3.5 w-3.5 text-cyan-300" /> Preview tip
+              <Lightbulb className="h-3.5 w-3.5 text-cyan-300" /> {t("nav.tipTitle")}
             </h3>
             <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-              Press{" "}
+              {t("nav.tipBefore")}{" "}
               <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.05] text-foreground">
                 /
               </kbd>{" "}
-              to search anywhere.
+              {t("nav.tipAfter")}
             </p>
           </div>
         </section>
@@ -662,6 +676,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const user = useApp((s) => s.user);
   const setUnreadCount = useApp((s) => s.setUnreadCount);
   const setSearchOpen = useApp((s) => s.setSearchOpen);
+  const t = useT();
   const userId = user?.id ?? null;
 
   // Poll unread notification count every 45s while signed in.
@@ -717,8 +732,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </motion.div>
             </div>
           </main>
-          <footer className="py-4 text-center text-xs text-muted-foreground/70 select-none" aria-label="Footer">
-            TEKA NEXUS — demo preview
+          <footer className="py-4 text-center text-xs text-muted-foreground/70 select-none" aria-label={t("nav.footerAria")}>
+            {t("nav.footerTagline")}
           </footer>
         </div>
 

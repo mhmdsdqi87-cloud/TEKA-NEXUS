@@ -1,0 +1,133 @@
+// TEKA NEXUS — Simplified Chinese dictionary: "landing" namespace.
+// Owned by Task 2-a (i18n landing/auth/onboarding).
+
+import type { LandingDict } from "../en/landing";
+
+export const landing: LandingDict = {
+  topbar: {
+    navAria: "主导航",
+    startBuilding: "开始构建",
+  },
+  hero: {
+    badge: "TEKA NEXUS — 含演示数据的 Beta 预览",
+    title1: "让想法成为",
+    title2: "真正的科技",
+    title3: "",
+    subtitle: "发现项目，结识伙伴，构建未来。",
+    exploreProjects: "探索项目",
+  },
+  orbit: {
+    ship: "发布",
+    teamUp: "组队",
+    fork: "Fork",
+    rankUp: "升级",
+  },
+  live: {
+    aria: "实时活动",
+    label: "实时动态",
+    empty: "做第一个构建真实项目的人。",
+  },
+  feed: {
+    created: "创建了",
+    released: "发布了",
+    updateOn: "更新了",
+    taskOn: "完成了任务：",
+    milestoneOn: "达成了里程碑：",
+    joined: "加入了",
+    updated: "更新了",
+    someone: "有人",
+    projectFallback: "一个项目",
+  },
+  workflow: {
+    eyebrow: "路径",
+    title: "一套工作流，从想法到影响力。",
+    subtitle: "TEKA NEXUS 的每个功能都对应同一循环中的一步 —— 真实项目正是这样落地的。",
+    idea: "想法",
+    discover: "探索",
+    findTeam: "组建团队",
+    build: "构建",
+    collaborate: "协作",
+    publish: "发布",
+    grow: "成长",
+    monetize: "变现",
+  },
+  features: {
+    eyebrow: "平台",
+    title: "从零到发布，所需的一切都在这里。",
+    howLabel: "运作方式",
+    discovery: {
+      title: "Nexus 探索",
+      body: "按分类、状态、标签和所需技能查找项目 —— 从初次提交的想法到已发布的作品。每个公开项目在发布的那一刻就会被收录。",
+      how: "打开「探索」筛选项目目录，或使用搜索直达项目、用户和标签。",
+    },
+    workspaces: {
+      title: "项目工作区",
+      body: "每个项目都有共享工作区：任务看板、里程碑、进展动态，以及从所有者到查看者角色分明的团队名单。",
+      how: "所有者发布项目并审核申请；通过审核的协作者在同一看板上规划并交付工作。",
+    },
+    reputation: {
+      title: "经验证的声誉",
+      body: "声誉靠挣得，而非自我宣称。服务器验证每一笔贡献并自动发放 XP 和声誉 —— 没有任何自报成分。",
+      how: "完成任务、达成里程碑、发布版本；成果会显示在你的主页上，团队有目共睹。",
+    },
+  },
+  preview: {
+    eyebrow: "走进项目",
+    title: "为交付而打造的工作区。",
+    subtitle: "任务、里程碑、动态和整个团队 —— 每个项目一块看板，井井有条。",
+    chip: "预览",
+    caption: "产品预览 —— 项目工作区的示意布局。",
+    backlog: "待办",
+    inProgress: "进行中",
+    done: "已完成",
+    taskCard: "任务卡片",
+    assignee: "负责人",
+  },
+  how: {
+    eyebrow: "使用方式",
+    title: "三步即可开始。",
+    step1: {
+      title: "创建个人主页",
+      body: "注册并设置显示名称、技能和兴趣。引导流程不到一分钟。",
+    },
+    step2: {
+      title: "发布或发现项目",
+      body: "把你的想法连同简介和分类发布为项目，或浏览探索页寻找值得加入的项目。",
+    },
+    step3: {
+      title: "申请协作",
+      body: "选择角色并附上简短介绍。项目所有者审核你的申请后将你加入团队。",
+    },
+  },
+  faq: {
+    eyebrow: "常见问题",
+    title: "你的疑问，这里解答。",
+    q1: "TEKA NEXUS 是什么？",
+    a1: "一个以开发者为先的平台，让想法变成真正的科技。项目在任何阶段都能发布 —— 从粗略的想法到已发布的作品 —— 并找到一起构建的伙伴。项目发现、组队与经验证的声誉，尽在一处。",
+    q2: "免费吗？",
+    a2: "免费。Beta 预览期间 TEKA NEXUS 可免费使用。变现工具计划在后续阶段推出，且此预览环境完全基于明确标注的演示数据运行。",
+    q3: "声誉如何获得？",
+    a3: "绝不自报。服务器会为经验证的贡献自动发放 XP 和声誉：完成任务、达成里程碑、发布动态、发布项目，以及协作申请被接受。",
+    q4: "不用加密货币也能用吗？",
+    a4: "可以。TEKA NEXUS 是标准的网络平台 —— 无需钱包、代币或区块链知识。一切只需普通电子邮箱即可使用。",
+    q5: "团队如何运作？",
+    a5: "项目有所有者、管理员、协作者和查看者。想加入，就发送一份协作申请，写明期望角色和简短介绍；项目所有者审核后决定接受或拒绝。",
+  },
+  footer: {
+    tagline: "TEKA NEXUS — 想象。构建。连接。",
+    previewNote: "预览环境：所有内容均为明确标注的演示数据。",
+    navAria: "页脚 — {section}",
+    colProduct: "产品",
+    colCompany: "公司",
+    colLegal: "法律",
+    colSupport: "支持",
+    about: "关于",
+    faq: "常见问题",
+    terms: "条款",
+    privacy: "隐私",
+    guidelines: "社区准则",
+  },
+  toast: {
+    comingSoon: "此功能尚未包含在预览中 —— 将在后续阶段推出。",
+  },
+};

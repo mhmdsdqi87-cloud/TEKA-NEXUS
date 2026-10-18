@@ -1,0 +1,44 @@
+// TEKA NEXUS — Persian dictionary. Shared namespace.
+// Owned by the orchestrator.
+
+import type { CommonDict } from "../en/common";
+
+export const common: CommonDict = {
+  brand: "TEKA NEXUS",
+  loading: "در حال بارگذاری…",
+  cancel: "لغو",
+  save: "ذخیره",
+  saveChanges: "ذخیره تغییرات",
+  delete: "حذف",
+  close: "بستن",
+  back: "بازگشت",
+  retry: "تلاش دوباره",
+  optional: "اختیاری",
+  error: "مشکلی پیش آمد. لطفاً دوباره تلاش کن.",
+  networkError: "اتصال به سرور برقرار نشد. اتصال اینترنت را بررسی کن و دوباره تلاش کن.",
+  search: "جستجو",
+  language: "زبان",
+  signIn: "ورود",
+  signUp: "ساخت حساب",
+  logOut: "خروج",
+  settings: "تنظیمات",
+  members: "اعضا",
+  project: "پروژه",
+  projects: "پروژه‌ها",
+  people: "افراد",
+  seeAll: "مشاهده همه",
+  viewAll: "مشاهده همه",
+  comingSoon: "به‌زودی",
+  saved: "ذخیره‌شده‌ها",
+  explore: "کاوش",
+  home: "خانه",
+  notifications: "اعلان‌ها",
+  profile: "پروفایل",
+  teams: "تیم‌ها",
+  goals: {
+    build: "ساخت پروژه‌های خودم",
+    contribute: "مشارکت در پروژه‌ها",
+    learn: "یادگیری تکنولوژی جدید",
+    discover: "کشف پروژه‌ها",
+  },
+};

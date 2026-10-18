@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/store";
 import { post } from "@/lib/api";
+import { useT, useLabeled } from "@/lib/i18n";
 import { LIMITS, PROJECT_CATEGORIES, PROJECT_STATUSES, SKILLS } from "@/lib/constants";
 
 import { EmptyState } from "@/components/shared/atoms";
@@ -65,18 +66,18 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
 const VISIBILITY_OPTIONS = [
   {
     slug: "PUBLIC",
-    name: "Public",
-    description: "Listed in Explore and the live feed. Anyone can view it.",
+    nameKey: "projectNew.visibilityName.PUBLIC",
+    descKey: "projectNew.visibilityDesc.PUBLIC",
   },
   {
     slug: "UNLISTED",
-    name: "Unlisted",
-    description: "Viewable by direct link. Hidden from Explore and the feed.",
+    nameKey: "projectNew.visibilityName.UNLISTED",
+    descKey: "projectNew.visibilityDesc.UNLISTED",
   },
   {
     slug: "PRIVATE",
-    name: "Private",
-    description: "Only you and your team members can view this project.",
+    nameKey: "projectNew.visibilityName.PRIVATE",
+    descKey: "projectNew.visibilityDesc.PRIVATE",
   },
 ] as const;
 
@@ -93,6 +94,8 @@ export function ProjectNewView() {
   const user = useApp((s) => s.user);
   const navigate = useApp((s) => s.navigate);
   const back = useApp((s) => s.back);
+  const t = useT();
+  const lbl = useLabeled();
 
   const [name, setName] = useState("");
   const [tagline, setTagline] = useState("");
@@ -122,11 +125,11 @@ export function ProjectNewView() {
       >
         <EmptyState
           icon={Lock}
-          title="Sign in required"
-          description="You need a TEKA NEXUS account to launch a project."
+          title={t("projectNew.auth.title")}
+          description={t("projectNew.auth.description")}
           action={
             <Button className="btn-hero" onClick={() => navigate({ name: "login" })}>
-              Go to login
+              {t("projectNew.auth.goLogin")}
             </Button>
           }
         />
@@ -138,14 +141,14 @@ export function ProjectNewView() {
     const v = tagInput.trim().toLowerCase().replace(/\s+/g, "-");
     if (!v) return;
     if (tags.length >= maxTags) {
-      toast.error(`Max ${maxTags} tags`);
+      toast.error(t("projectNew.toasts.maxTags", { n: maxTags }));
       return;
     }
     if (!tags.includes(v)) setTags((prev) => [...prev, v]);
     setTagInput("");
   };
 
-  const removeTag = (t: string) => setTags((prev) => prev.filter((x) => x !== t));
+  const removeTag = (tag: string) => setTags((prev) => prev.filter((x) => x !== tag));
 
   const toggleSkill = (slugKey: string) =>
     setSkills((prev) => (prev.includes(slugKey) ? prev.filter((s) => s !== slugKey) : [...prev, slugKey]));
@@ -154,13 +157,14 @@ export function ProjectNewView() {
     const errs: FieldErrors = {};
     const trimmedName = name.trim();
     if (trimmedName.length < 3 || trimmedName.length > 80) {
-      errs.name = "Name must be 3-80 characters.";
+      errs.name = t("projectNew.errors.name");
     }
     const trimmedTagline = tagline.trim();
-    if (!trimmedTagline) errs.tagline = "Tagline is required.";
-    else if (trimmedTagline.length > LIMITS.tagline) errs.tagline = `Max ${LIMITS.tagline} characters.`;
-    if (!category) errs.category = "Pick a category for your project.";
-    const urlError = "Must start with http:// or https://";
+    if (!trimmedTagline) errs.tagline = t("projectNew.errors.taglineRequired");
+    else if (trimmedTagline.length > LIMITS.tagline)
+      errs.tagline = t("projectNew.errors.taglineMax", { n: LIMITS.tagline });
+    if (!category) errs.category = t("projectNew.errors.category");
+    const urlError = t("projectNew.errors.url");
     if (repositoryUrl.trim() && !/^https?:\/\//i.test(repositoryUrl.trim())) errs.repositoryUrl = urlError;
     if (demoUrl.trim() && !/^https?:\/\//i.test(demoUrl.trim())) errs.demoUrl = urlError;
     if (websiteUrl.trim() && !/^https?:\/\//i.test(websiteUrl.trim())) errs.websiteUrl = urlError;
@@ -173,7 +177,7 @@ export function ProjectNewView() {
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length > 0) {
-      toast.error("Fix the highlighted fields before launching.");
+      toast.error(t("projectNew.toasts.fixFields"));
       return;
     }
     setSubmitting(true);
@@ -191,10 +195,10 @@ export function ProjectNewView() {
         demoUrl: demoUrl.trim() || undefined,
         websiteUrl: websiteUrl.trim() || undefined,
       });
-      toast.success("Project launched");
+      toast.success(t("projectNew.toasts.launched"));
       navigate({ name: "project", slug: res.project.slug });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create project");
+      toast.error(err instanceof Error ? err.message : t("projectNew.toasts.createFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -213,23 +217,23 @@ export function ProjectNewView() {
       <div className="mb-6">
         <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2.5">
           <Rocket className="h-6 w-6 md:h-7 md:w-7 text-cyan-300" aria-hidden="true" />
-          Launch a project
+          {t("projectNew.title")}
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">Tell the world what you&rsquo;re building.</p>
+        <p className="text-sm text-muted-foreground mt-1">{t("projectNew.subtitle")}</p>
       </div>
 
       <form onSubmit={handleSubmit} noValidate className="glass-card rounded-2xl p-5 md:p-8 max-w-3xl flex flex-col gap-7">
         {/* Name + live slug preview */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="project-name" className="text-sm font-medium">
-            Project name <span className="text-rose-400" aria-hidden="true">*</span>
+            {t("projectNew.form.name")} <span className="text-rose-400" aria-hidden="true">*</span>
           </Label>
           <Input
             id="project-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={80}
-            placeholder="e.g. Nexus CLI"
+            placeholder={t("projectNew.form.namePlaceholder")}
             aria-invalid={Boolean(errors.name)}
             aria-describedby="project-name-hint"
             className="bg-white/[0.03] border-white/10"
@@ -240,7 +244,7 @@ export function ProjectNewView() {
                 /projects/{slug}
               </span>
             ) : (
-              <span className="text-xs text-muted-foreground">Your URL slug appears here as you type.</span>
+              <span className="text-xs text-muted-foreground">{t("projectNew.form.slugHint")}</span>
             )}
             <span className="font-mono text-[11px] text-muted-foreground">{name.length}/80</span>
           </div>
@@ -250,14 +254,14 @@ export function ProjectNewView() {
         {/* Tagline */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="project-tagline" className="text-sm font-medium">
-            Tagline <span className="text-rose-400" aria-hidden="true">*</span>
+            {t("projectNew.form.tagline")} <span className="text-rose-400" aria-hidden="true">*</span>
           </Label>
           <Input
             id="project-tagline"
             value={tagline}
             onChange={(e) => setTagline(e.target.value)}
             maxLength={LIMITS.tagline}
-            placeholder="One line that sells the idea"
+            placeholder={t("projectNew.form.taglinePlaceholder")}
             aria-invalid={Boolean(errors.tagline)}
             className="bg-white/[0.03] border-white/10"
           />
@@ -277,7 +281,7 @@ export function ProjectNewView() {
         {/* Description */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="project-description" className="text-sm font-medium">
-            Description
+            {t("projectNew.form.description")}
           </Label>
           <Textarea
             id="project-description"
@@ -285,22 +289,22 @@ export function ProjectNewView() {
             onChange={(e) => setDescription(e.target.value)}
             rows={8}
             maxLength={LIMITS.projectDescription}
-            placeholder="What are you building? Who is it for? What makes it different?"
+            placeholder={t("projectNew.form.descriptionPlaceholder")}
             className="bg-white/[0.03] border-white/10 resize-y"
           />
           <p className="text-[11px] text-muted-foreground">
-            Plain text or Markdown. {description.length}/{LIMITS.projectDescription}
+            {t("projectNew.form.descriptionHint")} {description.length}/{LIMITS.projectDescription}
           </p>
         </div>
 
         {/* Category grid */}
         <div className="flex flex-col gap-2">
           <Label className="text-sm font-medium">
-            Category <span className="text-rose-400" aria-hidden="true">*</span>
+            {t("projectNew.form.category")} <span className="text-rose-400" aria-hidden="true">*</span>
           </Label>
           <div
             role="radiogroup"
-            aria-label="Project category"
+            aria-label={t("projectNew.a11y.categoryGroup")}
             className="grid grid-cols-2 sm:grid-cols-3 gap-2"
           >
             {PROJECT_CATEGORIES.map((c) => {
@@ -330,7 +334,7 @@ export function ProjectNewView() {
                       selected ? "text-cyan-200 font-medium" : "text-muted-foreground"
                     )}
                   >
-                    {c.name}
+                    {lbl("project.categories", c.slug, c.name)}
                   </span>
                 </button>
               );
@@ -342,16 +346,16 @@ export function ProjectNewView() {
         {/* Status */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="project-status" className="text-sm font-medium">
-            Status
+            {t("projectNew.form.status")}
           </Label>
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger id="project-status" className="w-[220px] bg-white/[0.03] border-white/10">
-              <SelectValue placeholder="Pick a status" />
+              <SelectValue placeholder={t("projectNew.form.statusPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {PROJECT_STATUSES.filter((s) => s.slug !== "ARCHIVED").map((s) => (
                 <SelectItem key={s.slug} value={s.slug}>
-                  {s.name}
+                  {lbl("project.status", s.slug, s.name)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -360,12 +364,12 @@ export function ProjectNewView() {
 
         {/* Visibility */}
         <div className="flex flex-col gap-2">
-          <Label className="text-sm font-medium">Visibility</Label>
+          <Label className="text-sm font-medium">{t("projectNew.form.visibility")}</Label>
           <RadioGroup
             value={visibility}
             onValueChange={setVisibility}
             className="grid gap-2 sm:grid-cols-3"
-            aria-label="Project visibility"
+            aria-label={t("projectNew.a11y.visibilityGroup")}
           >
             {VISIBILITY_OPTIONS.map((v) => (
               <Label
@@ -380,8 +384,8 @@ export function ProjectNewView() {
               >
                 <RadioGroupItem id={`visibility-${v.slug}`} value={v.slug} className="mt-0.5" />
                 <span className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium text-foreground">{v.name}</span>
-                  <span className="text-xs text-muted-foreground leading-snug">{v.description}</span>
+                  <span className="text-sm font-medium text-foreground">{t(v.nameKey)}</span>
+                  <span className="text-xs text-muted-foreground leading-snug">{t(v.descKey)}</span>
                 </span>
               </Label>
             ))}
@@ -391,20 +395,20 @@ export function ProjectNewView() {
         {/* Tags */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="project-tags" className="text-sm font-medium">
-            Tags <span className="text-muted-foreground font-normal">({tags.length}/{maxTags})</span>
+            {t("projectNew.form.tags")} <span className="text-muted-foreground font-normal">({tags.length}/{maxTags})</span>
           </Label>
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {tags.map((t) => (
+              {tags.map((tag) => (
                 <span
-                  key={t}
+                  key={tag}
                   className="inline-flex items-center gap-1 rounded-full border border-cyan-500/25 bg-cyan-500/10 px-2.5 py-1 font-mono text-xs text-cyan-300"
                 >
-                  #{t}
+                  #{tag}
                   <button
                     type="button"
-                    onClick={() => removeTag(t)}
-                    aria-label={`Remove tag ${t}`}
+                    onClick={() => removeTag(tag)}
+                    aria-label={t("projectNew.a11y.removeTag", { tag })}
                     className="text-cyan-300/70 hover:text-cyan-200 outline-none focus-glow rounded-full"
                   >
                     <X className="h-3 w-3" />
@@ -424,7 +428,11 @@ export function ProjectNewView() {
               }
             }}
             disabled={tags.length >= maxTags}
-            placeholder={tags.length >= maxTags ? "Max 8 tags reached" : "Type a tag and press Enter"}
+            placeholder={
+              tags.length >= maxTags
+                ? t("projectNew.form.maxTagsReached")
+                : t("projectNew.form.tagPlaceholder")
+            }
             className="bg-white/[0.03] border-white/10"
           />
         </div>
@@ -432,9 +440,9 @@ export function ProjectNewView() {
         {/* Required skills */}
         <div className="flex flex-col gap-2">
           <Label className="text-sm font-medium">
-            Required skills <span className="text-muted-foreground font-normal">(optional)</span>
+            {t("projectNew.form.requiredSkills")} <span className="text-muted-foreground font-normal">{t("projectNew.form.optional")}</span>
           </Label>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Required skills">
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t("projectNew.form.requiredSkills")}>
             {SKILLS.map((s) => {
               const on = skills.includes(s.slug);
               return (
@@ -450,7 +458,7 @@ export function ProjectNewView() {
                       : "border-white/10 bg-white/[0.02] text-muted-foreground hover:border-white/25 hover:text-foreground"
                   )}
                 >
-                  {s.name}
+                  {lbl("project.skills", s.slug, s.name)}
                 </button>
               );
             })}
@@ -460,13 +468,13 @@ export function ProjectNewView() {
         {/* Links */}
         <div className="flex flex-col gap-4">
           <Label className="text-sm font-medium">
-            Links <span className="text-muted-foreground font-normal">(optional)</span>
+            {t("projectNew.form.links")} <span className="text-muted-foreground font-normal">{t("projectNew.form.optional")}</span>
           </Label>
           {(
             [
-              { key: "repositoryUrl", label: "Repository URL", value: repositoryUrl, set: setRepositoryUrl, ph: "https://github.com/you/repo" },
-              { key: "demoUrl", label: "Demo URL", value: demoUrl, set: setDemoUrl, ph: "https://demo.yourproject.dev" },
-              { key: "websiteUrl", label: "Website URL", value: websiteUrl, set: setWebsiteUrl, ph: "https://yourproject.dev" },
+              { key: "repositoryUrl", label: t("projectNew.form.repoUrl"), value: repositoryUrl, set: setRepositoryUrl, ph: "https://github.com/you/repo" },
+              { key: "demoUrl", label: t("projectNew.form.demoUrl"), value: demoUrl, set: setDemoUrl, ph: "https://demo.yourproject.dev" },
+              { key: "websiteUrl", label: t("projectNew.form.websiteUrl"), value: websiteUrl, set: setWebsiteUrl, ph: "https://yourproject.dev" },
             ] as const
           ).map((f) => (
             <div key={f.key} className="flex flex-col gap-1.5">
@@ -493,16 +501,16 @@ export function ProjectNewView() {
           <Button type="submit" className="btn-hero" disabled={submitting}>
             {submitting ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" /> Launching…
+                <Loader2 className="h-4 w-4 animate-spin" /> {t("projectNew.submitting")}
               </>
             ) : (
               <>
-                <Rocket className="h-4 w-4" /> Launch project
+                <Rocket className="h-4 w-4" /> {t("projectNew.submit")}
               </>
             )}
           </Button>
           <Button type="button" variant="outline" onClick={back} disabled={submitting}>
-            Cancel
+            {t("common.cancel")}
           </Button>
         </div>
       </form>

@@ -1,0 +1,44 @@
+// TEKA NEXUS — Spanish dictionary. Shared namespace.
+// Owned by the orchestrator.
+
+import type { CommonDict } from "../en/common";
+
+export const common: CommonDict = {
+  brand: "TEKA NEXUS",
+  loading: "Cargando…",
+  cancel: "Cancelar",
+  save: "Guardar",
+  saveChanges: "Guardar cambios",
+  delete: "Eliminar",
+  close: "Cerrar",
+  back: "Volver",
+  retry: "Intentar de nuevo",
+  optional: "Opcional",
+  error: "Algo salió mal. Inténtalo de nuevo.",
+  networkError: "No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
+  search: "Buscar",
+  language: "Idioma",
+  signIn: "Iniciar sesión",
+  signUp: "Crear cuenta",
+  logOut: "Cerrar sesión",
+  settings: "Configuración",
+  members: "Miembros",
+  project: "Proyecto",
+  projects: "Proyectos",
+  people: "Personas",
+  seeAll: "Ver todo",
+  viewAll: "Ver todo",
+  comingSoon: "Próximamente",
+  saved: "Guardados",
+  explore: "Explorar",
+  home: "Inicio",
+  notifications: "Notificaciones",
+  profile: "Perfil",
+  teams: "Equipos",
+  goals: {
+    build: "Crear mis propios proyectos",
+    contribute: "Contribuir a proyectos",
+    learn: "Aprender nueva tecnología",
+    discover: "Descubrir proyectos",
+  },
+};

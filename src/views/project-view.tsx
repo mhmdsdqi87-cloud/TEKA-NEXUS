@@ -8,7 +8,7 @@ import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
-import { format, formatDistanceToNow, isBefore, parseISO } from "date-fns";
+import { format, isBefore, parseISO } from "date-fns";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -75,6 +75,7 @@ import {
 import { cn } from "@/lib/utils";
 import { get, post, patch, del, ApiError } from "@/lib/api";
 import { useApp } from "@/lib/store";
+import { useT, useRelativeTime, useFormatDate, useLabeled, type TFunc } from "@/lib/i18n";
 import {
   LIMITS,
   MEMBER_ROLES,
@@ -149,15 +150,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // ─── Local helpers ────────────────────────────────────────────────────────────
 
-const errText = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong");
+/** Server error message if available, otherwise null (caller supplies fallback). */
+const errText = (e: unknown): string | null =>
+  e instanceof Error ? e.message : null;
+
+/** Toast error text: server-provided message, or a localized fallback. */
+function useErrText() {
+  const t = useT();
+  return useCallback(
+    (e: unknown) => errText(e) ?? t("common.error"),
+    [t]
+  );
+}
+
 const enc = encodeURIComponent;
 
-function fmtDate(v: string | null | undefined) {
-  return v ? format(parseISO(v), "MMM d, yyyy") : "—";
-}
-function fmtAgo(v: string | null | undefined) {
-  return v ? formatDistanceToNow(parseISO(v), { addSuffix: true }) : "—";
-}
+const ROLE_KEYS: ReadonlySet<string> = new Set(MEMBER_ROLES.map((r) => r.slug));
+
+/** Translated role label; unknown DB roles fall back to the raw value. */
+const roleLabel = (t: TFunc, role: string) =>
+  ROLE_KEYS.has(role) ? t(`project.roles.${role}`) : role;
+
+const STATUS_KEYS: ReadonlySet<string> = new Set(TASK_STATUSES.map((s) => s.slug));
+const PRIORITY_KEYS: ReadonlySet<string> = new Set(TASK_PRIORITIES.map((p) => p.slug));
+const CATEGORY_KEYS: ReadonlySet<string> = new Set(PROJECT_CATEGORIES.map((c) => c.slug));
+const SKILL_KEYS: ReadonlySet<string> = new Set(SKILLS.map((s) => s.slug));
+
 function isOverdue(dueAt: string | null, done: boolean) {
   return !!dueAt && !done && isBefore(parseISO(dueAt), new Date());
 }
@@ -187,7 +205,8 @@ const ROLE_STYLE: Record<string, string> = {
 };
 
 function RoleChip({ role, className }: { role: string; className?: string }) {
-  const name = MEMBER_ROLES.find((r) => r.slug === role)?.name ?? role;
+  const t = useT();
+  const name = roleLabel(t, role);
   return (
     <span
       className={cn(
@@ -226,6 +245,8 @@ function Markdown({ children, className }: { children: string; className?: strin
 }
 
 function DueChip({ dueAt, done }: { dueAt: string | null; done: boolean }) {
+  const t = useT();
+  const fd = useFormatDate();
   if (!dueAt) return null;
   const overdue = isOverdue(dueAt, done);
   return (
@@ -236,33 +257,34 @@ function DueChip({ dueAt, done }: { dueAt: string | null; done: boolean }) {
       )}
     >
       <CalendarDays className="h-3 w-3" />
-      {overdue ? "Overdue " : ""}
-      {format(parseISO(dueAt), "MMM d")}
+      {overdue ? `${t("project.milestones.overdue")} ` : ""}
+      {fd(dueAt, "MMM d")}
     </span>
   );
 }
 
 function RequestStateChip({ status }: { status: string }) {
-  const meta: Record<string, { icon: IconType; cls: string; label: string }> = {
+  const t = useT();
+  const meta: Record<string, { icon: IconType; cls: string; key: string }> = {
     PENDING: {
       icon: Clock3,
       cls: "border-amber-500/30 bg-amber-500/10 text-amber-300",
-      label: "Request pending review",
+      key: "pendingReview",
     },
     ACCEPTED: {
       icon: CheckCircle2,
       cls: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-      label: "Request accepted",
+      key: "accepted",
     },
     REJECTED: {
       icon: XCircle,
       cls: "border-rose-500/30 bg-rose-500/10 text-rose-300",
-      label: "Request rejected",
+      key: "rejected",
     },
     WITHDRAWN: {
       icon: Clock3,
       cls: "border-zinc-500/30 bg-zinc-500/10 text-zinc-400",
-      label: "Request withdrawn",
+      key: "withdrawn",
     },
   };
   const m = meta[status] ?? meta.PENDING;
@@ -274,12 +296,13 @@ function RequestStateChip({ status }: { status: string }) {
         m.cls
       )}
     >
-      <Icon className="h-3.5 w-3.5" /> {m.label}
+      <Icon className="h-3.5 w-3.5" /> {t(`project.requestState.${m.key}`)}
     </span>
   );
 }
 
 function ReqRoleChip({ role }: { role: string }) {
+  const t = useT();
   return (
     <span
       className={cn(
@@ -287,7 +310,7 @@ function ReqRoleChip({ role }: { role: string }) {
         role === "CONTRIBUTOR" ? "bg-cyan-500/15 text-cyan-300" : "bg-zinc-500/15 text-zinc-400"
       )}
     >
-      wants {role.toLowerCase()}
+      {t("project.requests.wantsRole", { role: roleLabel(t, role).toLowerCase() })}
     </span>
   );
 }
@@ -295,18 +318,21 @@ function ReqRoleChip({ role }: { role: string }) {
 // ─── Main view ────────────────────────────────────────────────────────────────
 
 const TAB_ITEMS = [
-  { value: "overview", label: "Overview", icon: LayoutDashboard },
-  { value: "updates", label: "Updates", icon: Megaphone },
-  { value: "tasks", label: "Tasks", icon: ListChecks },
-  { value: "milestones", label: "Milestones", icon: Flag },
-  { value: "team", label: "Team", icon: Users },
-  { value: "activity", label: "Activity", icon: Activity },
+  { value: "overview", icon: LayoutDashboard },
+  { value: "updates", icon: Megaphone },
+  { value: "tasks", icon: ListChecks },
+  { value: "milestones", icon: Flag },
+  { value: "team", icon: Users },
+  { value: "activity", icon: Activity },
 ] as const;
 
 export function ProjectView({ slug }: { slug: string }) {
   const user = useApp((s) => s.user);
   const navigate = useApp((s) => s.navigate);
   const back = useApp((s) => s.back);
+  const t = useT();
+  const rel = useRelativeTime();
+  const err = useErrText();
 
   const [detail, setDetail] = useState<ProjectDetailResponse | null>(null);
   const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
@@ -343,10 +369,10 @@ export function ProjectView({ slug }: { slug: string }) {
       setDetail(d);
       setPhase("ready");
     } catch (e) {
-      setErrorMsg(e instanceof ApiError ? e.message : "Failed to load project");
+      setErrorMsg(e instanceof ApiError ? e.message : t("project.errors.loadFailed"));
       setPhase("error");
     }
-  }, [base]);
+  }, [base, t]);
 
   const loadWorkspace = useCallback(
     async (manage: boolean) => {
@@ -378,9 +404,9 @@ export function ProjectView({ slug }: { slug: string }) {
       const c = await get<{ comments: CommentDTO[] }>(`${base}/comments`);
       setComments(c.comments);
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     }
-  }, [base]);
+  }, [base, err]);
 
   useEffect(() => {
     // reset per-slug state
@@ -421,7 +447,7 @@ export function ProjectView({ slug }: { slug: string }) {
   async function toggleLike() {
     if (!detail) return;
     if (!user) {
-      toast.error("Sign in to like projects");
+      toast.error(t("project.toasts.signInToLike"));
       navigate({ name: "login" });
       return;
     }
@@ -430,7 +456,7 @@ export function ProjectView({ slug }: { slug: string }) {
       const r = await post<{ liked: boolean; likeCount: number }>(`${base}/like`);
       setDetail((d) => (d ? { ...d, liked: r.liked, likeCount: r.likeCount } : d));
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setLikePending(false);
     }
@@ -439,7 +465,7 @@ export function ProjectView({ slug }: { slug: string }) {
   async function toggleSave() {
     if (!detail) return;
     if (!user) {
-      toast.error("Sign in to save projects");
+      toast.error(t("project.toasts.signInToSave"));
       navigate({ name: "login" });
       return;
     }
@@ -447,9 +473,9 @@ export function ProjectView({ slug }: { slug: string }) {
     try {
       const r = await post<{ saved: boolean }>(`${base}/save`);
       setDetail((d) => (d ? { ...d, saved: r.saved } : d));
-      toast.success(r.saved ? "Saved to your library" : "Removed from library");
+      toast.success(r.saved ? t("project.toasts.savedToLibrary") : t("project.toasts.removedFromLibrary"));
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setSavePending(false);
     }
@@ -458,19 +484,19 @@ export function ProjectView({ slug }: { slug: string }) {
   async function share() {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied");
+      toast.success(t("project.toasts.linkCopied"));
     } catch {
-      toast.error("Could not copy the link");
+      toast.error(t("project.toasts.copyFailed"));
     }
   }
 
   async function archiveProject() {
     try {
       await del(`${base}`);
-      toast.success("Project archived");
+      toast.success(t("project.toasts.projectArchived"));
       navigate({ name: "explore" });
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     }
   }
 
@@ -481,11 +507,11 @@ export function ProjectView({ slug }: { slug: string }) {
       <div className="mx-auto w-full max-w-3xl px-4 py-20">
         <EmptyState
           icon={FileQuestion}
-          title="Project not found or private"
-          description={errorMsg || "This project does not exist, was archived, or is private."}
+          title={t("project.notFound.title")}
+          description={errorMsg || t("project.notFound.description")}
           action={
             <Button variant="outline" onClick={() => navigate({ name: "explore" })}>
-              <ArrowLeft className="h-4 w-4" /> Back to explore
+              <ArrowLeft className="h-4 w-4" /> {t("project.notFound.backToExplore")}
             </Button>
           }
         />
@@ -493,12 +519,15 @@ export function ProjectView({ slug }: { slug: string }) {
     );
   }
 
-  const visibilityMeta: Record<string, { icon: IconType; label: string }> = {
-    PUBLIC: { icon: Globe, label: "Public" },
-    UNLISTED: { icon: Eye, label: "Unlisted" },
-    PRIVATE: { icon: EyeOff, label: "Private" },
+  const visibilityIcon: Record<string, IconType> = {
+    PUBLIC: Globe,
+    UNLISTED: Eye,
+    PRIVATE: EyeOff,
   };
-  const VisIcon = visibilityMeta[project.visibility]?.icon ?? Globe;
+  const VisIcon = visibilityIcon[project.visibility] ?? Globe;
+  const visLabel = ["PUBLIC", "UNLISTED", "PRIVATE"].includes(project.visibility)
+    ? t(`project.visibility.${project.visibility}`)
+    : project.visibility;
 
   const tabCounts: Record<string, number | undefined> = {
     updates: updates?.length,
@@ -514,7 +543,7 @@ export function ProjectView({ slug }: { slug: string }) {
         onClick={back}
         className="focus-glow mb-3 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
       >
-        <ArrowLeft className="h-3.5 w-3.5" /> Back
+        <ArrowLeft className="h-3.5 w-3.5" /> {t("project.back")}
       </button>
 
       {/* Cover banner */}
@@ -534,10 +563,10 @@ export function ProjectView({ slug }: { slug: string }) {
               <StatusPill status={project.status} />
               <span
                 className="inline-flex items-center gap-1 rounded-full bg-white/[0.05] px-2 py-0.5 text-[11px] text-muted-foreground"
-                title={`Visibility: ${visibilityMeta[project.visibility]?.label ?? project.visibility}`}
+                title={t("project.visibility.title", { label: visLabel })}
               >
                 <VisIcon className="h-3 w-3" />
-                {visibilityMeta[project.visibility]?.label}
+                {visLabel}
               </span>
               {myRole && <RoleChip role={myRole} />}
             </div>
@@ -547,18 +576,25 @@ export function ProjectView({ slug }: { slug: string }) {
               <button
                 onClick={() => navigate({ name: "profile", username: project.owner.username })}
                 className="focus-glow inline-flex items-center gap-2 rounded-lg py-0.5 transition-colors hover:text-foreground"
-                aria-label={`View profile of ${project.owner.displayName}`}
+                aria-label={t("project.a11y.viewProfileOf", { name: project.owner.displayName })}
               >
                 <UserAvatar user={project.owner} size={22} />
                 <span className="font-medium">{project.owner.displayName}</span>
               </button>
               <span className="inline-flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5" /> {project.memberCount} member
-                {project.memberCount === 1 ? "" : "s"}
+                <Users className="h-3.5 w-3.5" />{" "}
+                {t(
+                  project.memberCount === 1
+                    ? "project.stats.memberOne"
+                    : "project.stats.memberMany",
+                  { n: project.memberCount }
+                )}
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Heart className="h-3.5 w-3.5" /> {detail.likeCount} like
-                {detail.likeCount === 1 ? "" : "s"}
+                <Heart className="h-3.5 w-3.5" />{" "}
+                {t(detail.likeCount === 1 ? "project.stats.likeOne" : "project.stats.likeMany", {
+                  n: detail.likeCount,
+                })}
               </span>
             </div>
           </div>
@@ -585,11 +621,11 @@ export function ProjectView({ slug }: { slug: string }) {
               className={cn("h-9", detail.saved && "border-cyan-500/40 text-cyan-300")}
             >
               <Bookmark className={cn("h-4 w-4", detail.saved && "fill-current")} />
-              <span className="hidden sm:inline">{detail.saved ? "Saved" : "Save"}</span>
+              <span className="hidden sm:inline">{detail.saved ? t("common.saved") : t("common.save")}</span>
             </Button>
             <Button variant="outline" size="sm" onClick={share} className="h-9">
               <Share2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Share</span>
+              <span className="hidden sm:inline">{t("project.actions.share")}</span>
             </Button>
             {user && (
               <Button
@@ -599,7 +635,7 @@ export function ProjectView({ slug }: { slug: string }) {
                 className="h-9 text-muted-foreground"
               >
                 <Flag className="h-4 w-4" />
-                <span className="sr-only">Report project</span>
+                <span className="sr-only">{t("project.report.title")}</span>
               </Button>
             )}
 
@@ -609,12 +645,12 @@ export function ProjectView({ slug }: { slug: string }) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="h-9">
                     <Settings2 className="h-4 w-4" />
-                    <span className="hidden sm:inline">Settings</span>
+                    <span className="hidden sm:inline">{t("common.settings")}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={() => setEditOpen(true)}>
-                    <Pencil className="h-4 w-4" /> Edit project
+                    <Pencil className="h-4 w-4" /> {t("project.menu.edit")}
                   </DropdownMenuItem>
                   {myRole === "OWNER" && (
                     <>
@@ -623,7 +659,7 @@ export function ProjectView({ slug }: { slug: string }) {
                         onClick={() => setArchiveOpen(true)}
                         className="text-rose-300 focus:text-rose-300"
                       >
-                        <Archive className="h-4 w-4" /> Archive project
+                        <Archive className="h-4 w-4" /> {t("project.actions.archive")}
                       </DropdownMenuItem>
                     </>
                   )}
@@ -634,7 +670,7 @@ export function ProjectView({ slug }: { slug: string }) {
             {/* Join flow */}
             {!user && project.visibility !== "PRIVATE" && (
               <Button size="sm" className="btn-hero h-9" onClick={() => navigate({ name: "login" })}>
-                <UserPlus className="h-4 w-4" /> Sign in to collaborate
+                <UserPlus className="h-4 w-4" /> {t("project.actions.signInToCollaborate")}
               </Button>
             )}
             {user && !myRole &&
@@ -642,7 +678,7 @@ export function ProjectView({ slug }: { slug: string }) {
                 <RequestStateChip status={(detail.myRequest ?? mySentRequest!).status} />
               ) : (
                 <Button size="sm" className="btn-hero h-9" onClick={() => setJoinOpen(true)}>
-                  <UserPlus className="h-4 w-4" /> Request to join
+                  <UserPlus className="h-4 w-4" /> {t("project.actions.requestToJoin")}
                 </Button>
               ))}
           </div>
@@ -653,20 +689,20 @@ export function ProjectView({ slug }: { slug: string }) {
       <Tabs value={tab} onValueChange={setTab} className="mt-8">
         <div className="overflow-x-auto pb-0.5">
           <TabsList className="glass h-11 w-fit min-w-full gap-1 rounded-xl bg-transparent p-1">
-            {TAB_ITEMS.map((t) => (
+            {TAB_ITEMS.map((item) => (
               <TabsTrigger
-                key={t.value}
-                value={t.value}
+                key={item.value}
+                value={item.value}
                 className="relative gap-1.5 rounded-lg px-3 text-xs data-[state=active]:bg-white/[0.06] data-[state=active]:text-foreground md:px-4 md:text-sm"
               >
-                <t.icon className="h-4 w-4" />
-                <span>{t.label}</span>
-                {typeof tabCounts[t.value] === "number" && (
+                <item.icon className="h-4 w-4" />
+                <span>{t(`project.tabs.${item.value}`)}</span>
+                {typeof tabCounts[item.value] === "number" && (
                   <span className="rounded-full bg-white/[0.07] px-1.5 text-[10px] text-muted-foreground">
-                    {tabCounts[t.value]}
+                    {tabCounts[item.value]}
                   </span>
                 )}
-                {tab === t.value && (
+                {tab === item.value && (
                   <motion.span
                     layoutId="project-tab-underline"
                     className="absolute inset-x-3 bottom-0.5 h-[2px] rounded-full bg-gradient-to-r from-cyan-400 to-violet-400"
@@ -765,19 +801,18 @@ export function ProjectView({ slug }: { slug: string }) {
       <AlertDialog open={archiveOpen} onOpenChange={setArchiveOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Archive this project?</AlertDialogTitle>
+            <AlertDialogTitle>{t("project.archiveDialog.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              &ldquo;{project.name}&rdquo; will be marked as archived and removed from discovery.
-              This cannot be undone from the workspace.
+              {t("project.archiveDialog.description", { name: project.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={archiveProject}
               className="bg-rose-500/90 text-white hover:bg-rose-500"
             >
-              <Archive className="h-4 w-4" /> Archive project
+              <Archive className="h-4 w-4" /> {t("project.actions.archive")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -840,17 +875,20 @@ function OverviewTab({
   const completed = (milestones ?? []).filter((m) => m.completedAt).length;
   const totalMilestones = (milestones ?? []).length;
   const healthValue = totalMilestones ? Math.round((completed / totalMilestones) * 100) : 0;
+  const t = useT();
+  const rel = useRelativeTime();
+  const fd = useFormatDate();
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       {/* Left column */}
       <div className="space-y-6 lg:col-span-2">
-        <section className="glass-card rounded-2xl p-5 md:p-6" aria-label="Project description">
-          <h2 className="font-display mb-3 text-lg font-semibold">About this project</h2>
+        <section className="glass-card rounded-2xl p-5 md:p-6" aria-label={t("project.a11y.projectDescription")}>
+          <h2 className="font-display mb-3 text-lg font-semibold">{t("project.overview.about")}</h2>
           {project.description?.trim() ? (
             <Markdown>{project.description}</Markdown>
           ) : (
-            <p className="text-sm italic text-muted-foreground">No description provided yet.</p>
+            <p className="text-sm italic text-muted-foreground">{t("project.overview.noDescription")}</p>
           )}
         </section>
 
@@ -866,31 +904,31 @@ function OverviewTab({
 
       {/* Right column */}
       <div className="space-y-6">
-        <section className="glass-card rounded-2xl p-5" aria-label="Project facts">
+        <section className="glass-card rounded-2xl p-5" aria-label={t("project.a11y.projectFacts")}>
           <h3 className="font-display mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Facts
+            {t("project.overview.facts")}
           </h3>
           <dl className="space-y-3 text-sm">
             <div className="flex items-center justify-between gap-2">
-              <dt className="text-muted-foreground">Category</dt>
+              <dt className="text-muted-foreground">{t("project.overview.category")}</dt>
               <dd className="inline-flex items-center gap-1.5 font-medium">
                 <CatIcon className="h-4 w-4 text-cyan-300" />
-                {cat?.name ?? project.category}
+                {cat ? t(`project.categories.${cat.slug}`) : project.category}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <dt className="text-muted-foreground">Status</dt>
+              <dt className="text-muted-foreground">{t("project.overview.status")}</dt>
               <dd>
                 <StatusPill status={project.status} />
               </dd>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <dt className="text-muted-foreground">Created</dt>
-              <dd className="font-mono text-xs">{fmtDate(project.createdAt)}</dd>
+              <dt className="text-muted-foreground">{t("project.overview.created")}</dt>
+              <dd className="font-mono text-xs">{fd(project.createdAt)}</dd>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <dt className="text-muted-foreground">Updated</dt>
-              <dd className="font-mono text-xs">{fmtDate(project.updatedAt)}</dd>
+              <dt className="text-muted-foreground">{t("project.overview.updated")}</dt>
+              <dd className="font-mono text-xs">{fd(project.updatedAt)}</dd>
             </div>
           </dl>
 
@@ -903,7 +941,7 @@ function OverviewTab({
                   rel="noreferrer noopener"
                   className="focus-glow flex items-center gap-2 rounded-lg px-1 py-1 text-sm text-muted-foreground transition-colors hover:text-cyan-300"
                 >
-                  <Github className="h-4 w-4" /> Repository <ExternalLink className="ml-auto h-3 w-3" />
+                  <Github className="h-4 w-4" /> {t("project.links.repository")} <ExternalLink className="ml-auto h-3 w-3" />
                 </a>
               )}
               {project.demoUrl && (
@@ -913,7 +951,7 @@ function OverviewTab({
                   rel="noreferrer noopener"
                   className="focus-glow flex items-center gap-2 rounded-lg px-1 py-1 text-sm text-muted-foreground transition-colors hover:text-cyan-300"
                 >
-                  <ExternalLink className="h-4 w-4" /> Live demo
+                  <ExternalLink className="h-4 w-4" /> {t("project.links.demo")}
                 </a>
               )}
               {project.websiteUrl && (
@@ -923,7 +961,7 @@ function OverviewTab({
                   rel="noreferrer noopener"
                   className="focus-glow flex items-center gap-2 rounded-lg px-1 py-1 text-sm text-muted-foreground transition-colors hover:text-cyan-300"
                 >
-                  <Globe className="h-4 w-4" /> Website
+                  <Globe className="h-4 w-4" /> {t("project.links.website")}
                 </a>
               )}
             </div>
@@ -932,7 +970,7 @@ function OverviewTab({
           {project.requiredSkills.length > 0 && (
             <div className="mt-4 border-t border-white/[0.06] pt-4">
               <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Required skills
+                {t("project.overview.requiredSkills")}
               </h4>
               <div className="flex flex-wrap gap-1.5">
                 {project.requiredSkills.map((s) => (
@@ -940,7 +978,7 @@ function OverviewTab({
                     key={s}
                     className="rounded-md bg-violet-500/10 px-2 py-0.5 text-[11px] font-medium text-violet-300"
                   >
-                    {SKILLS.find((k) => k.slug === s)?.name ?? s}
+                    {SKILL_KEYS.has(s) ? t(`project.skills.${s}`) : s}
                   </span>
                 ))}
               </div>
@@ -950,7 +988,7 @@ function OverviewTab({
           {project.tags.length > 0 && (
             <div className="mt-4 border-t border-white/[0.06] pt-4">
               <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Tags
+                {t("project.overview.tags")}
               </h4>
               <div className="flex flex-wrap gap-1.5">
                 {project.tags.map((t) => (
@@ -966,43 +1004,42 @@ function OverviewTab({
           )}
         </section>
 
-        <section className="glass-card rounded-2xl p-5" aria-label="Project health">
+        <section className="glass-card rounded-2xl p-5" aria-label={t("project.a11y.projectHealth")}>
           <h3 className="font-display mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Health
+            {t("project.overview.health")}
           </h3>
           <div className="space-y-4">
             <div>
               <div className="mb-1.5 flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Milestones completed</span>
+                <span className="text-muted-foreground">{t("project.overview.milestonesCompleted")}</span>
                 <span className="font-mono font-semibold">
                   {completed}/{totalMilestones}
                 </span>
               </div>
-              <Progress value={healthValue} className="h-2" aria-label="Milestone progress" />
+              <Progress value={healthValue} className="h-2" aria-label={t("project.a11y.milestoneProgress")} />
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Team size</span>
+              <span className="text-muted-foreground">{t("project.overview.teamSize")}</span>
               <span className="inline-flex items-center gap-1.5 font-medium">
                 <Users className="h-4 w-4 text-violet-300" /> {project.memberCount}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Open tasks</span>
+              <span className="text-muted-foreground">{t("project.overview.openTasks")}</span>
               <span className="font-mono font-medium">
-                {(tasks ?? []).filter((t) => t.status !== "DONE").length}
+                {(tasks ?? []).filter((task) => task.status !== "DONE").length}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Last activity</span>
+              <span className="text-muted-foreground">{t("project.overview.lastActivity")}</span>
               <span className="inline-flex items-center gap-1.5 text-xs">
-                <Clock3 className="h-3.5 w-3.5" /> {fmtAgo(project.updatedAt)}
+                <Clock3 className="h-3.5 w-3.5" /> {rel(project.updatedAt)}
               </span>
             </div>
           </div>
           {myRole && (
             <p className="mt-4 border-t border-white/[0.06] pt-3 text-[11px] text-muted-foreground">
-              You are a {MEMBER_ROLES.find((r) => r.slug === myRole)?.name.toLowerCase()} of this
-              project.
+              {t("project.overview.yourRole", { role: roleLabel(t, myRole).toLowerCase() })}
             </p>
           )}
         </section>
@@ -1034,6 +1071,9 @@ function CommentsSection({
   const [replyBody, setReplyBody] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const navigate = useApp((s) => s.navigate);
+  const t = useT();
+  const rel = useRelativeTime();
+  const err = useErrText();
 
   async function submit() {
     if (!body.trim()) return;
@@ -1044,9 +1084,9 @@ function CommentsSection({
       });
       setComments((prev) => [r.comment, ...(prev ?? [])]);
       setBody("");
-      toast.success("Comment posted");
+      toast.success(t("project.comments.posted"));
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setSending(false);
     }
@@ -1063,9 +1103,9 @@ function CommentsSection({
       setReplyBody("");
       setReplyTo(null);
       await refetchComments();
-      toast.success("Reply posted");
+      toast.success(t("project.comments.replyPosted"));
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setSending(false);
     }
@@ -1076,18 +1116,18 @@ function CommentsSection({
     try {
       await del(`/api/comments/${deleteId}`);
       await refetchComments();
-      toast.success("Comment deleted");
+      toast.success(t("project.comments.commentDeleted"));
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setDeleteId(null);
     }
   }
 
   return (
-    <section className="glass-card rounded-2xl p-5 md:p-6" aria-label="Project discussion">
+    <section className="glass-card rounded-2xl p-5 md:p-6" aria-label={t("project.a11y.discussion")}>
       <h2 className="font-display mb-4 text-lg font-semibold">
-        Discussion{" "}
+        {t("project.comments.title")}{" "}
         <span className="ml-1 text-sm font-normal text-muted-foreground">
           ({comments?.length ?? 0})
         </span>
@@ -1098,7 +1138,7 @@ function CommentsSection({
           <Textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Share your thoughts on this project..."
+            placeholder={t("project.comments.placeholder")}
             rows={3}
             maxLength={LIMITS.comment}
             className="focus-glow resize-none bg-white/[0.03]"
@@ -1109,15 +1149,15 @@ function CommentsSection({
             </span>
             <Button size="sm" className="btn-hero" onClick={submit} disabled={sending || !body.trim()}>
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Comment
+              {t("project.comments.submit")}
             </Button>
           </div>
         </div>
       ) : (
         <div className="mb-6 flex flex-col items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.02] py-5">
-          <p className="text-sm text-muted-foreground">Sign in to join the discussion</p>
+          <p className="text-sm text-muted-foreground">{t("project.comments.signIn")}</p>
           <Button size="sm" variant="outline" onClick={() => navigate({ name: "login" })}>
-            Sign in
+            {t("common.signIn")}
           </Button>
         </div>
       )}
@@ -1126,7 +1166,7 @@ function CommentsSection({
         <ListRowsSkeleton rows={2} />
       ) : comments.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted-foreground">
-          No comments yet. Be the first to say something.
+          {t("project.comments.empty")}
         </p>
       ) : (
         <ul className="space-y-4">
@@ -1165,7 +1205,9 @@ function CommentsSection({
                     onChange={(e) => setReplyBody(e.target.value)}
                     rows={2}
                     maxLength={LIMITS.comment}
-                    placeholder={`Reply to ${c.author?.displayName ?? "this comment"}...`}
+                    placeholder={t("project.comments.replyTo", {
+                      name: c.author?.displayName ?? t("project.comments.thisComment"),
+                    })}
                     className="focus-glow resize-none bg-white/[0.03]"
                     autoFocus
                   />
@@ -1178,7 +1220,7 @@ function CommentsSection({
                         setReplyBody("");
                       }}
                     >
-                      Cancel
+                      {t("common.cancel")}
                     </Button>
                     <Button
                       size="sm"
@@ -1186,7 +1228,7 @@ function CommentsSection({
                       onClick={submitReply}
                       disabled={sending || !replyBody.trim()}
                     >
-                      Reply
+                      {t("project.comments.reply")}
                     </Button>
                   </div>
                 </div>
@@ -1199,18 +1241,18 @@ function CommentsSection({
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this comment?</AlertDialogTitle>
+            <AlertDialogTitle>{t("project.comments.deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              The comment will be removed for everyone. This action cannot be undone.
+              {t("project.comments.deleteBody")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-rose-500/90 text-white hover:bg-rose-500"
             >
-              Delete
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1237,6 +1279,8 @@ function CommentItem({
   const canDelete =
     !!user && comment.author && (comment.author.id === user.id || canManage);
   const deleted = comment.author === null || comment.body === "[deleted]";
+  const t = useT();
+  const rel = useRelativeTime();
 
   return (
     <div className="flex gap-3">
@@ -1255,9 +1299,9 @@ function CommentItem({
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium">
-            {deleted ? "Deleted" : comment.author.displayName}
+            {deleted ? t("project.comments.deleted") : comment.author.displayName}
           </span>
-          <span className="text-[11px] text-muted-foreground">{fmtAgo(comment.createdAt)}</span>
+          <span className="text-[11px] text-muted-foreground">{rel(comment.createdAt)}</span>
         </div>
         <p className="mt-1 whitespace-pre-wrap break-words text-sm text-zinc-300">{comment.body}</p>
         {!deleted && (
@@ -1267,16 +1311,16 @@ function CommentItem({
                 onClick={onReply}
                 className="focus-glow rounded text-[11px] font-medium text-muted-foreground transition-colors hover:text-cyan-300"
               >
-                Reply
+                {t("project.comments.reply")}
               </button>
             )}
             {canDelete && (
               <button
                 onClick={onDelete}
                 className="focus-glow inline-flex items-center gap-1 rounded text-[11px] text-muted-foreground transition-colors hover:text-rose-300"
-                aria-label="Delete comment"
+                aria-label={t("project.a11y.deleteComment")}
               >
-                <Trash2 className="h-3 w-3" /> Delete
+                <Trash2 className="h-3 w-3" /> {t("common.delete")}
               </button>
             )}
           </div>
@@ -1318,6 +1362,9 @@ function UpdatesTab({
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
+  const t = useT();
+  const rel = useRelativeTime();
+  const err = useErrText();
 
   async function publish() {
     setSending(true);
@@ -1326,9 +1373,9 @@ function UpdatesTab({
       onCreated(r.update);
       setTitle("");
       setBody("");
-      toast.success("Update published — +5 XP");
+      toast.success(t("project.toasts.updatePublished"));
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setSending(false);
     }
@@ -1337,19 +1384,19 @@ function UpdatesTab({
   return (
     <div className="space-y-6">
       {canContribute && (
-        <section className="glass-card rounded-2xl p-5" aria-label="Publish an update">
-          <h2 className="font-display mb-3 text-base font-semibold">Post a project update</h2>
+        <section className="glass-card rounded-2xl p-5" aria-label={t("project.a11y.publishUpdate")}>
+          <h2 className="font-display mb-3 text-base font-semibold">{t("project.updates.postTitle")}</h2>
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Update title (e.g. Alpha build shipped)"
+            placeholder={t("project.updates.titlePlaceholder")}
             maxLength={LIMITS.updateTitle}
             className="focus-glow bg-white/[0.03]"
           />
           <Textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="What changed? Markdown is supported."
+            placeholder={t("project.updates.bodyPlaceholder")}
             rows={4}
             maxLength={LIMITS.updateBody}
             className="focus-glow mt-2 resize-y bg-white/[0.03]"
@@ -1365,7 +1412,7 @@ function UpdatesTab({
               disabled={sending || !title.trim() || !body.trim()}
             >
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Megaphone className="h-4 w-4" />}
-              Publish update
+              {t("project.updates.publish")}
             </Button>
           </div>
         </section>
@@ -1376,11 +1423,11 @@ function UpdatesTab({
       ) : updates.length === 0 ? (
         <EmptyState
           icon={Megaphone}
-          title="No updates yet"
+          title={t("project.updates.emptyTitle")}
           description={
             canContribute
-              ? "Keep your collaborators and followers in the loop — publish the first update."
-              : "The team has not posted any updates yet. Check back soon."
+              ? t("project.updates.emptyContributor")
+              : t("project.updates.emptyViewer")
           }
         />
       ) : (
@@ -1391,7 +1438,7 @@ function UpdatesTab({
                 <UserAvatar user={u.author} size={34} />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{u.author.displayName}</p>
-                  <p className="text-[11px] text-muted-foreground">{fmtAgo(u.createdAt)}</p>
+                  <p className="text-[11px] text-muted-foreground">{rel(u.createdAt)}</p>
                 </div>
               </header>
               <h3 className="font-display mt-3 text-lg font-semibold">{u.title}</h3>
@@ -1425,6 +1472,8 @@ function TasksTab({
   const [taskId, setTaskId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const dragMovedRef = useRef(false);
+  const t = useT();
+  const err = useErrText();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -1451,7 +1500,7 @@ function TasksTab({
   function refetchTasks() {
     get<{ tasks: TaskDTO[] }>(`${base}/tasks`)
       .then((r) => setTasks(r.tasks))
-      .catch((e) => toast.error(errText(e)));
+      .catch((e) => toast.error(err(e)));
   }
 
   async function moveTask(task: TaskDTO, status: string) {
@@ -1475,14 +1524,16 @@ function TasksTab({
     );
     try {
       const r = await patch<{ task: TaskDTO }>(`/api/tasks/${task.id}`, { status });
-      setTasks((prev) => (prev ?? []).map((t) => (t.id === task.id ? r.task : t)));
+      setTasks((prev) => (prev ?? []).map((t2) => (t2.id === task.id ? r.task : t2)));
       if (toDone) {
         toast.success(
-          `Task completed — +10 XP to ${r.task.assignee?.displayName ?? "the assignee"}`
+          t("project.toasts.taskCompleted", {
+            name: r.task.assignee?.displayName ?? t("project.tasks.theAssignee"),
+          })
         );
       }
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
       refetchTasks();
     }
   }
@@ -1532,7 +1583,7 @@ function TasksTab({
               view === "kanban" ? "bg-white/[0.08] text-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Columns3 className="h-4 w-4" /> Kanban
+            <Columns3 className="h-4 w-4" /> {t("project.tasks.kanban")}
           </button>
           <button
             onClick={() => setView("list")}
@@ -1542,17 +1593,17 @@ function TasksTab({
               view === "list" ? "bg-white/[0.08] text-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <AlignJustify className="h-4 w-4" /> List
+            <AlignJustify className="h-4 w-4" /> {t("project.tasks.list")}
           </button>
         </div>
 
         <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-          <SelectTrigger size="sm" className="h-9 w-[170px] bg-white/[0.03]" aria-label="Filter by assignee">
+          <SelectTrigger size="sm" className="h-9 w-[170px] bg-white/[0.03]" aria-label={t("project.a11y.filterAssignee")}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All assignees</SelectItem>
-            <SelectItem value="none">Unassigned</SelectItem>
+            <SelectItem value="all">{t("project.tasks.allAssignees")}</SelectItem>
+            <SelectItem value="none">{t("project.tasks.unassigned")}</SelectItem>
             {members.map((m) => (
               <SelectItem key={m.id} value={m.user.id}>
                 {m.user.displayName}
@@ -1564,7 +1615,7 @@ function TasksTab({
         <div className="ml-auto">
           {canContribute && (
             <Button size="sm" className="btn-hero h-9" onClick={() => setCreateOpen(true)}>
-              <Plus className="h-4 w-4" /> New task
+              <Plus className="h-4 w-4" /> {t("project.tasks.newTask")}
             </Button>
           )}
         </div>
@@ -1573,16 +1624,16 @@ function TasksTab({
       {filtered.length === 0 ? (
         <EmptyState
           icon={ListChecks}
-          title="No tasks here"
+          title={t("project.tasks.emptyTitle")}
           description={
             canContribute
-              ? "Break the work down — create the first task for your crew."
-              : "Nothing matches this filter yet."
+              ? t("project.tasks.emptyContributor")
+              : t("project.tasks.emptyFilter")
           }
           action={
             canContribute ? (
               <Button size="sm" variant="outline" onClick={() => setCreateOpen(true)}>
-                <Plus className="h-4 w-4" /> New task
+                <Plus className="h-4 w-4" /> {t("project.tasks.newTask")}
               </Button>
             ) : undefined
           }
@@ -1605,11 +1656,11 @@ function TasksTab({
               <KanbanColumn
                 key={s.slug}
                 status={s.slug}
-                name={s.name}
+                name={t(`project.kanban.${s.slug}`)}
                 tasks={byStatus[s.slug] ?? []}
                 canContribute={canContribute}
-                onOpen={(t) => {
-                  if (!dragMovedRef.current) setTaskId(t.id);
+                onOpen={(task) => {
+                  if (!dragMovedRef.current) setTaskId(task.id);
                 }}
                 onStatusChange={moveTask}
               />
@@ -1621,35 +1672,35 @@ function TasksTab({
         </DndContext>
       ) : (
         <div className="overflow-hidden rounded-xl border border-white/[0.07]">
-          {filtered.map((t, i) => (
+          {filtered.map((task, i) => (
             <div
-              key={t.id}
+              key={task.id}
               className={cn(
                 "flex flex-wrap items-center gap-2 bg-white/[0.02] px-3 py-2.5 transition-colors hover:bg-white/[0.04] sm:gap-3 sm:px-4",
                 i > 0 && "border-t border-white/[0.06]"
               )}
             >
-              <PriorityPill priority={t.priority} />
+              <PriorityPill priority={task.priority} />
               <button
-                onClick={() => setTaskId(t.id)}
+                onClick={() => setTaskId(task.id)}
                 className="focus-glow min-w-0 flex-1 truncate rounded text-left text-sm font-medium transition-colors hover:text-cyan-300"
               >
-                {t.title}
+                {task.title}
               </button>
               {canContribute ? (
                 <div onPointerDown={(e) => e.stopPropagation()}>
-                  <Select value={t.status} onValueChange={(v) => moveTask(t, v)}>
+                  <Select value={task.status} onValueChange={(v) => moveTask(task, v)}>
                     <SelectTrigger
                       size="sm"
                       className="h-7 w-[118px] text-[11px]"
-                      aria-label={`Status of ${t.title}`}
+                      aria-label={t("project.a11y.taskStatusOf", { title: task.title })}
                     >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {TASK_STATUSES.map((s) => (
                         <SelectItem key={s.slug} value={s.slug}>
-                          {s.name}
+                          {t(`project.kanban.${s.slug}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1657,20 +1708,22 @@ function TasksTab({
                 </div>
               ) : (
                 <span className="rounded bg-white/[0.05] px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                  {TASK_STATUSES.find((s) => s.slug === t.status)?.name ?? t.status}
+                  {STATUS_KEYS.has(task.status) ? t(`project.kanban.${task.status}`) : task.status}
                 </span>
               )}
-              {t.assignee ? (
-                <span className="inline-flex items-center gap-1.5" title={t.assignee.displayName}>
-                  <UserAvatar user={t.assignee} size={22} />
+              {task.assignee ? (
+                <span className="inline-flex items-center gap-1.5" title={task.assignee.displayName}>
+                  <UserAvatar user={task.assignee} size={22} />
                   <span className="hidden max-w-[100px] truncate text-xs text-muted-foreground md:inline">
-                    {t.assignee.displayName}
+                    {task.assignee.displayName}
                   </span>
                 </span>
               ) : (
-                <span className="hidden text-xs text-muted-foreground sm:inline">Unassigned</span>
+                <span className="hidden text-xs text-muted-foreground sm:inline">
+                  {t("project.tasks.unassigned")}
+                </span>
               )}
-              <DueChip dueAt={t.dueAt} done={t.status === "DONE"} />
+              <DueChip dueAt={task.dueAt} done={task.status === "DONE"} />
             </div>
           ))}
         </div>
@@ -1691,8 +1744,8 @@ function TasksTab({
           members={members}
           canContribute={canContribute}
           onClose={() => setTaskId(null)}
-          onUpdated={(t) =>
-            setTasks((prev) => (prev ?? []).map((x) => (x.id === t.id ? t : x)))
+          onUpdated={(updated) =>
+            setTasks((prev) => (prev ?? []).map((x) => (x.id === updated.id ? updated : x)))
           }
           onDeleted={(id) => {
             setTasks((prev) => (prev ?? []).filter((x) => x.id !== id));
@@ -1720,6 +1773,7 @@ function KanbanColumn({
   onStatusChange: (t: TaskDTO, status: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
+  const t = useT();
 
   return (
     <div
@@ -1740,7 +1794,7 @@ function KanbanColumn({
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto">
         {tasks.length === 0 ? (
           <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-white/[0.06] py-6">
-            <span className="text-[11px] text-muted-foreground/60">Drop tasks here</span>
+            <span className="text-[11px] text-muted-foreground/60">{t("project.tasks.dropHere")}</span>
           </div>
         ) : (
           tasks.map((t) => (
@@ -1773,6 +1827,7 @@ function KanbanCard({
     id: task.id,
     disabled: !canContribute,
   });
+  const t = useT();
 
   return (
     <div
@@ -1784,7 +1839,7 @@ function KanbanCard({
         "glass-card group cursor-grab touch-none rounded-lg p-3 active:cursor-grabbing",
         isDragging && "opacity-40"
       )}
-      aria-label={`Task: ${task.title}`}
+      aria-label={t("project.a11y.task", { title: task.title })}
     >
       <TaskCardVisual task={task} />
       {canContribute && (
@@ -1797,14 +1852,14 @@ function KanbanCard({
             <SelectTrigger
               size="sm"
               className="h-6 w-[112px] border-white/[0.08] px-2 text-[10px] focus-glow"
-              aria-label={`Move ${task.title} to status`}
+              aria-label={t("project.a11y.moveTaskToStatus", { title: task.title })}
             >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {TASK_STATUSES.map((s) => (
                 <SelectItem key={s.slug} value={s.slug} className="text-xs">
-                  {s.name}
+                  {t(`project.kanban.${s.slug}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -1818,6 +1873,7 @@ function KanbanCard({
 
 function TaskCardVisual({ task, overlay = false }: { task: TaskDTO; overlay?: boolean }) {
   const done = task.status === "DONE";
+  const t = useT();
   return (
     <div
       className={cn(
@@ -1838,7 +1894,7 @@ function TaskCardVisual({ task, overlay = false }: { task: TaskDTO; overlay?: bo
         )}
         {done && (
           <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-300">
-            <CheckCircle2 className="h-3 w-3" /> Completed
+            <CheckCircle2 className="h-3 w-3" /> {t("project.tasks.doneChip")}
           </span>
         )}
       </div>
@@ -1875,6 +1931,9 @@ function TaskDetailDialog({
   const [comments, setComments] = useState<CommentDTO[] | null>(null);
   const [commentBody, setCommentBody] = useState("");
   const [commentSending, setCommentSending] = useState(false);
+  const t = useT();
+  const rel = useRelativeTime();
+  const err = useErrText();
 
   useEffect(() => {
     setTitleDraft(task.title);
@@ -1893,7 +1952,7 @@ function TaskDetailDialog({
       .catch((e) => {
         if (!cancelled) {
           setComments([]);
-          toast.error(errText(e));
+          toast.error(err(e));
         }
       });
     return () => {
@@ -1906,10 +1965,10 @@ function TaskDetailDialog({
     try {
       const r = await patch<{ task: TaskDTO }>(`/api/tasks/${task.id}`, body);
       onUpdated(r.task);
-      if (!quiet) toast.success("Task updated");
+      if (!quiet) toast.success(t("project.toasts.taskUpdated"));
       return r.task;
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
       return null;
     } finally {
       setPending(false);
@@ -1925,9 +1984,9 @@ function TaskDetailDialog({
       });
       setComments((prev) => [...(prev ?? []), r.comment]);
       setCommentBody("");
-      toast.success("Comment added");
+      toast.success(t("project.toasts.commentAdded"));
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setCommentSending(false);
     }
@@ -1936,10 +1995,10 @@ function TaskDetailDialog({
   async function deleteTask() {
     try {
       await del(`/api/tasks/${task.id}`);
-      toast.success("Task deleted");
+      toast.success(t("project.toasts.taskDeleted"));
       onDeleted(task.id);
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     }
   }
 
@@ -1950,9 +2009,12 @@ function TaskDetailDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="font-display">Task</DialogTitle>
+          <DialogTitle className="font-display">{t("project.taskDetail.title")}</DialogTitle>
           <DialogDescription>
-            Created by {task.creator.displayName} · {fmtAgo(task.createdAt)}
+            {t("project.taskDetail.createdBy", {
+              name: task.creator.displayName,
+              ago: rel(task.createdAt),
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -1965,14 +2027,14 @@ function TaskDetailDialog({
                 onChange={(e) => setTitleDraft(e.target.value)}
                 maxLength={LIMITS.taskTitle}
                 className="focus-glow bg-white/[0.03] text-base font-semibold"
-                aria-label="Task title"
+                aria-label={t("project.a11y.taskTitle")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && titleChanged) doPatch({ title: titleDraft.trim() });
                 }}
               />
               {titleChanged && (
                 <Button size="sm" onClick={() => doPatch({ title: titleDraft.trim() })} disabled={pending}>
-                  Save
+                  {t("common.save")}
                 </Button>
               )}
             </div>
@@ -1984,45 +2046,49 @@ function TaskDetailDialog({
         {/* Properties grid */}
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Status</Label>
+            <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("project.form.status")}</Label>
             {canContribute ? (
               <Select
                 value={task.status}
                 onValueChange={(v) => {
                   if (v === "DONE" && task.status !== "DONE") {
                     toast.success(
-                      `Task completed — +10 XP to ${task.assignee?.displayName ?? "the assignee"}`
+                      t("project.toasts.taskCompleted", {
+                        name: task.assignee?.displayName ?? t("project.tasks.theAssignee"),
+                      })
                     );
                   }
                   doPatch({ status: v });
                 }}
               >
-                <SelectTrigger className="w-full bg-white/[0.03]" aria-label="Task status">
+                <SelectTrigger className="w-full bg-white/[0.03]" aria-label={t("project.a11y.taskStatus")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {TASK_STATUSES.map((s) => (
                     <SelectItem key={s.slug} value={s.slug}>
-                      {s.name}
+                      {t(`project.kanban.${s.slug}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             ) : (
-              <p className="text-sm">{TASK_STATUSES.find((s) => s.slug === task.status)?.name}</p>
+              <p className="text-sm">
+                {STATUS_KEYS.has(task.status) ? t(`project.kanban.${task.status}`) : task.status}
+              </p>
             )}
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Priority</Label>
+            <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("project.form.priority")}</Label>
             {canContribute ? (
               <Select value={task.priority} onValueChange={(v) => doPatch({ priority: v })}>
-                <SelectTrigger className="w-full bg-white/[0.03]" aria-label="Task priority">
+                <SelectTrigger className="w-full bg-white/[0.03]" aria-label={t("project.a11y.taskPriority")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {TASK_PRIORITIES.map((p) => (
                     <SelectItem key={p.slug} value={p.slug}>
-                      {p.name}
+                      {PRIORITY_KEYS.has(p.slug) ? t(`project.priority.${p.slug}`) : p.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -2032,17 +2098,17 @@ function TaskDetailDialog({
             )}
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Assignee</Label>
+            <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("project.form.assignee")}</Label>
             {canContribute ? (
               <Select
                 value={task.assignee?.id ?? "none"}
                 onValueChange={(v) => doPatch({ assigneeId: v === "none" ? null : v })}
               >
-                <SelectTrigger className="w-full bg-white/[0.03]" aria-label="Task assignee">
+                <SelectTrigger className="w-full bg-white/[0.03]" aria-label={t("project.a11y.taskAssignee")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Unassigned</SelectItem>
+                  <SelectItem value="none">{t("project.tasks.unassigned")}</SelectItem>
                   {members.map((m) => (
                     <SelectItem key={m.id} value={m.user.id}>
                       {m.user.displayName}
@@ -2051,11 +2117,11 @@ function TaskDetailDialog({
                 </SelectContent>
               </Select>
             ) : (
-              <p className="text-sm">{task.assignee?.displayName ?? "Unassigned"}</p>
+              <p className="text-sm">{task.assignee?.displayName ?? t("project.tasks.unassigned")}</p>
             )}
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">Due date</Label>
+            <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("project.form.dueDate")}</Label>
             {canContribute ? (
               <Input
                 type="date"
@@ -2066,7 +2132,7 @@ function TaskDetailDialog({
                   doPatch({ dueAt: v ? new Date(`${v}T12:00:00`).toISOString() : null }, true);
                 }}
                 className="focus-glow w-full bg-white/[0.03]"
-                aria-label="Task due date"
+                aria-label={t("project.a11y.taskDueDate")}
               />
             ) : (
               <DueChip dueAt={task.dueAt} done={task.status === "DONE"} />
@@ -2078,7 +2144,7 @@ function TaskDetailDialog({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              Description
+              {t("project.form.description")}
             </Label>
             {canContribute && (
               <button
@@ -2088,7 +2154,7 @@ function TaskDetailDialog({
                 }}
                 className="focus-glow inline-flex items-center gap-1 rounded text-[11px] text-muted-foreground transition-colors hover:text-cyan-300"
               >
-                <Pencil className="h-3 w-3" /> {descEditing ? "Cancel" : "Edit"}
+                <Pencil className="h-3 w-3" /> {descEditing ? t("common.cancel") : t("project.actions.edit")}
               </button>
             )}
           </div>
@@ -2100,37 +2166,37 @@ function TaskDetailDialog({
                 rows={5}
                 maxLength={LIMITS.taskDescription}
                 className="focus-glow resize-y bg-white/[0.03] font-mono text-xs"
-                placeholder="Describe the work (Markdown supported)"
+                placeholder={t("project.taskDetail.descPlaceholder")}
               />
               <div className="flex justify-end">
                 <Button
                   size="sm"
                   disabled={pending || !descChanged}
                   onClick={async () => {
-                    const t = await doPatch({ description: descDraft });
-                    if (t) setDescEditing(false);
+                    const updated = await doPatch({ description: descDraft });
+                    if (updated) setDescEditing(false);
                   }}
                 >
-                  Save description
+                  {t("project.taskDetail.saveDescription")}
                 </Button>
               </div>
             </div>
           ) : task.description?.trim() ? (
             <Markdown>{task.description}</Markdown>
           ) : (
-            <p className="text-sm italic text-muted-foreground">No description.</p>
+            <p className="text-sm italic text-muted-foreground">{t("project.taskDetail.noDescription")}</p>
           )}
         </div>
 
         {/* Comments */}
         <div className="space-y-3 border-t border-white/[0.07] pt-4">
           <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Comments
+            {t("project.taskDetail.comments")}
           </h4>
           {comments === null ? (
             <ListRowsSkeleton rows={2} />
           ) : comments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No comments yet.</p>
+            <p className="text-sm text-muted-foreground">{t("project.taskDetail.noComments")}</p>
           ) : (
             <ul className="max-h-56 space-y-3 overflow-y-auto pr-1">
               {comments.map((c) => (
@@ -2138,8 +2204,8 @@ function TaskDetailDialog({
                   <UserAvatar user={c.author} size={26} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium">{c.author?.displayName ?? "Deleted"}</span>
-                      <span className="text-[10px] text-muted-foreground">{fmtAgo(c.createdAt)}</span>
+                      <span className="text-xs font-medium">{c.author?.displayName ?? t("project.comments.deleted")}</span>
+                      <span className="text-[10px] text-muted-foreground">{rel(c.createdAt)}</span>
                     </div>
                     <p className="whitespace-pre-wrap break-words text-xs text-zinc-300">{c.body}</p>
                   </div>
@@ -2154,14 +2220,14 @@ function TaskDetailDialog({
                 onChange={(e) => setCommentBody(e.target.value)}
                 rows={2}
                 maxLength={LIMITS.comment}
-                placeholder="Write a comment..."
+                placeholder={t("project.taskDetail.commentPlaceholder")}
                 className="focus-glow resize-none bg-white/[0.03] text-sm"
               />
               <Button
                 size="sm"
                 onClick={addComment}
                 disabled={commentSending || !commentBody.trim()}
-                aria-label="Add comment"
+                aria-label={t("project.a11y.addComment")}
               >
                 {commentSending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -2182,10 +2248,10 @@ function TaskDetailDialog({
               onClick={() => setConfirmDelete(true)}
               className="text-rose-300 hover:bg-rose-500/10 hover:text-rose-300"
             >
-              <Trash2 className="h-4 w-4" /> Delete task
+              <Trash2 className="h-4 w-4" /> {t("project.taskDetail.deleteTask")}
             </Button>
             <Button variant="outline" size="sm" onClick={onClose}>
-              Close
+              {t("common.close")}
             </Button>
           </DialogFooter>
         )}
@@ -2194,18 +2260,18 @@ function TaskDetailDialog({
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this task?</AlertDialogTitle>
+            <AlertDialogTitle>{t("project.taskDetail.deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              &ldquo;{task.title}&rdquo; and its comments will be permanently removed.
+              {t("project.taskDetail.deleteBody", { title: task.title })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={deleteTask}
               className="bg-rose-500/90 text-white hover:bg-rose-500"
             >
-              <Trash2 className="h-4 w-4" /> Delete task
+              <Trash2 className="h-4 w-4" /> {t("project.taskDetail.deleteTask")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -2235,6 +2301,8 @@ function CreateTaskDialog({
   const [assignee, setAssignee] = useState("none");
   const [due, setDue] = useState("");
   const [sending, setSending] = useState(false);
+  const t = useT();
+  const err = useErrText();
 
   function reset() {
     setTitle("");
@@ -2256,11 +2324,11 @@ function CreateTaskDialog({
       if (due) payload.dueAt = new Date(`${due}T12:00:00`).toISOString();
       const r = await post<{ task: TaskDTO }>(`${base}/tasks`, payload);
       onCreated(r.task);
-      toast.success("Task created");
+      toast.success(t("project.toasts.taskCreated"));
       reset();
       onOpenChange(false);
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setSending(false);
     }
@@ -2270,37 +2338,37 @@ function CreateTaskDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display">New task</DialogTitle>
-          <DialogDescription>Add a piece of work to the project board.</DialogDescription>
+          <DialogTitle className="font-display">{t("project.tasks.newTask")}</DialogTitle>
+          <DialogDescription>{t("project.tasks.newTaskDesc")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="task-title">Title</Label>
+            <Label htmlFor="task-title">{t("project.form.title")}</Label>
             <Input
               id="task-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={LIMITS.taskTitle}
-              placeholder="e.g. Implement auth flow"
+              placeholder={t("project.tasks.titlePlaceholder")}
               className="focus-glow bg-white/[0.03]"
               autoFocus
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="task-desc">Description</Label>
+            <Label htmlFor="task-desc">{t("project.form.description")}</Label>
             <Textarea
               id="task-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               maxLength={LIMITS.taskDescription}
-              placeholder="Optional details (Markdown supported)"
+              placeholder={t("project.tasks.descPlaceholder")}
               className="focus-glow resize-y bg-white/[0.03]"
             />
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1.5">
-              <Label>Priority</Label>
+              <Label>{t("project.form.priority")}</Label>
               <Select value={priority} onValueChange={setPriority}>
                 <SelectTrigger className="w-full bg-white/[0.03]">
                   <SelectValue />
@@ -2308,20 +2376,20 @@ function CreateTaskDialog({
                 <SelectContent>
                   {TASK_PRIORITIES.map((p) => (
                     <SelectItem key={p.slug} value={p.slug}>
-                      {p.name}
+                      {PRIORITY_KEYS.has(p.slug) ? t(`project.priority.${p.slug}`) : p.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Assignee</Label>
+              <Label>{t("project.form.assignee")}</Label>
               <Select value={assignee} onValueChange={setAssignee}>
                 <SelectTrigger className="w-full bg-white/[0.03]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Unassigned</SelectItem>
+                  <SelectItem value="none">{t("project.tasks.unassigned")}</SelectItem>
                   {members.map((m) => (
                     <SelectItem key={m.id} value={m.user.id}>
                       {m.user.displayName}
@@ -2331,7 +2399,7 @@ function CreateTaskDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="task-due">Due date</Label>
+              <Label htmlFor="task-due">{t("project.form.dueDate")}</Label>
               <Input
                 id="task-due"
                 type="date"
@@ -2344,7 +2412,7 @@ function CreateTaskDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             className="btn-hero"
@@ -2352,7 +2420,7 @@ function CreateTaskDialog({
             disabled={sending || !title.trim()}
           >
             {sending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Create task
+            {t("project.tasks.create")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -2376,6 +2444,10 @@ function MilestonesTab({
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [togglePending, setTogglePending] = useState<string | null>(null);
+  const t = useT();
+  const rel = useRelativeTime();
+  const fd = useFormatDate();
+  const err = useErrText();
 
   const list = milestones ?? [];
   const completed = list.filter((m) => m.completedAt).length;
@@ -2394,9 +2466,13 @@ function MilestonesTab({
         completed: nowCompleted,
       });
       setMilestones((prev) => (prev ?? []).map((x) => (x.id === m.id ? r.milestone : x)));
-      toast.success(nowCompleted ? "Milestone completed — +20 XP +10 REP" : "Milestone reopened");
+      toast.success(
+        nowCompleted
+          ? t("project.toasts.milestoneCompleted")
+          : t("project.toasts.milestoneReopened")
+      );
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
       get<{ milestones: MilestoneDTO[] }>(`${base}/milestones`)
         .then((r) => setMilestones(r.milestones))
         .catch(() => undefined);
@@ -2410,9 +2486,9 @@ function MilestonesTab({
     try {
       await del(`/api/milestones/${deleteId}`);
       setMilestones((prev) => (prev ?? []).filter((m) => m.id !== deleteId));
-      toast.success("Milestone deleted");
+      toast.success(t("project.toasts.milestoneDeleted"));
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setDeleteId(null);
     }
@@ -2422,16 +2498,16 @@ function MilestonesTab({
     <div className="space-y-5">
       <section className="glass-card rounded-2xl p-5">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-display text-base font-semibold">Milestone progress</h2>
+          <h2 className="font-display text-base font-semibold">{t("project.milestones.progress")}</h2>
           <span className="font-mono text-sm font-semibold">
             {completed}/{list.length}
           </span>
         </div>
-        <Progress value={pct} aria-label="Milestone completion" />
+        <Progress value={pct} aria-label={t("project.a11y.milestoneCompletion")} />
         {canContribute && (
           <div className="mt-4 flex justify-end">
             <Button size="sm" className="btn-hero" onClick={() => setCreateOpen(true)}>
-              <Plus className="h-4 w-4" /> New milestone
+              <Plus className="h-4 w-4" /> {t("project.milestones.new")}
             </Button>
           </div>
         )}
@@ -2442,16 +2518,16 @@ function MilestonesTab({
       ) : list.length === 0 ? (
         <EmptyState
           icon={Flag}
-          title="No milestones yet"
+          title={t("project.milestones.emptyTitle")}
           description={
             canContribute
-              ? "Set ambitious checkpoints — create your first milestone."
-              : "This project has not defined any milestones yet."
+              ? t("project.milestones.emptyContributor")
+              : t("project.milestones.emptyViewer")
           }
           action={
             canContribute ? (
               <Button size="sm" variant="outline" onClick={() => setCreateOpen(true)}>
-                <Plus className="h-4 w-4" /> New milestone
+                <Plus className="h-4 w-4" /> {t("project.milestones.new")}
               </Button>
             ) : undefined
           }
@@ -2485,12 +2561,12 @@ function MilestonesTab({
                         </h3>
                         {done && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
-                            <CheckCircle2 className="h-3 w-3" /> Completed
+                            <CheckCircle2 className="h-3 w-3" /> {t("project.milestones.completed")}
                           </span>
                         )}
                         {overdue && (
                           <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-300">
-                            Overdue
+                            {t("project.milestones.overdue")}
                           </span>
                         )}
                       </div>
@@ -2506,15 +2582,15 @@ function MilestonesTab({
                             )}
                           >
                             <CalendarDays className="h-3 w-3" />
-                            Due {format(parseISO(m.dueAt), "MMM d, yyyy")}
+                            {t("project.milestones.due", { date: fd(m.dueAt, "MMM d, yyyy") })}
                           </span>
                         )}
                         <span className="inline-flex items-center gap-1">
-                          <Clock3 className="h-3 w-3" /> {fmtAgo(m.createdAt)}
+                          <Clock3 className="h-3 w-3" /> {rel(m.createdAt)}
                         </span>
-                        {done && (
+                        {done && !!m.completedAt && (
                           <span className="inline-flex items-center gap-1 text-emerald-300/80">
-                            Completed {fmtAgo(m.completedAt)}
+                            {t("project.milestones.completedAgo", { ago: rel(m.completedAt) })}
                           </span>
                         )}
                       </div>
@@ -2526,7 +2602,11 @@ function MilestonesTab({
                           size="sm"
                           onClick={() => toggle(m)}
                           disabled={togglePending === m.id}
-                          aria-label={done ? "Mark milestone as not completed" : "Mark milestone as completed"}
+                          aria-label={
+                            done
+                              ? t("project.a11y.markNotCompleted")
+                              : t("project.a11y.markCompleted")
+                          }
                           className={cn(
                             "h-8 px-2",
                             done
@@ -2544,7 +2624,7 @@ function MilestonesTab({
                           variant="ghost"
                           size="sm"
                           onClick={() => setDeleteId(m.id)}
-                          aria-label="Delete milestone"
+                          aria-label={t("project.a11y.deleteMilestone")}
                           className="h-8 px-2 text-muted-foreground hover:bg-rose-500/10 hover:text-rose-300"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -2569,18 +2649,18 @@ function MilestonesTab({
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this milestone?</AlertDialogTitle>
+            <AlertDialogTitle>{t("project.milestones.deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              The milestone and its progress will be permanently removed from the project.
+              {t("project.milestones.deleteBody")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-rose-500/90 text-white hover:bg-rose-500"
             >
-              Delete
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -2604,6 +2684,8 @@ function CreateMilestoneDialog({
   const [description, setDescription] = useState("");
   const [due, setDue] = useState("");
   const [sending, setSending] = useState(false);
+  const t = useT();
+  const err = useErrText();
 
   async function create() {
     setSending(true);
@@ -2612,13 +2694,13 @@ function CreateMilestoneDialog({
       if (due) payload.dueAt = new Date(`${due}T12:00:00`).toISOString();
       const r = await post<{ milestone: MilestoneDTO }>(`${base}/milestones`, payload);
       onCreated(r.milestone);
-      toast.success("Milestone created");
+      toast.success(t("project.toasts.milestoneCreated"));
       setTitle("");
       setDescription("");
       setDue("");
       onOpenChange(false);
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setSending(false);
     }
@@ -2628,35 +2710,35 @@ function CreateMilestoneDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display">New milestone</DialogTitle>
-          <DialogDescription>Define a checkpoint the crew can rally behind.</DialogDescription>
+          <DialogTitle className="font-display">{t("project.milestones.new")}</DialogTitle>
+          <DialogDescription>{t("project.milestones.newDesc")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="ms-title">Title</Label>
+            <Label htmlFor="ms-title">{t("project.form.title")}</Label>
             <Input
               id="ms-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Public beta launch"
+              placeholder={t("project.milestones.titlePlaceholder")}
               maxLength={140}
               className="focus-glow bg-white/[0.03]"
               autoFocus
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="ms-desc">Description</Label>
+            <Label htmlFor="ms-desc">{t("project.form.description")}</Label>
             <Textarea
               id="ms-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="What does done look like?"
+              placeholder={t("project.milestones.descPlaceholder")}
               className="focus-glow resize-y bg-white/[0.03]"
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="ms-due">Target date</Label>
+            <Label htmlFor="ms-due">{t("project.milestones.targetDate")}</Label>
             <Input
               id="ms-due"
               type="date"
@@ -2668,11 +2750,11 @@ function CreateMilestoneDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button className="btn-hero" onClick={create} disabled={sending || !title.trim()}>
             {sending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Create milestone
+            {t("project.milestones.create")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -2705,6 +2787,10 @@ function TeamTab({
   const [pending, setPending] = useState(false);
   const [reqPending, setReqPending] = useState<string | null>(null);
   const navigate = useApp((s) => s.navigate);
+  const t = useT();
+  const rel = useRelativeTime();
+  const fd = useFormatDate();
+  const err = useErrText();
 
   const members = membersResp?.members ?? [];
   const myMember = user ? members.find((m) => m.user.id === user.id) ?? null : null;
@@ -2715,9 +2801,14 @@ function TeamTab({
     try {
       await patch(`/api/members/${member.id}`, { role });
       await refetchAll();
-      toast.success(`${member.user.displayName} is now ${role.toLowerCase()}`);
+      toast.success(
+        t("project.toasts.roleChanged", {
+          name: member.user.displayName,
+          role: roleLabel(t, role).toLowerCase(),
+        })
+      );
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setPending(false);
     }
@@ -2729,9 +2820,9 @@ function TeamTab({
     try {
       await patch(`/api/members/${transferMember.id}`, { role: "OWNER" });
       await refetchAll();
-      toast.success(`${transferMember.user.displayName} is now the project owner`);
+      toast.success(t("project.toasts.nowOwner", { name: transferMember.user.displayName }));
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setPending(false);
       setTransferMember(null);
@@ -2744,9 +2835,9 @@ function TeamTab({
     try {
       await del(`/api/members/${removeMember.id}`);
       await refetchAll();
-      toast.success(`${removeMember.user.displayName} was removed from the project`);
+      toast.success(t("project.toasts.memberRemoved", { name: removeMember.user.displayName }));
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setPending(false);
       setRemoveMember(null);
@@ -2759,9 +2850,9 @@ function TeamTab({
     try {
       await del(`/api/members/${myMember.id}`);
       await refetchAll();
-      toast.success("You left the project");
+      toast.success(t("project.toasts.leftProject"));
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setPending(false);
       setLeaveOpen(false);
@@ -2775,11 +2866,11 @@ function TeamTab({
       await refetchAll();
       toast.success(
         action === "accept"
-          ? "Welcome aboard — request accepted"
-          : "Request rejected"
+          ? t("teams.toasts.accepted")
+          : t("teams.toasts.rejected")
       );
     } catch (e) {
-      toast.error(errText(e));
+      toast.error(err(e));
     } finally {
       setReqPending(null);
     }
@@ -2788,10 +2879,10 @@ function TeamTab({
   return (
     <div className="space-y-8">
       {/* Members */}
-      <section aria-label="Project members">
+      <section aria-label={t("project.a11y.projectMembers")}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-lg font-semibold">
-            Members{" "}
+            {t("common.members")}{" "}
             <span className="ml-1 text-sm font-normal text-muted-foreground">
               ({members.length})
             </span>
@@ -2803,7 +2894,7 @@ function TeamTab({
               onClick={() => setLeaveOpen(true)}
               className="border-rose-500/30 text-rose-300 hover:bg-rose-500/10 hover:text-rose-300"
             >
-              Leave project
+              {t("project.team.leave")}
             </Button>
           )}
         </div>
@@ -2822,7 +2913,7 @@ function TeamTab({
                   <button
                     onClick={() => navigate({ name: "profile", username: m.user.username })}
                     className="focus-glow flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left"
-                    aria-label={`View profile of ${m.user.displayName}`}
+                    aria-label={t("project.a11y.viewProfileOf", { name: m.user.displayName })}
                   >
                     <UserAvatar user={m.user} size={44} />
                     <span className="min-w-0">
@@ -2841,7 +2932,7 @@ function TeamTab({
                           variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0 text-muted-foreground"
-                          aria-label={`Manage ${m.user.displayName}`}
+                          aria-label={t("project.a11y.manage", { name: m.user.displayName })}
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
@@ -2849,7 +2940,7 @@ function TeamTab({
                       <DropdownMenuContent align="end" className="w-52">
                         <DropdownMenuSub>
                           <DropdownMenuSubTrigger>
-                            <Shield className="mr-2 h-4 w-4" /> Change role
+                            <Shield className="mr-2 h-4 w-4" /> {t("project.team.changeRole")}
                           </DropdownMenuSubTrigger>
                           <DropdownMenuSubContent>
                             {["ADMIN", "CONTRIBUTOR", "VIEWER"].map((r) => (
@@ -2858,21 +2949,21 @@ function TeamTab({
                                 disabled={m.role === r || pending}
                                 onClick={() => changeRole(m, r)}
                               >
-                                {MEMBER_ROLES.find((x) => x.slug === r)?.name}
-                                {m.role === r && <span className="ml-auto text-[10px] text-muted-foreground">current</span>}
+                                {roleLabel(t, r)}
+                                {m.role === r && <span className="ml-auto text-[10px] text-muted-foreground">{t("project.team.current")}</span>}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuSubContent>
                         </DropdownMenuSub>
                         <DropdownMenuItem onClick={() => setTransferMember(m)}>
-                          <UserPlus className="mr-2 h-4 w-4" /> Transfer ownership
+                          <UserPlus className="mr-2 h-4 w-4" /> {t("project.team.transferOwnership")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => setRemoveMember(m)}
                           className="text-rose-300 focus:text-rose-300"
                         >
-                          <Trash2 className="mr-2 h-4 w-4" /> Remove member
+                          <Trash2 className="mr-2 h-4 w-4" /> {t("project.team.removeMember")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -2881,7 +2972,7 @@ function TeamTab({
                 <div className="mt-3 flex items-center justify-between">
                   <RoleChip role={m.role} />
                   <span className="text-[11px] text-muted-foreground">
-                    Joined {format(parseISO(m.joinedAt), "MMM yyyy")}
+                    {t("project.team.joined", { date: fd(m.joinedAt, "MMM yyyy") })}
                   </span>
                 </div>
               </div>
@@ -2892,9 +2983,9 @@ function TeamTab({
 
       {/* Requests inbox */}
       {canManage && (
-        <section aria-label="Collaboration requests">
+        <section aria-label={t("project.a11y.collabRequests")}>
           <h2 className="font-display mb-4 text-lg font-semibold">
-            Collaboration requests{" "}
+            {t("project.team.requestsTitle")}{" "}
             <span className="ml-1 text-sm font-normal text-muted-foreground">
               ({requests?.filter((r) => r.status === "PENDING").length ?? 0})
             </span>
@@ -2903,7 +2994,7 @@ function TeamTab({
             <ListRowsSkeleton rows={2} />
           ) : pendingRequests.length === 0 ? (
             <div className="rounded-xl border border-dashed border-white/[0.08] py-8 text-center text-sm text-muted-foreground">
-              No pending requests
+              {t("project.team.noRequests")}
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
@@ -2933,7 +3024,7 @@ function TeamTab({
                     &ldquo;{r.introduction}&rdquo;
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
-                    <span>{fmtAgo(r.createdAt)}</span>
+                    <span>{rel(r.createdAt)}</span>
                     {r.portfolioUrl && (
                       <a
                         href={r.portfolioUrl}
@@ -2941,7 +3032,7 @@ function TeamTab({
                         rel="noreferrer noopener"
                         className="focus-glow inline-flex items-center gap-1 rounded text-cyan-300 hover:underline"
                       >
-                        <Link2 className="h-3 w-3" /> Portfolio
+                        <Link2 className="h-3 w-3" /> {t("project.team.portfolio")}
                       </a>
                     )}
                   </div>
@@ -2957,7 +3048,7 @@ function TeamTab({
                       ) : (
                         <CheckCircle2 className="h-4 w-4" />
                       )}
-                      Accept
+                      {t("project.team.accept")}
                     </Button>
                     <Button
                       size="sm"
@@ -2966,7 +3057,7 @@ function TeamTab({
                       onClick={() => reviewRequest(r, "reject")}
                       disabled={reqPending === r.id}
                     >
-                      Reject
+                      {t("project.team.reject")}
                     </Button>
                   </div>
                 </div>
@@ -2983,20 +3074,21 @@ function TeamTab({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Transfer ownership?</AlertDialogTitle>
+            <AlertDialogTitle>{t("project.transferDialog.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {transferMember?.user.displayName} will become the project owner and you will be
-              demoted to admin. This cannot be undone from here.
+              {t("project.transferDialog.description", {
+                name: transferMember?.user.displayName ?? "",
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={transferOwnership}
               disabled={pending}
               className="bg-violet-500/90 text-white hover:bg-violet-500"
             >
-              {pending && <Loader2 className="h-4 w-4 animate-spin" />} Transfer ownership
+              {pending && <Loader2 className="h-4 w-4 animate-spin" />} {t("project.team.transferOwnership")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -3006,19 +3098,21 @@ function TeamTab({
       <AlertDialog open={!!removeMember} onOpenChange={(o) => !o && setRemoveMember(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove member?</AlertDialogTitle>
+            <AlertDialogTitle>{t("project.removeDialog.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {removeMember?.user.displayName} will lose access to this workspace immediately.
+              {t("project.removeDialog.description", {
+                name: removeMember?.user.displayName ?? "",
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={remove}
               disabled={pending}
               className="bg-rose-500/90 text-white hover:bg-rose-500"
             >
-              {pending && <Loader2 className="h-4 w-4 animate-spin" />} Remove
+              {pending && <Loader2 className="h-4 w-4 animate-spin" />} {t("project.team.remove")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -3028,20 +3122,19 @@ function TeamTab({
       <AlertDialog open={leaveOpen} onOpenChange={setLeaveOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Leave this project?</AlertDialogTitle>
+            <AlertDialogTitle>{t("project.leaveDialog.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              You will lose access to the workspace for &ldquo;{project.name}&rdquo;. You can ask
-              the owner to re-invite you later.
+              {t("project.leaveDialog.description", { name: project.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Stay</AlertDialogCancel>
+            <AlertDialogCancel>{t("project.team.stay")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={leave}
               disabled={pending}
               className="bg-rose-500/90 text-white hover:bg-rose-500"
             >
-              {pending && <Loader2 className="h-4 w-4 animate-spin" />} Leave project
+              {pending && <Loader2 className="h-4 w-4 animate-spin" />} {t("project.team.leave")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -3056,7 +3149,8 @@ type ActivityEvent = {
   id: string;
   icon: IconType;
   color: string;
-  label: string;
+  /** dictionary key inside project.activity */
+  labelKey: string;
   title: string;
   by: string;
   at: string;
@@ -3078,22 +3172,22 @@ function ActivityTab({
         id: `u-${u.id}`,
         icon: Megaphone,
         color: "bg-cyan-500/10 text-cyan-300",
-        label: "posted an update",
+        labelKey: "postedUpdate",
         title: u.title,
         by: u.author.displayName,
         at: u.createdAt,
       });
     }
-    for (const t of tasks ?? []) {
-      if (t.status === "DONE" && t.completedAt) {
+    for (const task of tasks ?? []) {
+      if (task.status === "DONE" && task.completedAt) {
         evts.push({
-          id: `t-${t.id}`,
+          id: `t-${task.id}`,
           icon: CheckCircle2,
           color: "bg-emerald-500/10 text-emerald-300",
-          label: "completed a task",
-          title: t.title,
-          by: t.assignee?.displayName ?? t.creator.displayName,
-          at: t.completedAt,
+          labelKey: "completedTask",
+          title: task.title,
+          by: task.assignee?.displayName ?? task.creator.displayName,
+          at: task.completedAt,
         });
       }
     }
@@ -3103,7 +3197,7 @@ function ActivityTab({
           id: `m-${m.id}`,
           icon: Flag,
           color: "bg-violet-500/10 text-violet-300",
-          label: "completed a milestone",
+          labelKey: "completedMilestone",
           title: m.title,
           by: m.creator.displayName,
           at: m.completedAt,
@@ -3113,18 +3207,21 @@ function ActivityTab({
     return evts.sort((a, b) => parseISO(b.at).getTime() - parseISO(a.at).getTime());
   }, [updates, tasks, milestones]);
 
+  const t = useT();
+  const rel = useRelativeTime();
+
   if (updates === null || tasks === null || milestones === null) {
     return <ListRowsSkeleton rows={4} />;
   }
 
   return (
-    <section className="glass-card rounded-2xl p-5 md:p-6" aria-label="Recent workspace activity">
-      <h2 className="font-display mb-5 text-lg font-semibold">Recent workspace activity</h2>
+    <section className="glass-card rounded-2xl p-5 md:p-6" aria-label={t("project.a11y.activitySection")}>
+      <h2 className="font-display mb-5 text-lg font-semibold">{t("project.activity.title")}</h2>
       {events.length === 0 ? (
         <EmptyState
           icon={Activity}
-          title="No activity yet"
-          description="Updates, completed tasks and milestones will appear here as the crew makes progress."
+          title={t("project.activity.emptyTitle")}
+          description={t("project.activity.emptyDesc")}
         />
       ) : (
         <ol className="space-y-4">
@@ -3141,10 +3238,10 @@ function ActivityTab({
               <div className="min-w-0 flex-1 border-b border-white/[0.05] pb-4 last:border-0">
                 <p className="text-sm">
                   <span className="font-medium">{e.by}</span>{" "}
-                  <span className="text-muted-foreground">{e.label}</span>{" "}
+                  <span className="text-muted-foreground">{t(`project.activity.${e.labelKey}`)}</span>{" "}
                   <span className="font-medium text-foreground">&ldquo;{e.title}&rdquo;</span>
                 </p>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">{fmtAgo(e.at)}</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">{rel(e.at)}</p>
               </div>
             </li>
           ))}
@@ -3167,6 +3264,8 @@ function EditProjectDialog({
   onOpenChange: (o: boolean) => void;
   onSaved: (p: ProjectDetail) => void;
 }) {
+  const t = useT();
+  const lbl = useLabeled();
   const [name, setName] = useState(project.name);
   const [tagline, setTagline] = useState(project.tagline);
   const [description, setDescription] = useState(project.description);
@@ -3197,17 +3296,17 @@ function EditProjectDialog({
   }, [open, project]);
 
   function addTag() {
-    const t = tagInput.trim().toLowerCase();
-    if (!t) return;
-    if (tags.includes(t)) {
+    const tag = tagInput.trim().toLowerCase();
+    if (!tag) return;
+    if (tags.includes(tag)) {
       setTagInput("");
       return;
     }
     if (tags.length >= 8) {
-      toast.error("At most 8 tags");
+      toast.error(t("project.toasts.atMost8Tags"));
       return;
     }
-    setTags((prev) => [...prev, t]);
+    setTags((prev) => [...prev, tag]);
     setTagInput("");
   }
 
@@ -3231,8 +3330,8 @@ function EditProjectDialog({
         websiteUrl: websiteUrl.trim(),
       });
       onSaved(r.project);
-      if (willRelease) toast.success("Release published — +30 XP");
-      else toast.success("Project updated");
+      if (willRelease) toast.success(t("project.toasts.releasePublished"));
+      else toast.success(t("project.toasts.projectUpdated"));
       onOpenChange(false);
     } catch (e) {
       toast.error(errText(e));
@@ -3251,14 +3350,14 @@ function EditProjectDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle className="font-display">Edit project</DialogTitle>
-          <DialogDescription>Update how your project appears across the platform.</DialogDescription>
+          <DialogTitle className="font-display">{t("project.menu.edit")}</DialogTitle>
+          <DialogDescription>{t("project.edit.desc")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="ep-name">Name</Label>
+              <Label htmlFor="ep-name">{t("project.form.name")}</Label>
               <Input
                 id="ep-name"
                 value={name}
@@ -3268,7 +3367,7 @@ function EditProjectDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="ep-tagline">Tagline</Label>
+              <Label htmlFor="ep-tagline">{t("project.form.tagline")}</Label>
               <Input
                 id="ep-tagline"
                 value={tagline}
@@ -3280,21 +3379,21 @@ function EditProjectDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="ep-desc">Description</Label>
+            <Label htmlFor="ep-desc">{t("project.form.description")}</Label>
             <Textarea
               id="ep-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={5}
               maxLength={LIMITS.projectDescription}
-              placeholder="Tell the story of your project (Markdown supported)"
+              placeholder={t("project.edit.descPlaceholder")}
               className="focus-glow resize-y bg-white/[0.03]"
             />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Status</Label>
+              <Label>{t("project.form.status")}</Label>
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger className="w-full bg-white/[0.03]">
                   <SelectValue />
@@ -3302,19 +3401,19 @@ function EditProjectDialog({
                 <SelectContent>
                   {PROJECT_STATUSES.map((s) => (
                     <SelectItem key={s.slug} value={s.slug}>
-                      {s.name}
+                      {lbl("project.status", s.slug, s.name)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               {willRelease && (
                 <p className="text-[11px] text-emerald-300">
-                  Publishing the release awards +30 XP to the owner.
+                  {t("project.edit.releaseHint")}
                 </p>
               )}
             </div>
             <div className="space-y-1.5">
-              <Label>Visibility</Label>
+              <Label>{t("project.form.visibility")}</Label>
               <RadioGroup
                 value={visibility}
                 onValueChange={setVisibility}
@@ -3326,7 +3425,7 @@ function EditProjectDialog({
                     className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2 py-2 text-xs font-normal has-[[data-state=checked]]:border-cyan-500/50 has-[[data-state=checked]]:bg-cyan-500/10 has-[[data-state=checked]]:text-cyan-200"
                   >
                     <RadioGroupItem value={v.slug} className="size-3.5" />
-                    {v.name}
+                    {lbl("project.visibility", v.slug, v.name)}
                   </Label>
                 ))}
               </RadioGroup>
@@ -3334,17 +3433,17 @@ function EditProjectDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="ep-tag">Tags (max 8)</Label>
+            <Label htmlFor="ep-tag">{t("project.edit.tags")}</Label>
             <div className="flex flex-wrap gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] p-2">
-              {tags.map((t) => (
+              {tags.map((tg) => (
                 <span
-                  key={t}
+                  key={tg}
                   className="inline-flex items-center gap-1 rounded-md bg-white/[0.06] px-2 py-0.5 font-mono text-[11px]"
                 >
-                  #{t}
+                  #{tg}
                   <button
-                    onClick={() => setTags((prev) => prev.filter((x) => x !== t))}
-                    aria-label={`Remove tag ${t}`}
+                    onClick={() => setTags((prev) => prev.filter((x) => x !== tg))}
+                    aria-label={t("project.a11y.removeTag", { tag: tg })}
                     className="focus-glow rounded text-muted-foreground hover:text-rose-300"
                   >
                     <X className="h-3 w-3" />
@@ -3362,7 +3461,7 @@ function EditProjectDialog({
                   }
                 }}
                 onBlur={addTag}
-                placeholder={tags.length ? "Add another..." : "Type a tag and press Enter"}
+                placeholder={tags.length ? t("project.edit.addAnother") : t("project.edit.tagPlaceholder")}
                 maxLength={24}
                 className="h-7 min-w-[140px] flex-1 border-0 bg-transparent p-0 text-xs shadow-none focus-visible:ring-0"
               />
@@ -3370,7 +3469,7 @@ function EditProjectDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label>Required skills</Label>
+            <Label>{t("project.form.requiredSkills")}</Label>
             <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] p-2">
               {skills.map((s) => (
                 <span
@@ -3380,7 +3479,7 @@ function EditProjectDialog({
                   {SKILLS.find((k) => k.slug === s)?.name ?? s}
                   <button
                     onClick={() => setSkills((prev) => prev.filter((x) => x !== s))}
-                    aria-label={`Remove skill ${s}`}
+                    aria-label={t("project.a11y.removeSkill", { skill: s })}
                     className="focus-glow rounded text-violet-300/70 hover:text-rose-300"
                   >
                     <X className="h-3 w-3" />
@@ -3394,17 +3493,17 @@ function EditProjectDialog({
                 }}
               >
                 <SelectTrigger className="h-7 w-[180px] border-0 bg-transparent p-0 text-xs shadow-none focus:ring-0">
-                  <SelectValue placeholder="Add a skill..." />
+                  <SelectValue placeholder={t("project.edit.addSkill")} />
                 </SelectTrigger>
                 <SelectContent>
                   {skillOptions.length === 0 ? (
                     <SelectItem value="__none" disabled>
-                      All skills added
+                      {t("project.edit.allSkillsAdded")}
                     </SelectItem>
                   ) : (
                     skillOptions.map((s) => (
                       <SelectItem key={s.slug} value={s.slug} className="text-xs">
-                        {s.name}
+                        {lbl("project.skills", s.slug, s.name)}
                       </SelectItem>
                     ))
                   )}
@@ -3415,7 +3514,7 @@ function EditProjectDialog({
 
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1.5">
-              <Label htmlFor="ep-repo">Repository URL</Label>
+              <Label htmlFor="ep-repo">{t("project.form.repositoryUrl")}</Label>
               <Input
                 id="ep-repo"
                 value={repoUrl}
@@ -3425,7 +3524,7 @@ function EditProjectDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="ep-demo">Demo URL</Label>
+              <Label htmlFor="ep-demo">{t("project.form.demoUrl")}</Label>
               <Input
                 id="ep-demo"
                 value={demoUrl}
@@ -3435,7 +3534,7 @@ function EditProjectDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="ep-web">Website URL</Label>
+              <Label htmlFor="ep-web">{t("project.form.websiteUrl")}</Label>
               <Input
                 id="ep-web"
                 value={websiteUrl}
@@ -3449,11 +3548,11 @@ function EditProjectDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button className="btn-hero" onClick={save} disabled={sending || !valid}>
             {sending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Save changes
+            {t("common.saveChanges")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -3474,6 +3573,7 @@ function JoinRequestDialog({
   slug: string;
   onSent: (req: CollabRequestDTO) => void;
 }) {
+  const t = useT();
   const [role, setRole] = useState("CONTRIBUTOR");
   const [intro, setIntro] = useState("");
   const [portfolio, setPortfolio] = useState("");
@@ -3502,7 +3602,7 @@ function JoinRequestDialog({
         payload
       );
       onSent(r.request);
-      toast.success("Request sent — the owner will review it soon");
+      toast.success(t("project.toasts.requestSent"));
       onOpenChange(false);
     } catch (e) {
       toast.error(errText(e));
@@ -3515,27 +3615,27 @@ function JoinRequestDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-display">Request to join</DialogTitle>
+          <DialogTitle className="font-display">{t("project.actions.requestToJoin")}</DialogTitle>
           <DialogDescription>
-            Introduce yourself and pick how you would like to contribute.
+            {t("project.join.desc")}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label>Requested role</Label>
+            <Label>{t("project.join.requestedRole")}</Label>
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger className="w-full bg-white/[0.03]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="CONTRIBUTOR">Contributor — build and ship</SelectItem>
-                <SelectItem value="VIEWER">Viewer — follow along</SelectItem>
+                <SelectItem value="CONTRIBUTOR">{t("project.join.contributorOption")}</SelectItem>
+                <SelectItem value="VIEWER">{t("project.join.viewerOption")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="jr-intro">
-              Introduction <span className="text-rose-300">*</span>
+              {t("project.join.introduction")} <span className="text-rose-300">*</span>
             </Label>
             <Textarea
               id="jr-intro"
@@ -3543,7 +3643,7 @@ function JoinRequestDialog({
               onChange={(e) => setIntro(e.target.value)}
               rows={4}
               maxLength={LIMITS.introduction}
-              placeholder="Who are you, what have you built, and how can you help this project? (10-600 characters)"
+              placeholder={t("project.join.introPlaceholder")}
               className="focus-glow resize-y bg-white/[0.03]"
             />
             <p
@@ -3554,11 +3654,11 @@ function JoinRequestDialog({
                   : "text-muted-foreground"
               )}
             >
-              {intro.trim().length}/{LIMITS.introduction} (min 10)
+              {t("project.join.minHint", { n: intro.trim().length, limit: LIMITS.introduction })}
             </p>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="jr-portfolio">Portfolio URL (optional)</Label>
+            <Label htmlFor="jr-portfolio">{t("project.join.portfolioLabel")}</Label>
             <Input
               id="jr-portfolio"
               value={portfolio}
@@ -3570,11 +3670,11 @@ function JoinRequestDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button className="btn-hero" onClick={send} disabled={sending || !valid}>
             {sending && <Loader2 className="h-4 w-4 animate-spin" />}
-            <Send className="h-4 w-4" /> Send request
+            <Send className="h-4 w-4" /> {t("project.join.send")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -3585,11 +3685,11 @@ function JoinRequestDialog({
 // ─── Report dialog ────────────────────────────────────────────────────────────
 
 const REPORT_REASONS = [
-  { slug: "SPAM", label: "Spam or misleading" },
-  { slug: "HARASSMENT", label: "Harassment" },
-  { slug: "INAPPROPRIATE", label: "Inappropriate content" },
-  { slug: "COPYRIGHT", label: "Copyright violation" },
-  { slug: "OTHER", label: "Something else" },
+  { slug: "SPAM" },
+  { slug: "HARASSMENT" },
+  { slug: "INAPPROPRIATE" },
+  { slug: "COPYRIGHT" },
+  { slug: "OTHER" },
 ] as const;
 
 function ReportProjectDialog({
@@ -3603,6 +3703,7 @@ function ReportProjectDialog({
   projectId: string;
   projectName: string;
 }) {
+  const t = useT();
   const [reason, setReason] = useState<string>("SPAM");
   const [details, setDetails] = useState("");
   const [sending, setSending] = useState(false);
@@ -3623,7 +3724,7 @@ function ReportProjectDialog({
         reason,
         ...(details.trim() ? { details: details.trim() } : {}),
       });
-      toast.success("Report submitted — our moderators will review it");
+      toast.success(t("project.toasts.reportSubmitted"));
       onOpenChange(false);
     } catch (e) {
       toast.error(errText(e));
@@ -3636,14 +3737,14 @@ function ReportProjectDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-display">Report project</DialogTitle>
+          <DialogTitle className="font-display">{t("project.report.title")}</DialogTitle>
           <DialogDescription>
-            Tell us what is wrong with &ldquo;{projectName}&rdquo;. Reports are anonymous.
+            {t("project.report.desc", { name: projectName })}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label>Reason</Label>
+            <Label>{t("project.report.reasonLabel")}</Label>
             <Select value={reason} onValueChange={setReason}>
               <SelectTrigger className="w-full bg-white/[0.03]">
                 <SelectValue />
@@ -3651,14 +3752,14 @@ function ReportProjectDialog({
               <SelectContent>
                 {REPORT_REASONS.map((r) => (
                   <SelectItem key={r.slug} value={r.slug}>
-                    {r.label}
+                    {t(`project.report.reason.${r.slug}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="rp-details">Additional details (optional)</Label>
+            <Label htmlFor="rp-details">{t("project.report.detailsLabel")}</Label>
             <Textarea
               id="rp-details"
               value={details}
@@ -3671,11 +3772,11 @@ function ReportProjectDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button className="btn-hero" onClick={submit} disabled={sending}>
             {sending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Submit report
+            {t("project.report.submit")}
           </Button>
         </DialogFooter>
       </DialogContent>

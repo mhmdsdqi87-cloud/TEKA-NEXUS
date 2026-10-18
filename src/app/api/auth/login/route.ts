@@ -1,0 +1,71 @@
+// POST /api/auth/login — verify credentials and issue a session cookie.
+
+import { NextRequest } from "next/server";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import {
+  verifyPassword,
+  createSession,
+  setSessionCookie,
+  safeParseArray,
+  AuthUser,
+} from "@/lib/auth";
+import { handle, HttpError, ok, parseBody } from "@/lib/server";
+
+const loginSchema = z.object({
+  email: z.string().trim().min(1, "Email is required.").max(255),
+  password: z.string().min(1, "Password is required.").max(200),
+});
+
+function toSessionUser(u: {
+  id: string;
+  email: string;
+  username: string;
+  displayName: string;
+  bio: string;
+  avatarColor: string;
+  avatarUrl: string | null;
+  websiteUrl: string;
+  role: string;
+  goals: string;
+  interests: string;
+  xp: number;
+  reputation: number;
+  onboardingCompleted: boolean;
+  createdAt: Date;
+}): AuthUser {
+  return {
+    id: u.id,
+    email: u.email,
+    username: u.username,
+    displayName: u.displayName,
+    bio: u.bio,
+    avatarColor: u.avatarColor,
+    avatarUrl: u.avatarUrl,
+    websiteUrl: u.websiteUrl,
+    role: u.role,
+    goals: safeParseArray(u.goals),
+    interests: safeParseArray(u.interests),
+    xp: u.xp,
+    reputation: u.reputation,
+    onboardingCompleted: u.onboardingCompleted,
+    createdAt: u.createdAt,
+  };
+}
+
+export async function POST(req: NextRequest) {
+  return handle(async () => {
+    const body = await parseBody(req, loginSchema);
+    const email = body.email.toLowerCase();
+
+    const user = await db.user.findUnique({ where: { email } });
+    if (!user || !verifyPassword(body.password, user.passwordHash)) {
+      throw new HttpError("Invalid email or password.", 401);
+    }
+
+    const { token, expiresAt } = await createSession(user.id);
+    await setSessionCookie(token, expiresAt);
+
+    return ok({ user: toSessionUser(user) });
+  });
+}

@@ -7,7 +7,7 @@ import { ProjectCard as ProjectCardDTO } from "@/lib/dto";
 import { PROJECT_CATEGORIES } from "@/lib/constants";
 import { StatusPill, ProjectCover, UserAvatar } from "@/components/shared/atoms";
 import { useApp } from "@/lib/store";
-import { formatDistanceToNow } from "date-fns";
+import { useT, useRelativeTime, useLabeled } from "@/lib/i18n";
 import { Skeleton as ShadSkeleton } from "@/components/ui/skeleton";
 import { Heart, Users, Clock3 } from "lucide-react";
 
@@ -19,6 +19,9 @@ export function ProjectCardView({
   compact?: boolean;
 }) {
   const navigate = useApp((s) => s.navigate);
+  const t = useT();
+  const rel = useRelativeTime();
+  const lbl = useLabeled();
   const cat = PROJECT_CATEGORIES.find((c) => c.slug === project.category);
 
   return (
@@ -28,7 +31,7 @@ export function ProjectCardView({
         "glass-card rounded-xl text-left group overflow-hidden focus-glow cursor-pointer w-full",
         compact ? "p-3" : "p-0"
       )}
-      aria-label={`Open project ${project.name}`}
+      aria-label={t("profile.shared.openProjectAria", { name: project.name })}
     >
       {!compact && (
         <div className="h-32 overflow-hidden border-b border-white/[0.06]">
@@ -67,18 +70,18 @@ export function ProjectCardView({
             <span className="truncate max-w-[110px]">{project.owner.displayName}</span>
           </span>
           <span className="flex items-center gap-3 shrink-0">
-            <span className="flex items-center gap-1" title="Likes">
+            <span className="flex items-center gap-1" title={t("profile.shared.likes")}>
               <Heart className="h-3 w-3" /> {project.likeCount}
             </span>
-            <span className="flex items-center gap-1" title="Team size">
+            <span className="flex items-center gap-1" title={t("profile.shared.teamSize")}>
               <Users className="h-3 w-3" /> {project.memberCount}
             </span>
           </span>
         </div>
         <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
           <Clock3 className="h-3 w-3" />
-          updated {formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })}
-          {cat && <span className="ml-auto font-mono uppercase tracking-wide opacity-70">{cat.name}</span>}
+          {t("profile.shared.updated", { time: rel(new Date(project.updatedAt)) })}
+          {cat && <span className="ml-auto font-mono uppercase tracking-wide opacity-70">{lbl("project.categories", cat.slug, cat.name)}</span>}
         </div>
       </div>
     </button>

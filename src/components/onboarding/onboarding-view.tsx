@@ -37,6 +37,7 @@ import { LogoMark, Wordmark } from "@/components/brand/logo";
 import { UserAvatar } from "@/components/shared/atoms";
 import { useApp, type SessionUser } from "@/lib/store";
 import { post } from "@/lib/api";
+import { useT, useLabeled } from "@/lib/i18n";
 import { AVATAR_GRADIENTS, AVATAR_GRADIENT_KEYS, GOALS, LIMITS, PROJECT_CATEGORIES, SKILLS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -57,10 +58,10 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
 };
 
 const STEPS = [
-  { label: "Identity", hint: "Who you are on TEKA NEXUS" },
-  { label: "Skills", hint: "What you can contribute" },
-  { label: "Interests", hint: "What you want to work on" },
-  { label: "Goals", hint: "What you are here to do" },
+  { key: "identity" },
+  { key: "skills" },
+  { key: "interests" },
+  { key: "goals" },
 ] as const;
 
 // Silent fallbacks so the backend always receives nonempty arrays.
@@ -72,6 +73,8 @@ export function OnboardingView() {
   const user = useApp((s) => s.user);
   const navigate = useApp((s) => s.navigate);
   const setUser = useApp((s) => s.setUser);
+  const t = useT();
+  const lbl = useLabeled();
 
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
@@ -109,13 +112,13 @@ export function OnboardingView() {
   function handleIdentityContinue() {
     const name = displayName.trim();
     if (name.length < 1 || name.length > 60) {
-      toast.error("Display name is required (1–60 characters).");
+      toast.error(t("onboarding.err.displayName"));
       return;
     }
     const url = websiteUrl.trim();
     if (url && !/^https?:\/\/\S+$/i.test(url)) {
       setWebsiteError(true);
-      toast.error("Website must be a valid http(s) URL, e.g. https://your-site.dev");
+      toast.error(t("onboarding.err.website"));
       return;
     }
     setWebsiteError(false);
@@ -126,7 +129,7 @@ export function OnboardingView() {
     if (!user || submitting) return;
     const name = displayName.trim();
     if (name.length < 1 || name.length > 60) {
-      toast.error("Display name is required (1–60 characters).");
+      toast.error(t("onboarding.err.displayName"));
       goTo(0);
       return;
     }
@@ -142,10 +145,10 @@ export function OnboardingView() {
         goals: goals.length ? goals : [FALLBACK_GOAL],
       });
       setUser(res.user);
-      toast.success("Welcome to TEKA NEXUS");
+      toast.success(t("onboarding.toastWelcome"));
       navigate({ name: "home" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not save your profile. Please try again.");
+      toast.error(err instanceof Error ? err.message : t("onboarding.err.save"));
     } finally {
       setSubmitting(false);
     }
@@ -157,12 +160,12 @@ export function OnboardingView() {
       <div className="flex min-h-screen flex-col items-center justify-center px-4">
         <div className="glass-card w-full max-w-sm rounded-2xl p-8 text-center">
           <LogoMark size={40} className="mx-auto" />
-          <h1 className="mt-4 font-display text-xl font-semibold">Sign in to set up your profile</h1>
+          <h1 className="mt-4 font-display text-xl font-semibold">{t("onboarding.guard.title")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Onboarding is part of the account flow — create or access your account first.
+            {t("onboarding.guard.body")}
           </p>
           <Button className="btn-hero mt-6 h-11 w-full" onClick={() => navigate({ name: "login" })}>
-            Go to sign in
+            {t("onboarding.guard.cta")}
           </Button>
         </div>
       </div>
@@ -177,11 +180,11 @@ export function OnboardingView() {
   };
 
   const goalNames = (goals.length ? goals : [FALLBACK_GOAL])
-    .map((g) => GOALS.find((x) => x.slug === g)?.name ?? g);
+    .map((g) => lbl("common.goals", g, GOALS.find((x) => x.slug === g)?.name ?? g));
   const skillNames = (skills.length ? skills : [FALLBACK_SKILL])
-    .map((s) => SKILLS.find((x) => x.slug === s)?.name ?? s);
+    .map((s) => lbl("project.skills", s, SKILLS.find((x) => x.slug === s)?.name ?? s));
   const interestNames = (interests.length ? interests : [FALLBACK_INTEREST])
-    .map((c) => PROJECT_CATEGORIES.find((x) => x.slug === c)?.name ?? c);
+    .map((c) => lbl("project.categories", c, PROJECT_CATEGORIES.find((x) => x.slug === c)?.name ?? c));
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -191,7 +194,7 @@ export function OnboardingView() {
           <LogoMark size={24} />
           <Wordmark className="text-base" compact />
           <span className="ml-auto font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-            Profile setup
+            {t("onboarding.topbar")}
           </span>
         </div>
       </header>
@@ -200,13 +203,13 @@ export function OnboardingView() {
         {/* mobile progress */}
         <div className="mb-8 md:hidden">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">{STEPS[step].label}</span>
-            <span className="font-mono">Step {step + 1} of {STEPS.length}</span>
+            <span className="font-medium text-foreground">{t(`onboarding.steps.${STEPS[step].key}.label`)}</span>
+            <span className="font-mono">{t("onboarding.stepOf", { n: step + 1, total: STEPS.length })}</span>
           </div>
           <div className="mt-2.5 flex gap-1.5">
             {STEPS.map((s, i) => (
               <span
-                key={s.label}
+                key={s.key}
                 className={cn(
                   "h-1 flex-1 rounded-full transition-colors",
                   i <= step ? "bg-cyan-400/70" : "bg-white/10"
@@ -218,13 +221,13 @@ export function OnboardingView() {
 
         <div className="flex gap-10">
           {/* left progress rail (desktop) */}
-          <nav aria-label="Onboarding steps" className="hidden w-56 shrink-0 md:block">
+          <nav aria-label={t("onboarding.stepsAria")} className="hidden w-56 shrink-0 md:block">
             <ol className="space-y-1.5">
               {STEPS.map((s, i) => {
                 const done = i < step;
                 const active = i === step;
                 return (
-                  <li key={s.label}>
+                  <li key={s.key}>
                     <button
                       type="button"
                       disabled={i >= step}
@@ -251,9 +254,9 @@ export function OnboardingView() {
                       </span>
                       <span className="min-w-0">
                         <span className={cn("block text-sm font-medium", active ? "text-foreground" : "text-foreground/80")}>
-                          {s.label}
+                          {t(`onboarding.steps.${s.key}.label`)}
                         </span>
-                        <span className="block truncate text-xs text-muted-foreground">{s.hint}</span>
+                        <span className="block truncate text-xs text-muted-foreground">{t(`onboarding.steps.${s.key}.hint`)}</span>
                       </span>
                     </button>
                   </li>
@@ -275,31 +278,31 @@ export function OnboardingView() {
               >
                 {/* ── STEP 1: Identity ── */}
                 {step === 0 && (
-                  <section aria-label="Identity" className="space-y-6">
+                  <section aria-label={t("onboarding.steps.identity.label")} className="space-y-6">
                     <div>
                       <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-                        Set up your identity
+                        {t("onboarding.identity.title")}
                       </h1>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        This is how other builders will see you across projects and teams.
+                        {t("onboarding.identity.subtitle")}
                       </p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="displayName">Display name *</Label>
+                      <Label htmlFor="displayName">{t("onboarding.identity.displayName")}</Label>
                       <Input
                         id="displayName"
                         value={displayName}
                         maxLength={60}
                         onChange={(e) => setDisplayName(e.target.value)}
-                        placeholder="e.g. Maya Chen"
+                        placeholder={t("onboarding.identity.displayNamePlaceholder")}
                         className="h-11"
                       />
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="bio">Bio</Label>
+                        <Label htmlFor="bio">{t("onboarding.identity.bio")}</Label>
                         <span className="font-mono text-[11px] text-muted-foreground">
                           {bio.length}/{LIMITS.bio}
                         </span>
@@ -309,14 +312,14 @@ export function OnboardingView() {
                         value={bio}
                         maxLength={LIMITS.bio}
                         onChange={(e) => setBio(e.target.value)}
-                        placeholder="What do you build? What are you looking for?"
+                        placeholder={t("onboarding.identity.bioPlaceholder")}
                         rows={4}
                         className="resize-none"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="websiteUrl">Website</Label>
+                      <Label htmlFor="websiteUrl">{t("onboarding.identity.website")}</Label>
                       <Input
                         id="websiteUrl"
                         type="url"
@@ -330,19 +333,19 @@ export function OnboardingView() {
                         className={cn("h-11", websiteError && "border-rose-400/60")}
                       />
                       <p className={cn("text-xs", websiteError ? "text-rose-300/90" : "text-muted-foreground")}>
-                        Optional — must be a full http(s) URL.
+                        {t("onboarding.identity.websiteHint")}
                       </p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Avatar gradient</Label>
+                      <Label>{t("onboarding.identity.avatarGradient")}</Label>
                       <div className="flex flex-wrap items-center gap-3">
                         <UserAvatar user={previewUser} size={48} />
                         {AVATAR_GRADIENT_KEYS.map((key) => (
                           <button
                             key={key}
                             type="button"
-                            aria-label={`Avatar gradient: ${key}`}
+                            aria-label={t("onboarding.identity.avatarGradientAria", { name: key })}
                             aria-pressed={avatarColor === key}
                             onClick={() => setAvatarColor(key)}
                             className={cn(
@@ -359,7 +362,7 @@ export function OnboardingView() {
 
                     <div className="flex items-center justify-end border-t border-white/[0.06] pt-5">
                       <Button className="btn-hero h-11 px-6" onClick={handleIdentityContinue}>
-                        Continue
+                        {t("onboarding.continue")}
                         <ArrowRight className="h-4 w-4" />
                       </Button>
                     </div>
@@ -368,13 +371,14 @@ export function OnboardingView() {
 
                 {/* ── STEP 2: Skills ── */}
                 {step === 1 && (
-                  <section aria-label="Skills" className="space-y-6">
+                  <section aria-label={t("onboarding.steps.skills.label")} className="space-y-6">
                     <div>
                       <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-                        What can you do?
+                        {t("onboarding.skills.title")}
                       </h1>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        Pick the skills you can bring to a team. {skills.length > 0 ? `${skills.length} selected.` : "Select at least one — or skip for now."}
+                        {t("onboarding.skills.subtitle")}{" "}
+                        {skills.length > 0 ? t("onboarding.nSelected", { n: skills.length }) : t("onboarding.selectAtLeastOne")}
                       </p>
                     </div>
 
@@ -394,7 +398,7 @@ export function OnboardingView() {
                                 : "border-white/[0.07] bg-white/[0.02] text-foreground/85 hover:border-white/20"
                             )}
                           >
-                            <span>{s.name}</span>
+                            <span>{lbl("project.skills", s.slug, s.name)}</span>
                             {active && <Check className="h-4 w-4 shrink-0 text-cyan-300" />}
                           </button>
                         );
@@ -403,9 +407,9 @@ export function OnboardingView() {
 
                     <WizardActions
                       onBack={() => goTo(0)}
-                      skipLabel="Skip for now"
+                      skipLabel={t("onboarding.skipForNow")}
                       onSkip={() => goTo(2)}
-                      nextLabel="Continue"
+                      nextLabel={t("onboarding.continue")}
                       onNext={() => goTo(2)}
                     />
                   </section>
@@ -413,13 +417,14 @@ export function OnboardingView() {
 
                 {/* ── STEP 3: Interests ── */}
                 {step === 2 && (
-                  <section aria-label="Interests" className="space-y-6">
+                  <section aria-label={t("onboarding.steps.interests.label")} className="space-y-6">
                     <div>
                       <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-                        What do you want to work on?
+                        {t("onboarding.interests.title")}
                       </h1>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        We tailor discovery to your interests. {interests.length > 0 ? `${interests.length} selected.` : "Pick at least one — or skip for now."}
+                        {t("onboarding.interests.subtitle")}{" "}
+                        {interests.length > 0 ? t("onboarding.nSelected", { n: interests.length }) : t("onboarding.pickAtLeastOne")}
                       </p>
                     </div>
 
@@ -441,7 +446,7 @@ export function OnboardingView() {
                             )}
                           >
                             <Icon className={cn("h-5 w-5 shrink-0", active ? "text-cyan-300" : "text-muted-foreground")} />
-                            <span className="text-sm font-medium">{c.name}</span>
+                            <span className="text-sm font-medium">{lbl("project.categories", c.slug, c.name)}</span>
                             {active && <Check className="ml-auto h-4 w-4 shrink-0 text-cyan-300" />}
                           </button>
                         );
@@ -450,9 +455,9 @@ export function OnboardingView() {
 
                     <WizardActions
                       onBack={() => goTo(1)}
-                      skipLabel="Skip for now"
+                      skipLabel={t("onboarding.skipForNow")}
                       onSkip={() => goTo(3)}
-                      nextLabel="Continue"
+                      nextLabel={t("onboarding.continue")}
                       onNext={() => goTo(3)}
                     />
                   </section>
@@ -460,13 +465,13 @@ export function OnboardingView() {
 
                 {/* ── STEP 4: Goals + review ── */}
                 {step === 3 && (
-                  <section aria-label="Goals" className="space-y-6">
+                  <section aria-label={t("onboarding.steps.goals.label")} className="space-y-6">
                     <div>
                       <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-                        Why are you here?
+                        {t("onboarding.goals.title")}
                       </h1>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        Your goals shape recommendations and who reaches out to you.
+                        {t("onboarding.goals.subtitle")}
                       </p>
                     </div>
 
@@ -486,7 +491,7 @@ export function OnboardingView() {
                                 : "border-white/[0.07] bg-white/[0.02] text-foreground/85 hover:border-white/20"
                             )}
                           >
-                            <span>{g.name}</span>
+                            <span>{lbl("common.goals", g.slug, g.name)}</span>
                             {active && <Check className="h-4 w-4 shrink-0 text-cyan-300" />}
                           </button>
                         );
@@ -496,7 +501,7 @@ export function OnboardingView() {
                     {/* summary review */}
                     <div className="glass-card mt-2 rounded-xl p-5">
                       <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                        Profile preview
+                        {t("onboarding.review.title")}
                       </h2>
                       <div className="mt-4 flex items-start gap-4">
                         <UserAvatar user={previewUser} size={52} />
@@ -511,20 +516,20 @@ export function OnboardingView() {
                         </div>
                       </div>
                       <div className="mt-4 space-y-2.5 border-t border-white/[0.06] pt-4">
-                        <SummaryRow label="Skills" values={skillNames} />
-                        <SummaryRow label="Interests" values={interestNames} />
-                        <SummaryRow label="Goals" values={goalNames} />
+                        <SummaryRow label={t("onboarding.review.skills")} values={skillNames} />
+                        <SummaryRow label={t("onboarding.review.interests")} values={interestNames} />
+                        <SummaryRow label={t("onboarding.review.goals")} values={goalNames} />
                       </div>
                       <p className="mt-4 text-xs text-muted-foreground/80">
-                        Anything you skipped gets a sensible default so your profile still works.
+                        {t("onboarding.review.note")}
                       </p>
                     </div>
 
                     <WizardActions
                       onBack={() => goTo(2)}
-                      skipLabel="Skip"
+                      skipLabel={t("onboarding.skip")}
                       onSkip={submit}
-                      nextLabel="Finish"
+                      nextLabel={t("onboarding.finish")}
                       onNext={submit}
                       nextLoading={submitting}
                       nextDisabled={submitting}
@@ -559,11 +564,13 @@ function WizardActions({
   nextLoading?: boolean;
   nextDisabled?: boolean;
 }) {
+  const t = useT();
+
   return (
     <div className="flex items-center justify-between border-t border-white/[0.06] pt-5">
       <Button variant="ghost" className="h-11 text-muted-foreground hover:text-foreground" onClick={onBack}>
         <ArrowLeft className="h-4 w-4" />
-        Back
+        {t("common.back")}
       </Button>
       <div className="flex items-center gap-2">
         <Button
@@ -578,7 +585,7 @@ function WizardActions({
           {nextLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Saving…
+              {t("onboarding.saving")}
             </>
           ) : (
             <>

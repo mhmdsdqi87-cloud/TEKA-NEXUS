@@ -23,12 +23,12 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/store";
 import { get, qs } from "@/lib/api";
 import { type FeedEvent } from "@/lib/dto";
+import { useT, useRelativeTime } from "@/lib/i18n";
 
 import { EmptyState, StatusPill, UserAvatar } from "@/components/shared/atoms";
 import { ListSkeleton } from "@/components/shared/project-card";
@@ -45,13 +45,16 @@ const EVENT_META: Record<string, { icon: LucideIcon; wrap: string; text: string 
 };
 const FALLBACK_META = { icon: Sparkles, wrap: "bg-white/[0.05] border-white/10", text: "text-muted-foreground" };
 
-const VERBS: Record<string, string> = {
-  PROJECT_CREATED: "created",
-  UPDATE_POSTED: "published an update on",
-  MILESTONE_COMPLETED: "completed a milestone on",
-  MEMBER_JOINED: "joined",
-  TASK_COMPLETED: "completed a task on",
+// Dictionary keys per feed event verb (rendered as: {actor} {verb} {project}).
+const VERB_KEYS: Record<string, string> = {
+  PROJECT_CREATED: "home.verbCreated",
+  UPDATE_POSTED: "home.verbUpdate",
+  MILESTONE_COMPLETED: "home.verbMilestone",
+  MEMBER_JOINED: "home.verbJoined",
+  TASK_COMPLETED: "home.verbTask",
 };
+
+const FALLBACK_VERB_KEY = "home.verbActivityOn";
 
 type FeedFilter = "all" | "releases" | "updates" | "milestones";
 const FILTER_EVENT_TYPES: Record<Exclude<FeedFilter, "all">, string[]> = {
@@ -60,24 +63,28 @@ const FILTER_EVENT_TYPES: Record<Exclude<FeedFilter, "all">, string[]> = {
   milestones: ["MILESTONE_COMPLETED"],
 };
 
-const FILTER_CHIPS: { key: FeedFilter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "releases", label: "Releases" },
-  { key: "updates", label: "Updates" },
-  { key: "milestones", label: "Milestones" },
-];
+const FILTER_LABEL_KEYS: Record<FeedFilter, string> = {
+  all: "home.filterAll",
+  releases: "home.filterReleases",
+  updates: "home.filterUpdates",
+  milestones: "home.filterMilestones",
+};
+
+const FILTER_CHIPS: FeedFilter[] = ["all", "releases", "updates", "milestones"];
 
 // ─── Feed event card ─────────────────────────────────────────
 function FeedEventCard({ event }: { event: FeedEvent }) {
   const navigate = useApp((s) => s.navigate);
+  const t = useT();
+  const rel = useRelativeTime();
   const meta = EVENT_META[event.eventType] ?? FALLBACK_META;
   const Icon = meta.icon;
-  const actorName = event.actor?.displayName ?? "Someone";
+  const actorName = event.actor?.displayName ?? t("home.someone");
   const releaseTitle =
     event.eventType === "RELEASE_PUBLISHED" && typeof event.metadata?.title === "string"
       ? event.metadata.title
       : "";
-  const verb = VERBS[event.eventType] ?? "activity on";
+  const verb = t(VERB_KEYS[event.eventType] ?? FALLBACK_VERB_KEY);
 
   const openProject = () => navigate({ name: "project", slug: event.project.slug });
   const openProfile = (e: React.MouseEvent) => {
@@ -96,7 +103,7 @@ function FeedEventCard({ event }: { event: FeedEvent }) {
           openProject();
         }
       }}
-      aria-label={`Open project ${event.project.name}`}
+      aria-label={t("home.openProjectAria", { name: event.project.name })}
       className="glass-card rounded-xl p-4 flex items-start gap-3.5 cursor-pointer outline-none focus-glow group"
     >
       <span
@@ -113,7 +120,7 @@ function FeedEventCard({ event }: { event: FeedEvent }) {
           {releaseTitle && (
             <>
               <span className="font-medium text-foreground">&ldquo;{releaseTitle}&rdquo;</span>{" "}
-              <span className="text-muted-foreground">on</span>{" "}
+              <span className="text-muted-foreground">{t("home.on")}</span>{" "}
             </>
           )}
           <span className="font-medium text-cyan-300 group-hover:underline">
@@ -125,7 +132,7 @@ function FeedEventCard({ event }: { event: FeedEvent }) {
         )}
         <div className="flex items-center gap-2.5 mt-2 flex-wrap">
           <span className="text-xs text-muted-foreground/70">
-            {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
+            {rel(new Date(event.createdAt))}
           </span>
           <StatusPill status={event.project.status} />
         </div>
@@ -135,7 +142,7 @@ function FeedEventCard({ event }: { event: FeedEvent }) {
         <button
           onClick={openProfile}
           className="shrink-0 rounded-full outline-none focus-glow cursor-pointer"
-          aria-label={`View ${event.actor.displayName}'s profile`}
+          aria-label={t("home.viewProfileAria", { name: event.actor.displayName })}
         >
           <UserAvatar user={event.actor} size={32} className="transition-transform hover:scale-105" />
         </button>
@@ -148,6 +155,7 @@ function FeedEventCard({ event }: { event: FeedEvent }) {
 export function HomeView() {
   const user = useApp((s) => s.user);
   const navigate = useApp((s) => s.navigate);
+  const t = useT();
 
   const [events, setEvents] = useState<FeedEvent[] | null>(null);
   const [page, setPage] = useState(1);
@@ -157,25 +165,28 @@ export function HomeView() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FeedFilter>("all");
 
-  const load = useCallback(async (nextPage: number, append: boolean) => {
-    if (append) setLoadingMore(true);
-    try {
-      const res = await get<{ events: FeedEvent[]; page: number; pages: number; total: number }>(
-        `/api/feed${qs({ page: nextPage })}`
-      );
-      setEvents((prev) => (append ? [...(prev ?? []), ...res.events] : res.events));
-      setPage(res.page);
-      setPages(res.pages);
-      setTotal(res.total);
-      setError(null);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Failed to load feed";
-      setError(msg);
-      toast.error(msg);
-    } finally {
-      if (append) setLoadingMore(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (nextPage: number, append: boolean) => {
+      if (append) setLoadingMore(true);
+      try {
+        const res = await get<{ events: FeedEvent[]; page: number; pages: number; total: number }>(
+          `/api/feed${qs({ page: nextPage })}`
+        );
+        setEvents((prev) => (append ? [...(prev ?? []), ...res.events] : res.events));
+        setPage(res.page);
+        setPages(res.pages);
+        setTotal(res.total);
+        setError(null);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : t("home.feedError");
+        setError(msg);
+        toast.error(msg);
+      } finally {
+        if (append) setLoadingMore(false);
+      }
+    },
+    [t]
+  );
 
   useEffect(() => {
     load(1, false);
@@ -197,11 +208,11 @@ export function HomeView() {
       {/* Header row */}
       <div className="flex items-end justify-between gap-4 mb-6">
         <div className="min-w-0">
-          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight">Home</h1>
-          <p className="text-sm text-muted-foreground mt-1">Live activity from public projects.</p>
+          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight">{t("common.home")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("home.subtitle")}</p>
         </div>
         <Button className="btn-hero shrink-0" size="sm" onClick={() => navigate({ name: "projectNew" })}>
-          <Plus className="h-4 w-4" /> New project
+          <Plus className="h-4 w-4" /> {t("nav.newProject")}
         </Button>
       </div>
 
@@ -210,8 +221,8 @@ export function HomeView() {
         <div className="glass-card rounded-xl p-4 md:p-5 flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
           <UserAvatar user={user} size={44} />
           <div className="flex-1 min-w-0">
-            <p className="font-display font-semibold">Welcome back, {user.displayName}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">@{user.username} · Ready to build something?</p>
+            <p className="font-display font-semibold">{t("home.welcomeBack", { name: user.displayName })}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("home.readyToBuild", { username: user.username })}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -219,33 +230,33 @@ export function HomeView() {
               size="sm"
               onClick={() => navigate({ name: "profile", username: user.username })}
             >
-              <CircleUserRound className="h-3.5 w-3.5" /> Your profile
+              <CircleUserRound className="h-3.5 w-3.5" /> {t("home.yourProfile")}
             </Button>
             <Button variant="outline" size="sm" onClick={() => navigate({ name: "saved" })}>
-              <Bookmark className="h-3.5 w-3.5" /> Saved
+              <Bookmark className="h-3.5 w-3.5" /> {t("common.saved")}
             </Button>
             <Button variant="outline" size="sm" onClick={() => navigate({ name: "teams" })}>
-              <Users className="h-3.5 w-3.5" /> Teams
+              <Users className="h-3.5 w-3.5" /> {t("common.teams")}
             </Button>
           </div>
         </div>
       )}
 
       {/* Filter chips */}
-      <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1" role="group" aria-label="Filter feed by event type">
+      <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1" role="group" aria-label={t("home.filterGroupAria")}>
         {FILTER_CHIPS.map((chip) => (
           <button
-            key={chip.key}
-            onClick={() => setFilter(chip.key)}
-            aria-pressed={filter === chip.key}
+            key={chip}
+            onClick={() => setFilter(chip)}
+            aria-pressed={filter === chip}
             className={cn(
               "rounded-full border px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors outline-none focus-glow min-h-[32px]",
-              filter === chip.key
+              filter === chip
                 ? "border-cyan-400/40 bg-cyan-500/10 text-cyan-300"
                 : "border-white/10 bg-white/[0.02] text-muted-foreground hover:border-white/20 hover:text-foreground"
             )}
           >
-            {chip.label}
+            {t(FILTER_LABEL_KEYS[chip])}
           </button>
         ))}
       </div>
@@ -255,11 +266,11 @@ export function HomeView() {
         error ? (
           <EmptyState
             icon={Sparkles}
-            title="Could not load the feed"
+            title={t("home.feedErrorTitle")}
             description={error}
             action={
               <Button variant="outline" onClick={() => load(1, false)}>
-                Try again
+                {t("common.retry")}
               </Button>
             }
           />
@@ -275,17 +286,17 @@ export function HomeView() {
       ) : events.length === 0 ? (
         <EmptyState
           icon={Sparkles}
-          title="Nothing here yet"
-          description="When people launch projects, ship releases and hit milestones, it shows up here."
+          title={t("home.emptyTitle")}
+          description={t("home.emptyDescription")}
           action={
             <Button className="btn-hero" onClick={() => navigate({ name: "projectNew" })}>
-              <Plus className="h-4 w-4" /> Create the first project
+              <Plus className="h-4 w-4" /> {t("home.createFirstProject")}
             </Button>
           }
         />
       ) : (
         <p className="text-center text-sm text-muted-foreground py-10">
-          No {filter} events in the loaded feed yet.
+          {t("home.noFilterEvents", { filter: t(FILTER_LABEL_KEYS[filter]) })}
         </p>
       )}
 
@@ -294,10 +305,10 @@ export function HomeView() {
         <div className="flex flex-col items-center gap-1.5 mt-6">
           <Button variant="outline" disabled={loadingMore} onClick={() => load(page + 1, true)}>
             {loadingMore ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronDown className="h-4 w-4" />}
-            Load more
+            {t("home.loadMore")}
           </Button>
           <span className="text-[11px] text-muted-foreground/70 font-mono">
-            {total} events · page {page} of {pages}
+            {t("home.pageStatus", { total, page, pages })}
           </span>
         </div>
       )}

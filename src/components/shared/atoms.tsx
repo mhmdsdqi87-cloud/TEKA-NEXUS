@@ -3,6 +3,7 @@
 // TEKA NEXUS — shared UI atoms used across every view.
 
 import { cn } from "@/lib/utils";
+import { useT, useLabeled } from "@/lib/i18n";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AVATAR_GRADIENTS, PROJECT_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { UserCard } from "@/lib/dto";
@@ -38,6 +39,7 @@ export function UserAvatar({
 
 // ─── Status pill ─────────────────────────────────────────────
 export function StatusPill({ status, className }: { status: string; className?: string }) {
+  const lbl = useLabeled();
   const s = PROJECT_STATUSES.find((x) => x.slug === status) ?? PROJECT_STATUSES[0];
   return (
     <span
@@ -49,12 +51,13 @@ export function StatusPill({ status, className }: { status: string; className?: 
       )}
     >
       <span className={cn("h-1.5 w-1.5 rounded-full", s.dot)} />
-      {s.name}
+      {lbl("project.status", s.slug, s.name)}
     </span>
   );
 }
 
 export function PriorityPill({ priority, className }: { priority: string; className?: string }) {
+  const lbl = useLabeled();
   const p = TASK_PRIORITIES.find((x) => x.slug === priority) ?? TASK_PRIORITIES[1];
   return (
     <span
@@ -65,7 +68,7 @@ export function PriorityPill({ priority, className }: { priority: string; classN
         className
       )}
     >
-      {p.name}
+      {lbl("project.priority", p.slug, p.name)}
     </span>
   );
 }
@@ -116,9 +119,10 @@ export function ProjectCover({
   className?: string;
   seed?: number;
 }) {
+  const t = useT();
   if (cover) {
     return (
-      <img src={cover} alt={`${name} cover`} className={cn("object-cover w-full h-full", className)} loading="lazy" />
+      <img src={cover} alt={t("profile.shared.coverAlt", { name })} className={cn("object-cover w-full h-full", className)} loading="lazy" />
     );
   }
   const g = COVER_GRADIENTS[Math.abs(seed) % COVER_GRADIENTS.length];

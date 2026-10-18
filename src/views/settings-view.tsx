@@ -23,10 +23,14 @@ import {
 
 import { del, get, patch, post } from "@/lib/api";
 import { useApp, SessionUser } from "@/lib/store";
+import { useT, useLabeled } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/store";
+import { LOCALES } from "@/lib/i18n/locales";
 import { ProfileDetail } from "@/lib/dto";
 import { AVATAR_GRADIENTS, AVATAR_GRADIENT_KEYS, LIMITS, SKILLS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { EmptyState, UserAvatar } from "@/components/shared/atoms";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,27 +58,28 @@ type Prefs = {
   socialActivity: boolean;
 };
 
-const NAV_TABS: { value: SettingsTab; label: string; icon: LucideIcon }[] = [
-  { value: "profile", label: "Profile", icon: UserRound },
-  { value: "account", label: "Account", icon: KeyRound },
-  { value: "notifications", label: "Notifications", icon: Bell },
-  { value: "privacy", label: "Privacy", icon: Shield },
+const NAV_TABS: { value: SettingsTab; icon: LucideIcon }[] = [
+  { value: "profile", icon: UserRound },
+  { value: "account", icon: KeyRound },
+  { value: "notifications", icon: Bell },
+  { value: "privacy", icon: Shield },
 ];
 
 export function SettingsView({ tab }: { tab?: SettingsTab }) {
   const user = useApp((s) => s.user);
   const navigate = useApp((s) => s.navigate);
+  const t = useT();
 
   if (!user) {
     return (
       <div className="mx-auto w-full max-w-4xl px-4 py-6 md:py-8">
         <EmptyState
           icon={Lock}
-          title="Sign in to manage your settings"
-          description="Your profile, account, notification, and privacy controls live here."
+          title={t("settings.signedOut.title")}
+          description={t("settings.signedOut.description")}
           action={
             <Button className="btn-hero" onClick={() => navigate({ name: "login" })}>
-              Sign in
+              {t("common.signIn")}
             </Button>
           }
         />
@@ -89,6 +94,7 @@ export function SettingsView({ tab }: { tab?: SettingsTab }) {
 
 function SettingsContent({ user, initialTab }: { user: SessionUser; initialTab?: SettingsTab }) {
   const [active, setActive] = useState<SettingsTab>(initialTab ?? "profile");
+  const t = useT();
 
   return (
     <MotionConfig reducedMotion="user">
@@ -98,9 +104,9 @@ function SettingsContent({ user, initialTab }: { user: SessionUser; initialTab?:
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
-          <h1 className="font-display text-2xl font-bold md:text-3xl">Settings</h1>
+          <h1 className="font-display text-2xl font-bold md:text-3xl">{t("common.settings")}</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Manage your profile, account security, and community preferences.
+            {t("settings.subtitle")}
           </p>
         </motion.header>
 
@@ -108,14 +114,14 @@ function SettingsContent({ user, initialTab }: { user: SessionUser; initialTab?:
           <div className="grid gap-6 md:grid-cols-[200px_minmax(0,1fr)]">
             {/* Mini-nav: horizontal scroll chips on mobile, vertical radio list on desktop */}
             <TabsList className="h-auto w-full flex-row items-center gap-1 overflow-x-auto rounded-xl bg-transparent p-1 md:flex-col md:items-stretch md:justify-start">
-              {NAV_TABS.map((t) => (
+              {NAV_TABS.map((tab) => (
                 <TabsTrigger
-                  key={t.value}
-                  value={t.value}
+                  key={tab.value}
+                  value={tab.value}
                   className="h-auto w-auto shrink-0 justify-start gap-2 rounded-lg border border-transparent px-3.5 py-2.5 text-sm text-muted-foreground data-[state=active]:border-white/10 data-[state=active]:bg-white/[0.06] data-[state=active]:text-foreground data-[state=active]:shadow-none md:w-full"
                 >
-                  <t.icon className="h-4 w-4" />
-                  {t.label}
+                  <tab.icon className="h-4 w-4" />
+                  {t(`settings.tabs.${tab.value}`)}
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -145,6 +151,8 @@ function SettingsContent({ user, initialTab }: { user: SessionUser; initialTab?:
 
 function ProfileTab({ user }: { user: SessionUser }) {
   const setUser = useApp((s) => s.setUser);
+  const t = useT();
+  const lbl = useLabeled();
 
   const [displayName, setDisplayName] = useState(user.displayName);
   const [bio, setBio] = useState(user.bio ?? "");
@@ -175,12 +183,12 @@ function ProfileTab({ user }: { user: SessionUser }) {
   async function saveProfile() {
     const name = displayName.trim();
     if (!name) {
-      toast.error("Display name can't be empty.");
+      toast.error(t("settings.errors.emptyDisplayName"));
       return;
     }
     const site = websiteUrl.trim();
     if (site && !/^https?:\/\/\S+$/i.test(site)) {
-      setWebsiteError("Enter a full URL starting with http:// or https://");
+      setWebsiteError(t("settings.profileTab.websiteError"));
       return;
     }
     setWebsiteError(null);
@@ -195,9 +203,9 @@ function ProfileTab({ user }: { user: SessionUser }) {
         ...(skillsLoaded ? { skills } : {}),
       });
       setUser(res.user);
-      toast.success("Profile updated");
+      toast.success(t("settings.toasts.profileUpdated"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't save your profile.");
+      toast.error(e instanceof Error ? e.message : t("settings.errors.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -211,20 +219,20 @@ function ProfileTab({ user }: { user: SessionUser }) {
     <div className="space-y-5">
       <section className="glass-card space-y-5 rounded-xl p-5">
         <div className="space-y-2">
-          <Label htmlFor="display-name">Display name</Label>
+          <Label htmlFor="display-name">{t("settings.profileTab.displayName")}</Label>
           <Input
             id="display-name"
             value={displayName}
             maxLength={60}
             onChange={(e) => setDisplayName(e.target.value)}
             className="focus-glow"
-            placeholder="How should the community call you?"
+            placeholder={t("settings.profileTab.displayNamePlaceholder")}
           />
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="bio">Bio</Label>
+            <Label htmlFor="bio">{t("settings.profileTab.bio")}</Label>
             <span
               className={cn(
                 "font-mono text-[10px]",
@@ -240,13 +248,13 @@ function ProfileTab({ user }: { user: SessionUser }) {
             maxLength={LIMITS.bio}
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            placeholder="What are you building? What do you care about?"
+            placeholder={t("settings.profileTab.bioPlaceholder")}
             className="focus-glow"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="website">Website</Label>
+          <Label htmlFor="website">{t("settings.profileTab.website")}</Label>
           <Input
             id="website"
             value={websiteUrl}
@@ -260,21 +268,21 @@ function ProfileTab({ user }: { user: SessionUser }) {
           {websiteError ? (
             <p className="text-xs text-rose-300">{websiteError}</p>
           ) : (
-            <p className="text-xs text-muted-foreground">Shown as a link on your public profile.</p>
+            <p className="text-xs text-muted-foreground">{t("settings.profileTab.websiteHint")}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label>Avatar gradient</Label>
+          <Label>{t("settings.profileTab.avatarGradient")}</Label>
           <div className="flex flex-wrap items-center gap-4">
             <UserAvatar user={{ ...user, avatarColor }} size={56} />
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Choose avatar gradient">
+            <div className="flex flex-wrap gap-2" role="group" aria-label={t("settings.profileTab.chooseGradient")}>
               {AVATAR_GRADIENT_KEYS.map((key) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => setAvatarColor(key)}
-                  aria-label={`Gradient ${key}`}
+                  aria-label={t("settings.profileTab.gradientName", { name: key })}
                   aria-pressed={avatarColor === key}
                   className={cn(
                     "h-9 w-9 rounded-full bg-gradient-to-br transition-all focus-glow",
@@ -292,9 +300,9 @@ function ProfileTab({ user }: { user: SessionUser }) {
 
       <section className="glass-card space-y-3 rounded-xl p-5">
         <div>
-          <Label>Skills</Label>
+          <Label>{t("settings.profileTab.skills")}</Label>
           <p className="mt-1 text-xs text-muted-foreground">
-            Pick everything you can contribute with — teams use these to find you.
+            {t("settings.profileTab.skillsHint")}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -313,7 +321,7 @@ function ProfileTab({ user }: { user: SessionUser }) {
                     : "border-white/10 bg-white/[0.03] text-muted-foreground hover:border-white/20 hover:text-foreground"
                 )}
               >
-                {s.name}
+                {lbl("project.skills", s.slug, s.name)}
               </button>
             );
           })}
@@ -323,7 +331,7 @@ function ProfileTab({ user }: { user: SessionUser }) {
       <div className="flex justify-end">
         <Button onClick={saveProfile} disabled={saving} className="btn-hero min-w-32">
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-          Save changes
+          {t("common.saveChanges")}
         </Button>
       </div>
     </div>
@@ -335,6 +343,9 @@ function ProfileTab({ user }: { user: SessionUser }) {
 function AccountTab({ user }: { user: SessionUser }) {
   const setUser = useApp((s) => s.setUser);
   const navigate = useApp((s) => s.navigate);
+  const t = useT();
+  const locale = useI18n((s) => s.locale);
+  const activeLocaleNative = LOCALES.find((l) => l.code === locale)?.native ?? "English";
 
   const [pwCurrent, setPwCurrent] = useState("");
   const [pwNew, setPwNew] = useState("");
@@ -353,26 +364,26 @@ function AccountTab({ user }: { user: SessionUser }) {
 
   async function changePassword() {
     if (!pwCurrent) {
-      toast.error("Enter your current password.");
+      toast.error(t("settings.errors.enterCurrentPassword"));
       return;
     }
     if (pwNew.length < 8) {
-      toast.error("New password must be at least 8 characters.");
+      toast.error(t("settings.errors.pwTooShort"));
       return;
     }
     if (pwNew !== pwConfirm) {
-      toast.error("New passwords don't match.");
+      toast.error(t("settings.errors.pwMismatch"));
       return;
     }
     setPwPending(true);
     try {
       await patch("/api/me/password", { currentPassword: pwCurrent, newPassword: pwNew });
-      toast.success("Password changed — other devices signed out");
+      toast.success(t("settings.toasts.passwordChanged"));
       setPwCurrent("");
       setPwNew("");
       setPwConfirm("");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't change your password.");
+      toast.error(e instanceof Error ? e.message : t("settings.errors.pwChangeFailed"));
     } finally {
       setPwPending(false);
     }
@@ -385,10 +396,10 @@ function AccountTab({ user }: { user: SessionUser }) {
       await del("/api/me/account", { password: delPassword });
       setDelOpen(false);
       setUser(null);
-      toast.success("Your account has been deleted.");
+      toast.success(t("settings.toasts.accountDeleted"));
       navigate({ name: "landing" });
     } catch (e) {
-      setDelError(e instanceof Error ? e.message : "Couldn't delete your account.");
+      setDelError(e instanceof Error ? e.message : t("settings.errors.deleteFailed"));
     } finally {
       setDelPending(false);
     }
@@ -406,9 +417,26 @@ function AccountTab({ user }: { user: SessionUser }) {
 
   return (
     <div className="space-y-5">
+      <section className="glass-card space-y-4 rounded-xl p-5">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <h3 className="font-display font-semibold">{t("settings.accountTab.language")}</h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {t("settings.accountTab.languageDescription")}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:block text-sm text-muted-foreground" aria-hidden="true">
+              {activeLocaleNative}
+            </span>
+            <LanguageSwitcher />
+          </div>
+        </div>
+      </section>
+
       <section className="glass-card space-y-5 rounded-xl p-5">
         <div className="space-y-2">
-          <Label htmlFor="account-email">Email</Label>
+          <Label htmlFor="account-email">{t("settings.accountTab.email")}</Label>
           <Input
             id="account-email"
             value={user.email}
@@ -417,21 +445,21 @@ function AccountTab({ user }: { user: SessionUser }) {
             aria-describedby="account-email-hint"
           />
           <p id="account-email-hint" className="text-xs text-muted-foreground">
-            Your sign-in email — read-only during the beta.
+            {t("settings.accountTab.emailHint")}
           </p>
         </div>
       </section>
 
       <section className="glass-card space-y-4 rounded-xl p-5">
         <div>
-          <h3 className="font-display font-semibold">Change password</h3>
+          <h3 className="font-display font-semibold">{t("settings.accountTab.changePassword")}</h3>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Changing your password signs out every other device.
+            {t("settings.accountTab.changePasswordHint")}
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="pw-current">Current password</Label>
+            <Label htmlFor="pw-current">{t("settings.accountTab.currentPassword")}</Label>
             <Input
               id="pw-current"
               type="password"
@@ -442,7 +470,7 @@ function AccountTab({ user }: { user: SessionUser }) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="pw-new">New password</Label>
+            <Label htmlFor="pw-new">{t("settings.accountTab.newPassword")}</Label>
             <Input
               id="pw-new"
               type="password"
@@ -451,10 +479,10 @@ function AccountTab({ user }: { user: SessionUser }) {
               onChange={(e) => setPwNew(e.target.value)}
               className={cn("focus-glow", pwTooShort && "border-rose-500/50")}
             />
-            {pwTooShort && <p className="text-xs text-rose-300">At least 8 characters.</p>}
+            {pwTooShort && <p className="text-xs text-rose-300">{t("settings.accountTab.pwTooShort")}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="pw-confirm">Confirm new password</Label>
+            <Label htmlFor="pw-confirm">{t("settings.accountTab.confirmPassword")}</Label>
             <Input
               id="pw-confirm"
               type="password"
@@ -463,7 +491,7 @@ function AccountTab({ user }: { user: SessionUser }) {
               onChange={(e) => setPwConfirm(e.target.value)}
               className={cn("focus-glow", pwMismatch && "border-rose-500/50")}
             />
-            {pwMismatch && <p className="text-xs text-rose-300">Passwords don&apos;t match.</p>}
+            {pwMismatch && <p className="text-xs text-rose-300">{t("settings.accountTab.pwMismatch")}</p>}
           </div>
         </div>
         <div className="flex justify-end">
@@ -473,34 +501,33 @@ function AccountTab({ user }: { user: SessionUser }) {
             className="min-w-36"
           >
             {pwPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Update password
+            {t("settings.accountTab.updatePassword")}
           </Button>
         </div>
       </section>
 
       {/* Danger zone */}
       <section className="rounded-xl border border-rose-500/25 bg-rose-500/[0.04] p-5">
-        <h3 className="font-display font-semibold text-rose-200">Danger zone</h3>
+        <h3 className="font-display font-semibold text-rose-200">{t("settings.accountTab.dangerZone")}</h3>
         <p className="mt-1 max-w-lg text-sm text-muted-foreground">
-          Deleting your account permanently removes your profile and every project you own, along
-          with their tasks, updates, and milestones. This can&apos;t be undone.
+          {t("settings.accountTab.dangerDescription")}
         </p>
         <AlertDialog open={delOpen} onOpenChange={closeDeleteDialog}>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" className="mt-4">
               <Trash2 className="h-4 w-4" />
-              Delete account
+              {t("settings.accountTab.deleteAccount")}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             {delStage === "username" ? (
               <>
                 <AlertDialogHeader>
-                  <AlertDialogTitle className="font-display">Delete your account?</AlertDialogTitle>
+                  <AlertDialogTitle className="font-display">{t("settings.delete.title")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This permanently removes your profile and all projects you own. Type your
-                    username{" "}
-                    <span className="font-mono text-foreground">{user.username}</span> to continue.
+                    {t("settings.delete.typeUsername")}{" "}
+                    <span className="font-mono text-foreground">{user.username}</span>{" "}
+                    {t("settings.delete.toContinue")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <Input
@@ -509,10 +536,10 @@ function AccountTab({ user }: { user: SessionUser }) {
                   placeholder={user.username}
                   autoComplete="off"
                   className="font-mono focus-glow"
-                  aria-label="Type your username to confirm"
+                  aria-label={t("settings.delete.usernameAria")}
                 />
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                   <AlertDialogAction
                     disabled={delConfirm !== user.username}
                     className="bg-rose-600 text-white hover:bg-rose-600/90"
@@ -521,7 +548,7 @@ function AccountTab({ user }: { user: SessionUser }) {
                       setDelStage("password");
                     }}
                   >
-                    Continue
+                    {t("settings.delete.continue")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </>
@@ -529,11 +556,10 @@ function AccountTab({ user }: { user: SessionUser }) {
               <>
                 <AlertDialogHeader>
                   <AlertDialogTitle className="font-display">
-                    Confirm with your password
+                    {t("settings.delete.confirmTitle")}
                   </AlertDialogTitle>
                   <AlertDialogDescription>
-                    This is the last step — enter your password to permanently delete your account
-                    and every project you own.
+                    {t("settings.delete.confirmDescription")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <Input
@@ -547,14 +573,14 @@ function AccountTab({ user }: { user: SessionUser }) {
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && delPassword && !delPending) deleteAccount();
                   }}
-                  placeholder="Your password"
+                  placeholder={t("settings.delete.passwordPlaceholder")}
                   className="focus-glow"
-                  aria-label="Confirm your password"
+                  aria-label={t("settings.delete.passwordAria")}
                 />
                 {delError && <p className="text-sm text-rose-300">{delError}</p>}
                 <AlertDialogFooter>
                   <AlertDialogCancel onClick={() => setDelStage("username")}>
-                    Back
+                    {t("common.back")}
                   </AlertDialogCancel>
                   <AlertDialogAction
                     disabled={delPending || !delPassword}
@@ -569,7 +595,7 @@ function AccountTab({ user }: { user: SessionUser }) {
                     ) : (
                       <Trash2 className="h-4 w-4" />
                     )}
-                    Delete forever
+                    {t("settings.delete.deleteForever")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </>
@@ -584,6 +610,7 @@ function AccountTab({ user }: { user: SessionUser }) {
 // ─── NOTIFICATIONS ──────────────────────────────────────────────
 
 function NotificationsTab() {
+  const t = useT();
   const [prefs, setPrefs] = useState<Prefs | null>(null);
   const [pendingField, setPendingField] = useState<string | null>(null);
 
@@ -594,7 +621,7 @@ function NotificationsTab() {
         if (alive) setPrefs(res.prefs);
       })
       .catch((e) => {
-        toast.error(e instanceof Error ? e.message : "Couldn't load notification settings.");
+        toast.error(e instanceof Error ? e.message : t("settings.errors.loadPrefsFailed"));
       });
     return () => {
       alive = false;
@@ -609,10 +636,10 @@ function NotificationsTab() {
     try {
       const res = await patch<{ prefs: Prefs }>("/api/me/settings", { [field]: value });
       setPrefs(res.prefs);
-      toast.success("Notification preferences updated");
+      toast.success(t("settings.toasts.prefsUpdated"));
     } catch (e) {
       setPrefs(previous); // revert on error
-      toast.error(e instanceof Error ? e.message : "Couldn't update preferences.");
+      toast.error(e instanceof Error ? e.message : t("settings.errors.prefsUpdateFailed"));
     } finally {
       setPendingField(null);
     }
@@ -631,19 +658,18 @@ function NotificationsTab() {
   const rows: { field: keyof Prefs; title: string; description: string }[] = [
     {
       field: "projectActivity",
-      title: "Project activity",
-      description: "New tasks, updates, releases, and milestones in projects you're part of.",
+      title: t("settings.notificationsTab.projectActivity.title"),
+      description: t("settings.notificationsTab.projectActivity.description"),
     },
     {
       field: "collaborationRequests",
-      title: "Collaboration requests",
-      description:
-        "Applications to your projects and decisions on requests you've sent.",
+      title: t("settings.notificationsTab.collaboration.title"),
+      description: t("settings.notificationsTab.collaboration.description"),
     },
     {
       field: "socialActivity",
-      title: "Social activity",
-      description: "New followers and other activity across your network.",
+      title: t("settings.notificationsTab.social.title"),
+      description: t("settings.notificationsTab.social.description"),
     },
   ];
 
@@ -664,7 +690,7 @@ function NotificationsTab() {
             checked={prefs[row.field]}
             disabled={pendingField !== null}
             onCheckedChange={(v) => togglePref(row.field, v)}
-            aria-label={`Toggle ${row.title}`}
+            aria-label={t("settings.notificationsTab.toggleAria", { name: row.title })}
           />
         </div>
       ))}
@@ -675,32 +701,33 @@ function NotificationsTab() {
 // ─── PRIVACY ────────────────────────────────────────────────────
 
 function PrivacyTab() {
+  const t = useT();
   const [blockUsername, setBlockUsername] = useState("");
   const [blockPending, setBlockPending] = useState(false);
 
   const safetyItems: { icon: LucideIcon; title: string; text: string; tone: string }[] = [
     {
       icon: Flag,
-      title: "Reporting",
-      text: "Report any project, comment, or user from its menu. Reports land in a review queue — nothing is actioned without human review.",
+      title: t("settings.privacyTab.safety.reporting.title"),
+      text: t("settings.privacyTab.safety.reporting.text"),
       tone: "bg-cyan-500/10 text-cyan-300",
     },
     {
       icon: Ban,
-      title: "Blocking",
-      text: "Blocking someone removes follows between you and stops them from following you or interacting with your work.",
+      title: t("settings.privacyTab.safety.blocking.title"),
+      text: t("settings.privacyTab.safety.blocking.text"),
       tone: "bg-rose-500/10 text-rose-300",
     },
     {
       icon: Scale,
-      title: "Moderation queue",
-      text: "Every report is reviewed by the TEKA team before any action is taken on an account or project.",
+      title: t("settings.privacyTab.safety.moderation.title"),
+      text: t("settings.privacyTab.safety.moderation.text"),
       tone: "bg-violet-500/10 text-violet-300",
     },
     {
       icon: ShieldCheck,
-      title: "Account deletion",
-      text: "You can permanently delete your account and owned projects at any time from the Account tab.",
+      title: t("settings.privacyTab.safety.deletion.title"),
+      text: t("settings.privacyTab.safety.deletion.text"),
       tone: "bg-emerald-500/10 text-emerald-300",
     },
   ];
@@ -714,10 +741,14 @@ function PrivacyTab() {
       const res = await post<{ blocked: boolean }>(
         `/api/users/${encodeURIComponent(uname)}/block`
       );
-      toast.success(res.blocked ? `Blocked @${uname}` : `Unblocked @${uname}`);
+      toast.success(
+        res.blocked
+          ? t("settings.toasts.blocked", { name: uname })
+          : t("settings.toasts.unblocked", { name: uname })
+      );
       if (res.blocked) setBlockUsername("");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't update block.");
+      toast.error(err instanceof Error ? err.message : t("settings.errors.blockFailed"));
     } finally {
       setBlockPending(false);
     }
@@ -731,9 +762,9 @@ function PrivacyTab() {
             <Shield className="h-5 w-5 text-cyan-300" />
           </span>
           <div>
-            <h3 className="font-display font-semibold">Community safety</h3>
+            <h3 className="font-display font-semibold">{t("settings.privacyTab.safetyTitle")}</h3>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              TEKA NEXUS moderation is built on real, transparent behaviors — not promises.
+              {t("settings.privacyTab.safetyIntro")}
             </p>
           </div>
         </div>
@@ -756,26 +787,25 @@ function PrivacyTab() {
           ))}
         </ul>
         <p className="mt-4 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-2 text-xs italic text-muted-foreground">
-          Preview note: moderation review tools are handled by the TEKA team during beta.
+          {t("settings.privacyTab.previewNote")}
         </p>
       </section>
 
       <section className="glass-card rounded-xl p-5">
         <h3 className="flex items-center gap-2 font-display font-semibold">
           <Ban className="h-4 w-4 text-rose-300" />
-          Block a user
+          {t("settings.privacyTab.blockTitle")}
         </h3>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          Enter a username to block them. Blocking also removes follows between you, and it works
-          both ways — submitting a username you&apos;ve already blocked will unblock them.
+          {t("settings.privacyTab.blockDescription")}
         </p>
         <form onSubmit={submitBlock} className="mt-4 flex flex-col gap-2 sm:flex-row">
           <Input
             value={blockUsername}
             onChange={(e) => setBlockUsername(e.target.value)}
-            placeholder="username"
+            placeholder={t("settings.privacyTab.usernamePlaceholder")}
             autoComplete="off"
-            aria-label="Username to block"
+            aria-label={t("settings.privacyTab.usernameAria")}
             className="font-mono focus-glow"
           />
           <Button
@@ -785,7 +815,7 @@ function PrivacyTab() {
             className="shrink-0"
           >
             {blockPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}
-            Block user
+            {t("settings.privacyTab.blockButton")}
           </Button>
         </form>
       </section>

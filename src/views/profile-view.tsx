@@ -5,8 +5,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion, MotionConfig } from "framer-motion";
-import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { useT, useRelativeTime, useFormatDate, useLabeled } from "@/lib/i18n";
 import {
   Ban,
   CalendarDays,
@@ -70,21 +70,21 @@ type ProfileResponse = {
   contributions: ContributionDTO[];
 };
 
-const CONTRIBUTION_META: Record<string, { icon: LucideIcon; label: string }> = {
-  TASK_COMPLETED: { icon: CheckCircle2, label: "Completed task" },
-  RELEASE_PUBLISHED: { icon: Rocket, label: "Published release" },
-  MILESTONE_COMPLETED: { icon: Flag, label: "Completed milestone" },
-  UPDATE_POSTED: { icon: FileText, label: "Posted update" },
-  COLLABORATION_ACCEPTED: { icon: UserPlus, label: "Joined a team" },
-  PROJECT_CREATED: { icon: Sparkles, label: "Created project" },
+const CONTRIBUTION_META: Record<string, { icon: LucideIcon; labelKey: string }> = {
+  TASK_COMPLETED: { icon: CheckCircle2, labelKey: "task" },
+  RELEASE_PUBLISHED: { icon: Rocket, labelKey: "release" },
+  MILESTONE_COMPLETED: { icon: Flag, labelKey: "milestone" },
+  UPDATE_POSTED: { icon: FileText, labelKey: "update" },
+  COLLABORATION_ACCEPTED: { icon: UserPlus, labelKey: "collab" },
+  PROJECT_CREATED: { icon: Sparkles, labelKey: "created" },
 };
 
 const REPORT_REASONS = [
-  { value: "SPAM", label: "Spam" },
-  { value: "HARASSMENT", label: "Harassment" },
-  { value: "INAPPROPRIATE", label: "Inappropriate content" },
-  { value: "COPYRIGHT", label: "Copyright violation" },
-  { value: "OTHER", label: "Something else" },
+  { value: "SPAM", labelKey: "spam" },
+  { value: "HARASSMENT", labelKey: "harassment" },
+  { value: "INAPPROPRIATE", labelKey: "inappropriate" },
+  { value: "COPYRIGHT", labelKey: "copyright" },
+  { value: "OTHER", labelKey: "other" },
 ] as const;
 
 function ChipRow({
@@ -129,6 +129,10 @@ function StatCard({ label, value }: { label: string; value: number }) {
 export function ProfileView({ username }: { username: string }) {
   const user = useApp((s) => s.user);
   const navigate = useApp((s) => s.navigate);
+  const t = useT();
+  const lbl = useLabeled();
+  const rel = useRelativeTime();
+  const fd = useFormatDate();
 
   const [data, setData] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -160,7 +164,7 @@ export function ProfileView({ username }: { username: string }) {
         if (e instanceof ApiError && e.status === 404) setNotFound(true);
         else {
           setLoadFailed(true);
-          toast.error(e instanceof Error ? e.message : "Couldn't load this profile.");
+          toast.error(e instanceof Error ? e.message : t("profile.errors.loadFailed"));
         }
       } finally {
         setLoading(false);
@@ -178,7 +182,7 @@ export function ProfileView({ username }: { username: string }) {
   async function toggleFollow() {
     if (!profile || profile.isSelf) return;
     if (!user) {
-      toast.error("Sign in to follow creators.");
+      toast.error(t("profile.errors.signInToFollow"));
       navigate({ name: "login" });
       return;
     }
@@ -195,9 +199,13 @@ export function ProfileView({ username }: { username: string }) {
             }
           : prev
       );
-      toast.success(res.following ? `Following ${profile.displayName}` : `Unfollowed ${profile.displayName}`);
+      toast.success(
+        res.following
+          ? t("profile.toasts.followed", { name: profile.displayName })
+          : t("profile.toasts.unfollowed", { name: profile.displayName })
+      );
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't update follow.");
+      toast.error(e instanceof Error ? e.message : t("profile.errors.followFailed"));
     } finally {
       setFollowPending(false);
     }
@@ -206,7 +214,7 @@ export function ProfileView({ username }: { username: string }) {
   async function toggleBlock() {
     if (!profile) return;
     if (!user) {
-      toast.error("Sign in to manage blocks.");
+      toast.error(t("profile.errors.signInToBlock"));
       navigate({ name: "login" });
       return;
     }
@@ -217,11 +225,15 @@ export function ProfileView({ username }: { username: string }) {
       );
       setBlockedByMe(res.blocked);
       setMenuOpen(false);
-      toast.success(res.blocked ? `Blocked @${profile.username}` : `Unblocked @${profile.username}`);
+      toast.success(
+        res.blocked
+          ? t("profile.toasts.blocked", { name: profile.username })
+          : t("profile.toasts.unblocked", { name: profile.username })
+      );
       // Refresh silently — blocking removes follows in both directions.
       await load(true);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't update block.");
+      toast.error(e instanceof Error ? e.message : t("profile.errors.blockFailed"));
     } finally {
       setBlockPending(false);
     }
@@ -240,9 +252,9 @@ export function ProfileView({ username }: { username: string }) {
       setReportOpen(false);
       setReportDetails("");
       setReportReason("SPAM");
-      toast.success("Report submitted — our team will review it.");
+      toast.success(t("profile.toasts.reportSubmitted"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't submit report.");
+      toast.error(e instanceof Error ? e.message : t("profile.errors.reportFailed"));
     } finally {
       setReportPending(false);
     }
@@ -267,11 +279,11 @@ export function ProfileView({ username }: { username: string }) {
       <div className="mx-auto w-full max-w-5xl px-4 py-6 md:py-8">
         <EmptyState
           icon={UserX}
-          title="Creator not found"
-          description="This profile doesn't exist or may have been removed."
+          title={t("profile.notFound.title")}
+          description={t("profile.notFound.description")}
           action={
             <Button variant="outline" onClick={() => navigate({ name: "explore" })}>
-              Explore projects
+              {t("profile.notFound.action")}
             </Button>
           }
         />
@@ -284,11 +296,11 @@ export function ProfileView({ username }: { username: string }) {
       <div className="mx-auto w-full max-w-5xl px-4 py-6 md:py-8">
         <EmptyState
           icon={Info}
-          title="Couldn't load this profile"
-          description="Check your connection and try again."
+          title={t("profile.loadFailed.title")}
+          description={t("profile.loadFailed.description")}
           action={
             <Button variant="outline" onClick={() => load()}>
-              Try again
+              {t("common.retry")}
             </Button>
           }
         />
@@ -296,11 +308,11 @@ export function ProfileView({ username }: { username: string }) {
     );
   }
 
-  const goalNames = profile.goals.map((g) => GOALS.find((x) => x.slug === g)?.name ?? g);
+  const goalNames = profile.goals.map((g) => lbl("common.goals", g, GOALS.find((x) => x.slug === g)?.name ?? g));
   const interestNames = profile.interests.map(
-    (i) => PROJECT_CATEGORIES.find((c) => c.slug === i)?.name ?? i
+    (i) => lbl("project.categories", i, PROJECT_CATEGORIES.find((c) => c.slug === i)?.name ?? i)
   );
-  const skillNames = profile.skills.map((s) => SKILLS.find((x) => x.slug === s)?.name ?? s);
+  const skillNames = profile.skills.map((s) => lbl("project.skills", s, SKILLS.find((x) => x.slug === s)?.name ?? s));
   const websiteHost = profile.websiteUrl
     ? profile.websiteUrl.replace(/^https?:\/\//i, "").replace(/\/$/, "")
     : "";
@@ -348,14 +360,14 @@ export function ProfileView({ username }: { username: string }) {
                   <ReputationChip xp={profile.xp} reputation={profile.reputation} />
                   <span className="inline-flex items-center gap-1.5">
                     <CalendarDays className="h-3.5 w-3.5" />
-                    Member since {format(new Date(profile.createdAt), "MMM yyyy")}
+                    {t("profile.header.memberSince", { date: fd(new Date(profile.createdAt), "MMM yyyy") })}
                   </span>
                 </div>
 
                 <div className="space-y-2 pt-1">
-                  <ChipRow label="Goals" items={goalNames} tone="default" />
-                  <ChipRow label="Interests" items={interestNames} tone="cyan" />
-                  <ChipRow label="Skills" items={skillNames} tone="violet" />
+                  <ChipRow label={t("profile.sections.goals")} items={goalNames} tone="default" />
+                  <ChipRow label={t("profile.sections.interests")} items={interestNames} tone="cyan" />
+                  <ChipRow label={t("profile.sections.skills")} items={skillNames} tone="violet" />
                 </div>
               </div>
             </div>
@@ -364,7 +376,7 @@ export function ProfileView({ username }: { username: string }) {
               {profile.isSelf ? (
                 <Button onClick={() => navigate({ name: "settings", tab: "profile" })} className="btn-hero">
                   <Settings2 className="h-4 w-4" />
-                  Edit profile
+                  {t("profile.actions.editProfile")}
                 </Button>
               ) : (
                 <>
@@ -381,11 +393,15 @@ export function ProfileView({ username }: { username: string }) {
                     ) : (
                       <UserPlus className="h-4 w-4" />
                     )}
-                    {blockedByMe ? "Blocked" : profile.isFollowing ? "Following" : "Follow"}
+                    {blockedByMe
+                      ? t("profile.actions.blocked")
+                      : profile.isFollowing
+                        ? t("profile.actions.following")
+                        : t("profile.actions.follow")}
                   </Button>
                   <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" aria-label="More actions" className="focus-glow">
+                      <Button variant="ghost" size="icon" aria-label={t("profile.actions.moreActions")} className="focus-glow">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -400,7 +416,7 @@ export function ProfileView({ username }: { username: string }) {
                         ) : (
                           <Ban className="h-4 w-4" />
                         )}
-                        {blockedByMe ? "Unblock user" : "Block user"}
+                        {blockedByMe ? t("profile.actions.unblockUser") : t("profile.actions.blockUser")}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -408,7 +424,7 @@ export function ProfileView({ username }: { username: string }) {
                         className="cursor-pointer"
                       >
                         <Flag className="h-4 w-4" />
-                        Report user
+                        {t("profile.actions.reportUser")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -420,18 +436,18 @@ export function ProfileView({ username }: { username: string }) {
 
         {/* ── Stats ──────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <StatCard label="Followers" value={profile.followerCount} />
-          <StatCard label="Following" value={profile.followingCount} />
-          <StatCard label="Projects" value={profile.projectCount} />
-          <StatCard label="Reputation" value={profile.reputation ?? 0} />
+          <StatCard label={t("profile.stats.followers")} value={profile.followerCount} />
+          <StatCard label={t("profile.stats.following")} value={profile.followingCount} />
+          <StatCard label={t("common.projects")} value={profile.projectCount} />
+          <StatCard label={t("profile.stats.reputation")} value={profile.reputation ?? 0} />
         </div>
 
         {/* ── Tabs ───────────────────────────────────────────── */}
         <Tabs defaultValue="projects">
           <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="contributions">Contributions</TabsTrigger>
-            <TabsTrigger value="about">About</TabsTrigger>
+            <TabsTrigger value="projects">{t("common.projects")}</TabsTrigger>
+            <TabsTrigger value="contributions">{t("profile.tabs.contributions")}</TabsTrigger>
+            <TabsTrigger value="about">{t("profile.tabs.about")}</TabsTrigger>
           </TabsList>
 
           {/* Projects */}
@@ -445,8 +461,8 @@ export function ProfileView({ username }: { username: string }) {
             ) : (
               <EmptyState
                 icon={Globe}
-                title="No public projects yet"
-                description={`When ${profile.displayName} publishes projects, they'll show up here.`}
+                title={t("profile.empty.projects.title")}
+                description={t("profile.empty.projects.description", { name: profile.displayName })}
               />
             )}
           </TabsContent>
@@ -456,7 +472,7 @@ export function ProfileView({ username }: { username: string }) {
             <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" />
               <p className="text-sm text-muted-foreground">
-                Reputation is earned through verified contributions only — it can&apos;t be bought.
+                {t("profile.contributions.notice")}
               </p>
             </div>
 
@@ -465,7 +481,7 @@ export function ProfileView({ username }: { username: string }) {
                 {data.contributions.map((c) => {
                   const meta = CONTRIBUTION_META[c.eventType] ?? {
                     icon: Sparkles,
-                    label: "Contributed",
+                    labelKey: "other",
                   };
                   const Icon = meta.icon;
                   return (
@@ -475,7 +491,7 @@ export function ProfileView({ username }: { username: string }) {
                       </span>
                       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
                         <p className="text-sm">
-                          {meta.label}
+                          {t(`profile.contributionTypes.${meta.labelKey}`)}
                           {c.project && (
                             <>
                               <span className="text-muted-foreground"> · </span>
@@ -499,7 +515,7 @@ export function ProfileView({ username }: { username: string }) {
                           </span>
                         )}
                         <span className="ml-auto text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(c.createdAt), { addSuffix: true })}
+                          {rel(new Date(c.createdAt))}
                         </span>
                       </div>
                     </li>
@@ -509,8 +525,8 @@ export function ProfileView({ username }: { username: string }) {
             ) : (
               <EmptyState
                 icon={Flag}
-                title="No contributions yet"
-                description="Verified tasks, milestones, releases, and collaborations will appear here as they happen."
+                title={t("profile.empty.contributions.title")}
+                description={t("profile.empty.contributions.description")}
               />
             )}
           </TabsContent>
@@ -520,23 +536,23 @@ export function ProfileView({ username }: { username: string }) {
             {!profile.bio && skillNames.length === 0 && goalNames.length === 0 && interestNames.length === 0 && !websiteHost ? (
               <EmptyState
                 icon={UserRound}
-                title="This creator hasn't added details yet"
-                description="Their bio, skills, and interests will appear here once they complete their profile."
+                title={t("profile.empty.about.title")}
+                description={t("profile.empty.about.description")}
               />
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="glass-card rounded-xl p-5 md:col-span-2">
                   <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    Bio
+                    {t("profile.about.bio")}
                   </h3>
                   <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-foreground/85">
-                    {profile.bio || "No bio yet."}
+                    {profile.bio || t("profile.about.noBio")}
                   </p>
                 </div>
 
                 <div className="glass-card rounded-xl p-5">
                   <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    Skills
+                    {t("profile.sections.skills")}
                   </h3>
                   {skillNames.length > 0 ? (
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -550,13 +566,13 @@ export function ProfileView({ username }: { username: string }) {
                       ))}
                     </div>
                   ) : (
-                    <p className="mt-2 text-sm text-muted-foreground">None listed yet.</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{t("profile.about.noneListed")}</p>
                   )}
                 </div>
 
                 <div className="glass-card rounded-xl p-5">
                   <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    Goals
+                    {t("profile.sections.goals")}
                   </h3>
                   {goalNames.length > 0 ? (
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -570,13 +586,13 @@ export function ProfileView({ username }: { username: string }) {
                       ))}
                     </div>
                   ) : (
-                    <p className="mt-2 text-sm text-muted-foreground">None listed yet.</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{t("profile.about.noneListed")}</p>
                   )}
                 </div>
 
                 <div className="glass-card rounded-xl p-5">
                   <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    Interests
+                    {t("profile.sections.interests")}
                   </h3>
                   {interestNames.length > 0 ? (
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -590,18 +606,18 @@ export function ProfileView({ username }: { username: string }) {
                       ))}
                     </div>
                   ) : (
-                    <p className="mt-2 text-sm text-muted-foreground">None listed yet.</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{t("profile.about.noneListed")}</p>
                   )}
                 </div>
 
                 <div className="glass-card rounded-xl p-5">
                   <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    Creator details
+                    {t("profile.about.details")}
                   </h3>
                   <ul className="mt-3 space-y-2.5 text-sm">
                     <li className="flex items-center gap-2 text-muted-foreground">
                       <CalendarDays className="h-4 w-4 shrink-0 text-cyan-300" />
-                      Joined {format(new Date(profile.createdAt), "MMMM d, yyyy")}
+                      {t("profile.about.joined", { date: fd(new Date(profile.createdAt), "MMMM d, yyyy") })}
                     </li>
                     <li className="flex items-center gap-2 text-muted-foreground">
                       <UserRound className="h-4 w-4 shrink-0 text-violet-300" />
@@ -631,47 +647,49 @@ export function ProfileView({ username }: { username: string }) {
         <Dialog open={reportOpen} onOpenChange={setReportOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="font-display">Report {profile.displayName}</DialogTitle>
+              <DialogTitle className="font-display">
+                {t("profile.report.title", { name: profile.displayName })}
+              </DialogTitle>
               <DialogDescription>
-                Reports go to the moderation queue and are reviewed by the TEKA team.
+                {t("profile.report.description")}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="report-reason">Reason</Label>
+                <Label htmlFor="report-reason">{t("profile.report.reason")}</Label>
                 <Select value={reportReason} onValueChange={setReportReason}>
                   <SelectTrigger id="report-reason" className="w-full focus-glow">
-                    <SelectValue placeholder="Pick a reason" />
+                    <SelectValue placeholder={t("profile.report.pickReason")} />
                   </SelectTrigger>
                   <SelectContent>
                     {REPORT_REASONS.map((r) => (
                       <SelectItem key={r.value} value={r.value}>
-                        {r.label}
+                        {t(`profile.reportReasons.${r.labelKey}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="report-details">Details (optional)</Label>
+                <Label htmlFor="report-details">{t("profile.report.detailsLabel")}</Label>
                 <Textarea
                   id="report-details"
                   rows={4}
                   maxLength={2000}
                   value={reportDetails}
                   onChange={(e) => setReportDetails(e.target.value)}
-                  placeholder="Add any context that helps the moderators."
+                  placeholder={t("profile.report.detailsPlaceholder")}
                   className="focus-glow"
                 />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setReportOpen(false)} disabled={reportPending}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button onClick={submitReport} disabled={reportPending} className="min-w-32">
                 {reportPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                Submit report
+                {t("profile.report.submit")}
               </Button>
             </DialogFooter>
           </DialogContent>

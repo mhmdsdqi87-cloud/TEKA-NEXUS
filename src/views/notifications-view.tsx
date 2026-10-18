@@ -5,8 +5,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion, MotionConfig } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { useT, useRelativeTime, type TFunc } from "@/lib/i18n";
 import {
   Bell,
   BellOff,
@@ -54,7 +54,7 @@ function str(v: unknown): string | null {
   return typeof v === "string" && v.trim() ? v.trim() : null;
 }
 
-function notifText(n: NotificationDTO): string {
+function notifText(n: NotificationDTO, t: TFunc): string {
   const p = (n.payload ?? {}) as Record<string, unknown>;
   const actorName =
     n.actor?.displayName ??
@@ -63,39 +63,41 @@ function notifText(n: NotificationDTO): string {
     str(p.applicantName) ??
     str(p.memberName) ??
     (n.actor ? `@${n.actor.username}` : null) ??
-    "Someone";
+    t("notifications.someone");
   const projectName = str(p.projectName);
   const taskTitle = str(p.taskTitle);
 
   switch (n.type) {
     case "NEW_FOLLOWER":
-      return `${actorName} started following you`;
+      return t("notifications.types.newFollower", { name: actorName });
     case "PROJECT_COMMENT":
       return projectName
-        ? `${actorName} commented on ${projectName}`
-        : `${actorName} commented on your project`;
+        ? t("notifications.types.commentOn", { name: actorName, project: projectName })
+        : t("notifications.types.commentOnYours", { name: actorName });
     case "COLLAB_REQUEST":
       return projectName
-        ? `${actorName} requested to join ${projectName}`
-        : `${actorName} sent a collaboration request`;
+        ? t("notifications.types.joinRequest", { name: actorName, project: projectName })
+        : t("notifications.types.joinRequestPlain", { name: actorName });
     case "REQUEST_ACCEPTED":
       return projectName
-        ? `Your request to join ${projectName} was accepted`
-        : "Your collaboration request was accepted";
+        ? t("notifications.types.requestAccepted", { project: projectName })
+        : t("notifications.types.requestAcceptedPlain");
     case "REQUEST_REJECTED":
       return projectName
-        ? `Your request to join ${projectName} was rejected`
-        : "Your collaboration request was rejected";
+        ? t("notifications.types.requestRejected", { project: projectName })
+        : t("notifications.types.requestRejectedPlain");
     case "TASK_ASSIGNED":
       return taskTitle
-        ? `${actorName} assigned you a task: ${taskTitle}`
-        : `${actorName} assigned you a new task`;
+        ? t("notifications.types.taskAssigned", { name: actorName, task: taskTitle })
+        : t("notifications.types.taskAssignedPlain", { name: actorName });
     case "MEMBER_JOINED":
-      return projectName ? `${actorName} joined ${projectName}` : `${actorName} joined your team`;
+      return projectName
+        ? t("notifications.types.memberJoined", { name: actorName, project: projectName })
+        : t("notifications.types.memberJoinedTeam", { name: actorName });
     case "SYSTEM":
-      return str(p.message) ?? "System notification";
+      return str(p.message) ?? t("notifications.system");
     default:
-      return str(p.message) ?? "You have a new notification";
+      return str(p.message) ?? t("notifications.fallback");
   }
 }
 
@@ -103,6 +105,8 @@ export function NotificationsView() {
   const user = useApp((s) => s.user);
   const navigate = useApp((s) => s.navigate);
   const setUnreadCount = useApp((s) => s.setUnreadCount);
+  const t = useT();
+  const rel = useRelativeTime();
 
   const [items, setItems] = useState<NotificationDTO[] | null>(null);
   const [unread, setUnread] = useState(0);
@@ -121,9 +125,9 @@ export function NotificationsView() {
       setUnreadCount(res.unread);
     } catch (e) {
       setLoadFailed(true);
-      toast.error(e instanceof Error ? e.message : "Couldn't load notifications.");
+      toast.error(e instanceof Error ? e.message : t("notifications.toasts.loadFailed"));
     }
-  }, [setUnreadCount]);
+  }, [setUnreadCount, t]);
 
   useEffect(() => {
     if (user) load();
@@ -137,9 +141,9 @@ export function NotificationsView() {
       setItems((prev) => (prev ?? []).map((n) => (n.readAt ? n : { ...n, readAt: now })));
       setUnread(0);
       setUnreadCount(0);
-      toast.success("All notifications marked as read");
+      toast.success(t("notifications.toasts.allRead"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't mark notifications as read.");
+      toast.error(e instanceof Error ? e.message : t("notifications.toasts.markFailed"));
     } finally {
       setMarkAllPending(false);
     }
@@ -162,7 +166,7 @@ export function NotificationsView() {
         );
         setUnread(unread);
         setUnreadCount(unread);
-        toast.error("Couldn't mark this notification as read.");
+        toast.error(t("notifications.toasts.markOneFailed"));
         return;
       }
     }
@@ -180,11 +184,11 @@ export function NotificationsView() {
       <div className="mx-auto w-full max-w-3xl px-4 py-6 md:py-8">
         <EmptyState
           icon={Bell}
-          title="Sign in to view your notifications"
-          description="Activity from your projects, teams, and followers shows up here."
+          title={t("notifications.auth.title")}
+          description={t("notifications.auth.description")}
           action={
             <Button className="btn-hero" onClick={() => navigate({ name: "login" })}>
-              Sign in
+              {t("common.signIn")}
             </Button>
           }
         />
@@ -206,11 +210,13 @@ export function NotificationsView() {
           className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <div>
-            <h1 className="font-display text-2xl font-bold md:text-3xl">Notifications</h1>
+            <h1 className="font-display text-2xl font-bold md:text-3xl">{t("common.notifications")}</h1>
             <p className="mt-0.5 text-sm text-muted-foreground">
               {unread > 0
-                ? `${unread} unread notification${unread === 1 ? "" : "s"}`
-                : "You're all caught up"}
+                ? unread === 1
+                  ? t("notifications.unreadOne", { n: unread })
+                  : t("notifications.unreadMany", { n: unread })
+                : t("notifications.allCaughtUp")}
             </p>
           </div>
           <Button
@@ -220,12 +226,12 @@ export function NotificationsView() {
             className="shrink-0"
           >
             {markAllPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCheck className="h-4 w-4" />}
-            Mark all read
+            {t("notifications.markAll")}
           </Button>
         </motion.div>
 
         {/* ── Filter chips ───────────────────────────────────── */}
-        <div className="flex items-center gap-2" role="group" aria-label="Filter notifications">
+        <div className="flex items-center gap-2" role="group" aria-label={t("notifications.a11y.filter")}>
           {(["all", "unread"] as const).map((f) => (
             <button
               key={f}
@@ -239,7 +245,11 @@ export function NotificationsView() {
                   : "border-white/10 bg-white/[0.03] text-muted-foreground hover:text-foreground"
               )}
             >
-              {f === "all" ? "All" : `Unread${unread > 0 ? ` · ${unread}` : ""}`}
+              {f === "all"
+                ? t("notifications.filterAll")
+                : unread > 0
+                  ? t("notifications.filterUnreadCount", { n: unread })
+                  : t("notifications.filterUnread")}
             </button>
           ))}
         </div>
@@ -250,22 +260,22 @@ export function NotificationsView() {
         ) : loadFailed ? (
           <EmptyState
             icon={Info}
-            title="Couldn't load notifications"
-            description="Check your connection and try again."
+            title={t("notifications.loadFailed.title")}
+            description={t("notifications.loadFailed.description")}
             action={
               <Button variant="outline" onClick={load}>
-                Try again
+                {t("common.retry")}
               </Button>
             }
           />
         ) : visible.length === 0 ? (
           <EmptyState
             icon={BellOff}
-            title="You're all caught up"
+            title={t("notifications.allCaughtUp")}
             description={
               filter === "unread"
-                ? "No unread notifications right now."
-                : "Activity from your projects, teams, and followers will appear here."
+                ? t("notifications.noUnreadDesc")
+                : t("notifications.emptyDesc")
             }
           />
         ) : (
@@ -278,7 +288,7 @@ export function NotificationsView() {
                   <button
                     type="button"
                     onClick={() => openNotification(n)}
-                    aria-label={`${notifText(n)}${n.readAt ? "" : " (unread)"}`}
+                    aria-label={`${notifText(n, t)}${n.readAt ? "" : ` ${t("notifications.a11y.unreadSuffix")}`}`}
                     className={cn(
                       "flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors focus-glow",
                       n.readAt
@@ -310,10 +320,10 @@ export function NotificationsView() {
                     )}
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm leading-snug text-foreground/90">
-                        {notifText(n)}
+                        {notifText(n, t)}
                       </span>
                       <span className="mt-1 block text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
+                        {rel(n.createdAt)}
                       </span>
                     </span>
                     {!n.readAt && (

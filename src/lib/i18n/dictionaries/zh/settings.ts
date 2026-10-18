@@ -1,0 +1,125 @@
+// TEKA NEXUS — Simplified Chinese dictionary: "settings" namespace (owned by translation agent 2-d).
+
+import type { SettingsDict } from "../en/settings";
+
+export const settings: SettingsDict = {
+  subtitle: "管理你的个人资料、账号安全和社区偏好设置。",
+  signedOut: {
+    title: "登录后管理你的设置",
+    description: "个人资料、账号、通知和隐私设置都在这里。",
+  },
+  tabs: {
+    profile: "个人资料",
+    account: "账号",
+    notifications: "通知",
+    privacy: "隐私",
+  },
+  profileTab: {
+    displayName: "昵称",
+    displayNamePlaceholder: "希望社区怎么称呼你？",
+    bio: "简介",
+    bioPlaceholder: "你在做什么？你关心什么？",
+    website: "个人网站",
+    websiteHint: "会以链接形式显示在你的公开主页上。",
+    websiteError: "请输入以 http:// 或 https:// 开头的完整 URL",
+    avatarGradient: "头像渐变色",
+    chooseGradient: "选择头像渐变色",
+    gradientName: "渐变 {name}",
+    skills: "技能",
+    skillsHint: "勾选所有你能贡献的技能——团队会通过它们找到你。",
+  },
+  accountTab: {
+    language: "语言",
+    languageDescription: "选择界面语言 — English, Español, 中文, العربية, فارسی or Français.",
+    email: "邮箱",
+    emailHint: "你的登录邮箱——测试期间为只读。",
+    changePassword: "修改密码",
+    changePasswordHint: "修改密码后，其他所有设备都会退出登录。",
+    currentPassword: "当前密码",
+    newPassword: "新密码",
+    pwTooShort: "至少 8 个字符。",
+    confirmPassword: "确认新密码",
+    pwMismatch: "两次输入的密码不一致。",
+    updatePassword: "更新密码",
+    dangerZone: "危险操作区",
+    dangerDescription:
+      "删除账号将永久移除你的个人主页和你拥有的所有项目，包括其中的任务、动态和里程碑。此操作无法撤销。",
+    deleteAccount: "删除账号",
+  },
+  delete: {
+    title: "确定要删除账号吗？",
+    typeUsername: "此操作将永久删除你的个人主页和你拥有的所有项目。输入用户名",
+    toContinue: "以继续。",
+    usernameAria: "输入你的用户名以确认",
+    confirmTitle: "输入密码确认",
+    confirmDescription: "这是最后一步——输入密码以永久删除你的账号和所有你拥有的项目。",
+    passwordPlaceholder: "你的密码",
+    passwordAria: "确认你的密码",
+    continue: "继续",
+    deleteForever: "永久删除",
+  },
+  notificationsTab: {
+    projectActivity: {
+      title: "项目动态",
+      description: "你参与的项目中的新任务、动态、版本发布和里程碑。",
+    },
+    collaboration: {
+      title: "协作请求",
+      description: "收到的项目申请，以及你发出的请求的处理结果。",
+    },
+    social: {
+      title: "社交动态",
+      description: "新粉丝以及你社交网络中的其他动态。",
+    },
+    toggleAria: "切换{name}",
+  },
+  privacyTab: {
+    safetyTitle: "社区安全",
+    safetyIntro: "TEKA NEXUS 的审核基于真实、透明的行为，而非空口承诺。",
+    safety: {
+      reporting: {
+        title: "举报",
+        text: "通过菜单即可举报任何项目、评论或用户。举报会进入审核队列——未经人工审核不会采取任何处理。",
+      },
+      blocking: {
+        title: "屏蔽",
+        text: "屏蔽某人会解除你们之间的关注，并阻止对方关注你或与你的作品互动。",
+      },
+      moderation: {
+        title: "审核队列",
+        text: "每一条举报都会先由 TEKA 团队审核，然后才会对账号或项目采取任何措施。",
+      },
+      deletion: {
+        title: "删除账号",
+        text: "你可以随时在账号标签页中永久删除自己的账号和拥有的项目。",
+      },
+    },
+    previewNote: "预览说明：测试期间的审核工具由 TEKA 团队负责处理。",
+    blockTitle: "屏蔽用户",
+    blockDescription:
+      "输入用户名即可屏蔽对方。屏蔽会同时解除你们之间的关注，且是双向的——提交一个你已屏蔽的用户名将解除屏蔽。",
+    usernamePlaceholder: "用户名",
+    usernameAria: "要屏蔽的用户名",
+    blockButton: "屏蔽用户",
+  },
+  toasts: {
+    profileUpdated: "资料已更新",
+    passwordChanged: "密码已修改——其他设备已退出登录",
+    accountDeleted: "你的账号已删除。",
+    prefsUpdated: "通知偏好已更新",
+    blocked: "已屏蔽 @{name}",
+    unblocked: "已取消屏蔽 @{name}",
+  },
+  errors: {
+    emptyDisplayName: "昵称不能为空。",
+    saveFailed: "保存个人资料失败。",
+    enterCurrentPassword: "请输入当前密码。",
+    pwTooShort: "新密码至少需要 8 个字符。",
+    pwMismatch: "两次输入的新密码不一致。",
+    pwChangeFailed: "修改密码失败。",
+    deleteFailed: "删除账号失败。",
+    loadPrefsFailed: "加载通知设置失败。",
+    prefsUpdateFailed: "更新偏好设置失败。",
+    blockFailed: "更新屏蔽状态失败。",
+  },
+};

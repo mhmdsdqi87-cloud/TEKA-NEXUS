@@ -15,32 +15,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LogoMark, Wordmark } from "@/components/brand/logo";
 import { useApp, type SessionUser } from "@/lib/store";
 import { post } from "@/lib/api";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const USERNAME_RE = /^[a-z0-9_]{3,24}$/;
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
-const BRAND_BULLETS: { icon: typeof Compass; title: string; body: string }[] = [
-  {
-    icon: Compass,
-    title: "Discovery that fits your stack",
-    body: "Filter public projects by category, status, and the skills they need.",
-  },
-  {
-    icon: Users,
-    title: "Teams formed by real requests",
-    body: "Apply with a role and introduction; owners review every request.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Reputation you can trust",
-    body: "XP and reputation are awarded by the server for verified contributions.",
-  },
-];
-
 export function AuthView({ mode }: { mode: "login" | "signup" }) {
   const navigate = useApp((s) => s.navigate);
   const setUser = useApp((s) => s.setUser);
+  const t = useT();
+
+  const BRAND_BULLETS: { icon: typeof Compass; title: string; body: string }[] = [
+    {
+      icon: Compass,
+      title: t("auth.bullets.discovery.title"),
+      body: t("auth.bullets.discovery.body"),
+    },
+    {
+      icon: Users,
+      title: t("auth.bullets.teams.title"),
+      body: t("auth.bullets.teams.body"),
+    },
+    {
+      icon: ShieldCheck,
+      title: t("auth.bullets.reputation.title"),
+      body: t("auth.bullets.reputation.body"),
+    },
+  ];
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -57,20 +59,20 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
 
     if (isSignup) {
       if (!usernameValid) {
-        toast.error("Username must be 3–24 characters: lowercase letters, numbers, underscores.");
+        toast.error(t("auth.err.username"));
         return;
       }
       if (password.length < 8) {
-        toast.error("Password must be at least 8 characters.");
+        toast.error(t("auth.err.passwordShort"));
         return;
       }
     }
     if (!email.trim() || !EMAIL_RE.test(email.trim())) {
-      toast.error("Enter a valid email address.");
+      toast.error(t("auth.err.emailInvalid"));
       return;
     }
     if (!password) {
-      toast.error("Password is required.");
+      toast.error(t("auth.err.passwordRequired"));
       return;
     }
 
@@ -93,7 +95,7 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
         navigate(res.user.onboardingCompleted ? { name: "home" } : { name: "onboarding" });
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      toast.error(err instanceof Error ? err.message : t("common.error"));
     } finally {
       setLoading(false);
     }
@@ -116,11 +118,12 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
 
         <div className="relative">
           <p className="font-display text-4xl font-bold leading-tight tracking-tight xl:text-5xl">
-            Imagine. <span className="text-gradient">Build.</span> Connect.
+            {t("auth.brand.p1")}
+            <span className="text-gradient">{t("auth.brand.p2")}</span>
+            {t("auth.brand.p3")}
           </p>
           <p className="mt-4 max-w-md text-muted-foreground">
-            The developer network where projects at every stage — idea, prototype, release — meet the
-            people ready to build them.
+            {t("auth.brandLine")}
           </p>
         </div>
 
@@ -148,7 +151,7 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
             onClick={() => navigate({ name: "landing" })}
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to home
+            {t("auth.backHome")}
           </Button>
 
           {/* mobile brand row (left panel is hidden on small screens) */}
@@ -160,12 +163,10 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
           <Card className="glass-card mt-4 rounded-2xl border-white/[0.07] py-6">
             <CardHeader>
               <CardTitle className="font-display text-2xl font-bold tracking-tight">
-                {isSignup ? "Create your account" : "Welcome back"}
+                {isSignup ? t("auth.signupTitle") : t("auth.loginTitle")}
               </CardTitle>
               <CardDescription>
-                {isSignup
-                  ? "Start publishing projects and finding collaborators. Free during beta."
-                  : "Sign in to continue building."}
+                {isSignup ? t("auth.signupSubtitle") : t("auth.loginSubtitle")}
               </CardDescription>
             </CardHeader>
 
@@ -173,7 +174,7 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
               <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                 {isSignup && (
                   <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
+                    <Label htmlFor="username">{t("auth.username")}</Label>
                     <Input
                       id="username"
                       name="username"
@@ -197,13 +198,13 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
                             : "text-rose-300/90"
                       )}
                     >
-                      3–24 chars, letters/numbers/underscores
+                      {t("auth.usernameHint")}
                     </p>
                   </div>
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("auth.email")}</Label>
                   <Input
                     id="email"
                     name="email"
@@ -217,14 +218,14 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t("auth.password")}</Label>
                   <div className="relative">
                     <Input
                       id="password"
                       name="password"
                       type={showPassword ? "text" : "password"}
                       autoComplete={isSignup ? "new-password" : "current-password"}
-                      placeholder={isSignup ? "At least 8 characters" : "Your password"}
+                      placeholder={isSignup ? t("auth.passwordPlaceholderSignup") : t("auth.passwordPlaceholderLogin")}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="h-11 pr-11"
@@ -232,14 +233,14 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
                       className="focus-glow absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                   {isSignup && (
-                    <p className="text-xs text-muted-foreground">Minimum 8 characters.</p>
+                    <p className="text-xs text-muted-foreground">{t("auth.passwordMinHint")}</p>
                   )}
                 </div>
 
@@ -247,21 +248,21 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
                   {loading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      {isSignup ? "Creating account…" : "Signing in…"}
+                      {isSignup ? t("auth.creatingAccount") : t("auth.signingIn")}
                     </>
                   ) : isSignup ? (
-                    "Create account"
+                    t("common.signUp")
                   ) : (
-                    "Sign in"
+                    t("common.signIn")
                   )}
                 </Button>
               </form>
 
               {mode === "login" && (
                 <div className="mt-5 rounded-lg border border-violet-400/20 bg-violet-500/[0.06] p-3.5">
-                  <p className="text-xs font-medium text-violet-300">Preview demo account</p>
+                  <p className="text-xs font-medium text-violet-300">{t("auth.demoTitle")}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Explore the platform with seeded demo data. Password:{" "}
+                    {t("auth.demoBody")}{" "}
                     <span className="font-mono text-foreground/80">demo1234</span>
                   </p>
                   <Button
@@ -274,19 +275,19 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
                       setPassword("demo1234");
                     }}
                   >
-                    Use maya@teka.dev
+                    {t("auth.demoUse", { email: "maya@teka.dev" })}
                   </Button>
                 </div>
               )}
 
               <p className="mt-5 text-center text-sm text-muted-foreground">
-                {isSignup ? "Already have an account?" : "New to TEKA NEXUS?"}{" "}
+                {isSignup ? t("auth.haveAccount") : t("auth.newToTeka")}{" "}
                 <button
                   type="button"
                   onClick={() => navigate({ name: isSignup ? "login" : "signup" })}
                   className="focus-glow rounded px-0.5 font-medium text-cyan-300 transition-colors hover:text-cyan-200"
                 >
-                  {isSignup ? "Sign in" : "Create an account"}
+                  {isSignup ? t("common.signIn") : t("auth.createAccountLink")}
                 </button>
               </p>
             </CardContent>

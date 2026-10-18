@@ -7,7 +7,6 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import {
   ArrowRight,
@@ -31,9 +30,11 @@ import {
 } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Logo, LogoMark } from "@/components/brand/logo";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { useApp } from "@/lib/store";
 import { get } from "@/lib/api";
 import type { FeedEvent } from "@/lib/dto";
+import { useT, useRelativeTime } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 // ─── Motion helper: subtle fade-up on first view ─────────────
@@ -90,6 +91,8 @@ function OrbitChip({
 }
 
 function HeroOrbit() {
+  const t = useT();
+
   return (
     <div className="aurora-border relative overflow-hidden rounded-3xl p-5 sm:p-8">
       <div aria-hidden className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-500/10 blur-3xl" />
@@ -125,10 +128,10 @@ function HeroOrbit() {
         </div>
 
         {/* floating chips on the orbits */}
-        <OrbitChip icon={Rocket} label="Ship" tone="cyan" className="left-[1%] top-[16%]" delay={0} />
-        <OrbitChip icon={Users} label="Team up" tone="violet" className="right-[0%] top-[40%]" delay={1.2} />
-        <OrbitChip icon={GitBranch} label="Fork" tone="violet" className="bottom-[16%] left-[5%]" delay={2.1} />
-        <OrbitChip icon={Trophy} label="Rank up" tone="cyan" className="bottom-[4%] right-[7%]" delay={0.6} />
+        <OrbitChip icon={Rocket} label={t("landing.orbit.ship")} tone="cyan" className="left-[1%] top-[16%]" delay={0} />
+        <OrbitChip icon={Users} label={t("landing.orbit.teamUp")} tone="violet" className="right-[0%] top-[40%]" delay={1.2} />
+        <OrbitChip icon={GitBranch} label={t("landing.orbit.fork")} tone="violet" className="bottom-[16%] left-[5%]" delay={2.1} />
+        <OrbitChip icon={Trophy} label={t("landing.orbit.rankUp")} tone="cyan" className="bottom-[4%] right-[7%]" delay={0.6} />
       </div>
     </div>
   );
@@ -136,16 +139,19 @@ function HeroOrbit() {
 
 // ─── Live pulse strip (real /api/feed data — never fabricated) ─
 
-const FEED_VERBS: Record<string, string> = {
-  PROJECT_CREATED: "created",
-  RELEASE_PUBLISHED: "released",
-  UPDATE_POSTED: "posted an update on",
-  TASK_COMPLETED: "closed a task on",
-  MILESTONE_COMPLETED: "hit a milestone on",
-  MEMBER_JOINED: "joined",
+// eventType → dictionary key for the feed verb ("created", "released", …).
+const FEED_VERB_KEYS: Record<string, string> = {
+  PROJECT_CREATED: "landing.feed.created",
+  RELEASE_PUBLISHED: "landing.feed.released",
+  UPDATE_POSTED: "landing.feed.updateOn",
+  TASK_COMPLETED: "landing.feed.taskOn",
+  MILESTONE_COMPLETED: "landing.feed.milestoneOn",
+  MEMBER_JOINED: "landing.feed.joined",
 };
 
 function LivePulse() {
+  const t = useT();
+  const rel = useRelativeTime();
   const [events, setEvents] = useState<FeedEvent[] | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -164,11 +170,11 @@ function LivePulse() {
   }, []);
 
   return (
-    <section aria-label="Live activity" className="mt-14 border-y border-white/[0.06] bg-white/[0.015] sm:mt-20">
+    <section aria-label={t("landing.live.aria")} className="mt-14 border-y border-white/[0.06] bg-white/[0.015] sm:mt-20">
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6">
         <span className="hidden shrink-0 items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground sm:flex">
           <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          Live pulse
+          {t("landing.live.label")}
         </span>
 
         {events === null && !failed ? (
@@ -185,17 +191,19 @@ function LivePulse() {
                 className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-2 text-xs"
               >
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />
-                <span className="font-medium text-foreground">{e.actor?.displayName ?? "Someone"}</span>
-                <span className="text-muted-foreground">{FEED_VERBS[e.eventType] ?? "updated"}</span>
-                <span className="font-medium text-cyan-300">{e.project?.name ?? "a project"}</span>
+                <span className="font-medium text-foreground">{e.actor?.displayName ?? t("landing.feed.someone")}</span>
+                <span className="text-muted-foreground">
+                  {FEED_VERB_KEYS[e.eventType] ? t(FEED_VERB_KEYS[e.eventType]) : t("landing.feed.updated")}
+                </span>
+                <span className="font-medium text-cyan-300">{e.project?.name ?? t("landing.feed.projectFallback")}</span>
                 <span className="font-mono text-[10px] text-muted-foreground/70">
-                  {formatDistanceToNow(new Date(e.createdAt), { addSuffix: true })}
+                  {rel(new Date(e.createdAt))}
                 </span>
               </span>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Be the first to build something real.</p>
+          <p className="text-sm text-muted-foreground">{t("landing.live.empty")}</p>
         )}
       </div>
     </section>
@@ -224,25 +232,28 @@ function SectionHeading({
 
 // ─── Product preview: browser frame + mini kanban ────────────
 
-const BOARD_COLUMNS = [
-  { name: "Backlog", dot: "bg-zinc-400", cards: 2 },
-  { name: "In Progress", dot: "bg-cyan-400", cards: 2 },
-  { name: "Done", dot: "bg-emerald-400", cards: 1 },
-];
-
 function BoardCardStub() {
+  const t = useT();
+
   return (
     <div className="rounded-lg border border-white/[0.07] bg-white/[0.03] p-3">
-      <span className="text-[11px] text-foreground/80">Task card</span>
+      <span className="text-[11px] text-foreground/80">{t("landing.preview.taskCard")}</span>
       <div className="mt-2.5 flex items-center gap-1.5">
         <span className="h-4 w-4 rounded-full bg-white/10" />
-        <span className="font-mono text-[10px] text-muted-foreground">Assignee</span>
+        <span className="font-mono text-[10px] text-muted-foreground">{t("landing.preview.assignee")}</span>
       </div>
     </div>
   );
 }
 
 function ProductPreview() {
+  const t = useT();
+  const BOARD_COLUMNS = [
+    { name: t("landing.preview.backlog"), dot: "bg-zinc-400", cards: 2 },
+    { name: t("landing.preview.inProgress"), dot: "bg-cyan-400", cards: 2 },
+    { name: t("landing.preview.done"), dot: "bg-emerald-400", cards: 1 },
+  ];
+
   return (
     <div>
       <div className="aurora-border overflow-hidden rounded-2xl">
@@ -255,7 +266,7 @@ function ProductPreview() {
             teka.nexus/p/nexus-core/board
           </span>
           <span className="hidden rounded-full border border-cyan-400/25 bg-cyan-500/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-cyan-300 sm:inline-flex">
-            Preview
+            {t("landing.preview.chip")}
           </span>
         </div>
         {/* mini kanban */}
@@ -279,86 +290,11 @@ function ProductPreview() {
         </div>
       </div>
       <p className="mt-3 text-center font-mono text-[11px] text-muted-foreground/70">
-        Product preview — illustrative layout of a project workspace.
+        {t("landing.preview.caption")}
       </p>
     </div>
   );
 }
-
-// ─── Static content data ─────────────────────────────────────
-
-const WORKFLOW_WORDS = [
-  "IDEA",
-  "DISCOVER",
-  "FIND A TEAM",
-  "BUILD",
-  "COLLABORATE",
-  "PUBLISH",
-  "GROW",
-  "MONETIZE",
-] as const;
-
-const FEATURES: { icon: LucideIcon; title: string; body: string; how: string; tone: "cyan" | "violet" }[] = [
-  {
-    icon: Search,
-    title: "Nexus Discovery",
-    tone: "cyan",
-    body: "Find projects by category, status, tags, and the skills they need — from first-commit ideas to released builds. Every public project is indexed the moment it is published.",
-    how: "Open Explore to filter the catalog, or use search to jump straight to projects, people, and tags.",
-  },
-  {
-    icon: LayoutDashboard,
-    title: "Project Workspaces",
-    tone: "violet",
-    body: "Every project gets a shared workspace: a task board, milestones, progress updates, and a team roster with explicit roles from owner to viewer.",
-    how: "Owners publish a project and review requests; accepted collaborators plan and ship work on the same board.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Verified Reputation",
-    tone: "cyan",
-    body: "Reputation is earned, not claimed. The server verifies every contribution and awards XP and reputation automatically — nothing is self-reported.",
-    how: "Finish tasks, hit milestones, and ship releases; the results appear on your profile and are visible to teams.",
-  },
-];
-
-const HOW_STEPS: { title: string; body: string }[] = [
-  {
-    title: "Create a profile",
-    body: "Sign up, set your display name, skills, and interests. Onboarding takes under a minute.",
-  },
-  {
-    title: "Publish or discover a project",
-    body: "Share your own idea as a project with a tagline and category, or browse discovery for something worth joining.",
-  },
-  {
-    title: "Request to collaborate",
-    body: "Apply with a role and a short introduction. The project owner reviews your request and adds you to the team.",
-  },
-];
-
-const FAQ_ITEMS: { q: string; a: string }[] = [
-  {
-    q: "What is TEKA NEXUS?",
-    a: "A developer-first platform where ideas become real technology. Publish a project at any stage — from a rough idea to a released build — and find the people to build it with. Project discovery, team formation, and verified reputation live in one place.",
-  },
-  {
-    q: "Is it free?",
-    a: "Yes. TEKA NEXUS is free to use during the beta preview. Monetization tools are planned for a later phase, and this preview environment runs entirely on clearly-labeled demo data.",
-  },
-  {
-    q: "How is reputation earned?",
-    a: "It is never self-reported. The server awards XP and reputation automatically for verified contributions: completing tasks, completing milestones, posting updates, releasing a project, and having a collaboration request accepted.",
-  },
-  {
-    q: "Can I use it without crypto?",
-    a: "Yes. TEKA NEXUS is a standard web platform — no wallet, tokens, or blockchain knowledge required. Everything works with a regular email account.",
-  },
-  {
-    q: "How do teams work?",
-    a: "Projects have owners, admins, contributors, and viewers. To join, you send a collaboration request with your intended role and a short introduction; the project owner reviews and accepts or rejects it.",
-  },
-];
 
 // ─── Footer ──────────────────────────────────────────────────
 
@@ -377,39 +313,40 @@ function FooterLink({ label, onClick }: { label: string; onClick: () => void }) 
 function Footer() {
   const navigate = useApp((s) => s.navigate);
   const setSearchOpen = useApp((s) => s.setSearchOpen);
-  const comingSoon = () => toast("Not part of this preview yet — coming in a later phase.");
+  const t = useT();
+  const comingSoon = () => toast(t("landing.toast.comingSoon"));
   const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
   const scrollToFaqs = () =>
     document.getElementById("faq")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   const columns: { title: string; links: { label: string; action: () => void }[] }[] = [
     {
-      title: "Product",
+      title: t("landing.footer.colProduct"),
       links: [
-        { label: "Explore", action: () => navigate({ name: "explore" }) },
-        { label: "Projects", action: () => navigate({ name: "projectNew" }) },
-        { label: "Teams", action: () => navigate({ name: "teams" }) },
-        { label: "Search", action: () => setSearchOpen(true) },
+        { label: t("common.explore"), action: () => navigate({ name: "explore" }) },
+        { label: t("common.projects"), action: () => navigate({ name: "projectNew" }) },
+        { label: t("common.teams"), action: () => navigate({ name: "teams" }) },
+        { label: t("common.search"), action: () => setSearchOpen(true) },
       ],
     },
     {
-      title: "Company",
+      title: t("landing.footer.colCompany"),
       links: [
-        { label: "About", action: scrollTop },
-        { label: "FAQ", action: scrollToFaqs },
+        { label: t("landing.footer.about"), action: scrollTop },
+        { label: t("landing.footer.faq"), action: scrollToFaqs },
       ],
     },
     {
-      title: "Legal",
+      title: t("landing.footer.colLegal"),
       links: [
-        { label: "Terms", action: comingSoon },
-        { label: "Privacy", action: comingSoon },
-        { label: "Guidelines", action: comingSoon },
+        { label: t("landing.footer.terms"), action: comingSoon },
+        { label: t("landing.footer.privacy"), action: comingSoon },
+        { label: t("landing.footer.guidelines"), action: comingSoon },
       ],
     },
     {
-      title: "Support",
-      links: [{ label: "FAQ", action: comingSoon }],
+      title: t("landing.footer.colSupport"),
+      links: [{ label: t("landing.footer.faq"), action: comingSoon }],
     },
   ];
 
@@ -418,7 +355,7 @@ function Footer() {
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {columns.map((col) => (
-            <nav key={col.title} aria-label={`Footer — ${col.title}`} className="flex flex-col gap-1">
+            <nav key={col.title} aria-label={t("landing.footer.navAria", { section: col.title })} className="flex flex-col gap-1">
               <h3 className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-foreground/80">
                 {col.title}
               </h3>
@@ -430,8 +367,8 @@ function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col gap-3 border-t border-white/[0.06] pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span className="font-medium text-foreground/80">TEKA NEXUS — Imagine. Build. Connect.</span>
-          <span>Preview environment: all content is clearly-labeled demo data.</span>
+          <span className="font-medium text-foreground/80">{t("landing.footer.tagline")}</span>
+          <span>{t("landing.footer.previewNote")}</span>
           <span className="font-mono">© {new Date().getFullYear()} TEKA</span>
         </div>
       </div>
@@ -443,7 +380,58 @@ function Footer() {
 
 export function LandingView() {
   const navigate = useApp((s) => s.navigate);
+  const t = useT();
   const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // Translated content data (source strings live in dictionaries/*/landing.ts).
+  const WORKFLOW_WORDS = [
+    t("landing.workflow.idea"),
+    t("landing.workflow.discover"),
+    t("landing.workflow.findTeam"),
+    t("landing.workflow.build"),
+    t("landing.workflow.collaborate"),
+    t("landing.workflow.publish"),
+    t("landing.workflow.grow"),
+    t("landing.workflow.monetize"),
+  ];
+
+  const FEATURES: { icon: LucideIcon; title: string; body: string; how: string; tone: "cyan" | "violet" }[] = [
+    {
+      icon: Search,
+      title: t("landing.features.discovery.title"),
+      tone: "cyan",
+      body: t("landing.features.discovery.body"),
+      how: t("landing.features.discovery.how"),
+    },
+    {
+      icon: LayoutDashboard,
+      title: t("landing.features.workspaces.title"),
+      tone: "violet",
+      body: t("landing.features.workspaces.body"),
+      how: t("landing.features.workspaces.how"),
+    },
+    {
+      icon: ShieldCheck,
+      title: t("landing.features.reputation.title"),
+      tone: "cyan",
+      body: t("landing.features.reputation.body"),
+      how: t("landing.features.reputation.how"),
+    },
+  ];
+
+  const HOW_STEPS: { title: string; body: string }[] = [
+    { title: t("landing.how.step1.title"), body: t("landing.how.step1.body") },
+    { title: t("landing.how.step2.title"), body: t("landing.how.step2.body") },
+    { title: t("landing.how.step3.title"), body: t("landing.how.step3.body") },
+  ];
+
+  const FAQ_ITEMS: { q: string; a: string }[] = [
+    { q: t("landing.faq.q1"), a: t("landing.faq.a1") },
+    { q: t("landing.faq.q2"), a: t("landing.faq.a2") },
+    { q: t("landing.faq.q3"), a: t("landing.faq.a3") },
+    { q: t("landing.faq.q4"), a: t("landing.faq.a4") },
+    { q: t("landing.faq.q5"), a: t("landing.faq.a5") },
+  ];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -451,16 +439,17 @@ export function LandingView() {
       <header className="glass sticky top-0 z-40">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Logo size={28} onClick={scrollTop} />
-          <nav aria-label="Primary" className="flex items-center gap-2">
+          <nav aria-label={t("landing.topbar.navAria")} className="flex items-center gap-2">
+            <LanguageSwitcher />
             <Button
               variant="ghost"
               className="h-10 px-3 text-muted-foreground hover:text-foreground"
               onClick={() => navigate({ name: "login" })}
             >
-              Sign in
+              {t("common.signIn")}
             </Button>
             <Button className="btn-hero h-10 px-3 sm:px-5" onClick={() => navigate({ name: "signup" })}>
-              Start Building
+              {t("landing.topbar.startBuilding")}
             </Button>
           </nav>
         </div>
@@ -474,13 +463,15 @@ export function LandingView() {
               <div>
                 <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3.5 py-1.5 text-xs font-medium text-cyan-300">
                   <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-cyan-400" />
-                  TEKA NEXUS — beta preview with demo data
+                  {t("landing.hero.badge")}
                 </span>
                 <h1 className="mt-6 font-display text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
-                  Where Ideas Become <span className="text-gradient">Real Technology</span>.
+                  {t("landing.hero.title1")}
+                  <span className="text-gradient">{t("landing.hero.title2")}</span>
+                  {t("landing.hero.title3")}
                 </h1>
                 <p className="mt-5 max-w-lg text-base text-muted-foreground sm:text-lg">
-                  Discover projects, find your people, and build what comes next.
+                  {t("landing.hero.subtitle")}
                 </p>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <Button
@@ -488,14 +479,14 @@ export function LandingView() {
                     onClick={() => navigate({ name: "explore" })}
                   >
                     <Compass className="h-4 w-4" />
-                    Explore Projects
+                    {t("landing.hero.exploreProjects")}
                   </Button>
                   <Button
                     variant="outline"
                     className="h-11 px-6"
                     onClick={() => navigate({ name: "signup" })}
                   >
-                    Start Building
+                    {t("landing.topbar.startBuilding")}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -515,9 +506,9 @@ export function LandingView() {
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <FadeUp>
             <SectionHeading
-              eyebrow="The path"
-              title="One workflow, idea to impact."
-              subtitle="Every feature in TEKA NEXUS maps to a step of the same loop — the way real projects actually ship."
+              eyebrow={t("landing.workflow.eyebrow")}
+              title={t("landing.workflow.title")}
+              subtitle={t("landing.workflow.subtitle")}
             />
           </FadeUp>
           <FadeUp delay={0.1}>
@@ -548,8 +539,8 @@ export function LandingView() {
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
           <FadeUp>
             <SectionHeading
-              eyebrow="Platform"
-              title="Everything you need to go from zero to shipped."
+              eyebrow={t("landing.features.eyebrow")}
+              title={t("landing.features.title")}
             />
           </FadeUp>
           <div className="mt-10 grid gap-4 md:grid-cols-3 md:gap-6">
@@ -568,7 +559,7 @@ export function LandingView() {
                   <p className="mb-5 mt-2 text-sm leading-relaxed text-muted-foreground">{f.body}</p>
                   <div className="mt-auto border-t border-white/[0.06] pt-4 text-xs text-muted-foreground/80">
                     <span className="font-mono uppercase tracking-[0.18em] text-foreground/70">
-                      How it works
+                      {t("landing.features.howLabel")}
                     </span>
                     <p className="mt-1.5">{f.how}</p>
                   </div>
@@ -582,9 +573,9 @@ export function LandingView() {
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
           <FadeUp>
             <SectionHeading
-              eyebrow="Inside a project"
-              title="A workspace built for shipping."
-              subtitle="Tasks, milestones, updates, and your whole team — organized in one board per project."
+              eyebrow={t("landing.preview.eyebrow")}
+              title={t("landing.preview.title")}
+              subtitle={t("landing.preview.subtitle")}
             />
           </FadeUp>
           <FadeUp delay={0.1} className="mt-10">
@@ -595,7 +586,7 @@ export function LandingView() {
         {/* ── HOW IT WORKS ── */}
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
           <FadeUp>
-            <SectionHeading eyebrow="How it works" title="Start in three steps." />
+            <SectionHeading eyebrow={t("landing.how.eyebrow")} title={t("landing.how.title")} />
           </FadeUp>
           <div className="mt-10 grid gap-4 md:grid-cols-3 md:gap-6">
             {HOW_STEPS.map((s, i) => (
@@ -613,7 +604,7 @@ export function LandingView() {
         {/* ── FAQ ── */}
         <section id="faq" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-20 sm:px-6 sm:pb-28">
           <FadeUp>
-            <SectionHeading eyebrow="FAQ" title="Questions, answered." />
+            <SectionHeading eyebrow={t("landing.faq.eyebrow")} title={t("landing.faq.title")} />
           </FadeUp>
           <FadeUp delay={0.1}>
             <Accordion type="single" collapsible className="glass-card mt-8 rounded-xl px-5">

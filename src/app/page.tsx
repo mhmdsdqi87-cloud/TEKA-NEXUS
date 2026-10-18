@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { useApp } from "@/lib/store";
 import { get } from "@/lib/api";
 import { SessionUser } from "@/lib/store";
+import { useInitLocale } from "@/lib/i18n/store";
 
 import { LandingView } from "@/components/landing/landing-view";
 import { AuthView } from "@/components/auth/auth-view";
@@ -39,6 +40,8 @@ function BootScreen() {
 }
 
 export default function Page() {
+  useInitLocale();
+
   const view = useApp((s) => s.view);
   const user = useApp((s) => s.user);
   const authChecked = useApp((s) => s.authChecked);

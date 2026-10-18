@@ -1,0 +1,125 @@
+// TEKA NEXUS — Arabic dictionary: "settings" namespace (owned by translation agent 2-d).
+
+import type { SettingsDict } from "../en/settings";
+
+export const settings: SettingsDict = {
+  subtitle: "أدر ملفك الشخصي وأمان حسابك وتفضيلاتك للمجتمع.",
+  signedOut: {
+    title: "سجّل الدخول لإدارة إعداداتك",
+    description: "أدوات التحكم في ملفك الشخصي وحسابك وإشعاراتك وخصوصيتك موجودة هنا.",
+  },
+  tabs: {
+    profile: "الملف الشخصي",
+    account: "الحساب",
+    notifications: "الإشعارات",
+    privacy: "الخصوصية",
+  },
+  profileTab: {
+    displayName: "الاسم المعروض",
+    displayNamePlaceholder: "كيف تريد أن يناديك المجتمع؟",
+    bio: "نبذة",
+    bioPlaceholder: "ماذا تُنشئ؟ وما الذي يهمّك؟",
+    website: "الموقع الإلكتروني",
+    websiteHint: "يظهر كرابط في ملفك الشخصي العام.",
+    websiteError: "أدخل رابط URL كاملًا يبدأ بـ http:// أو https://",
+    avatarGradient: "تدرّج الصورة الرمزية",
+    chooseGradient: "اختيار تدرّج الصورة الرمزية",
+    gradientName: "التدرّج {name}",
+    skills: "المهارات",
+    skillsHint: "اختر كل ما يمكنك الإسهام به — تستخدمه الفرق للعثور عليك.",
+  },
+  accountTab: {
+    language: "اللغة",
+    languageDescription: "اختر لغة الواجهة — English, Español, 中文, العربية, فارسی or Français.",
+    email: "البريد الإلكتروني",
+    emailHint: "بريد تسجيل الدخول — للقراءة فقط خلال فترة التجربة.",
+    changePassword: "تغيير كلمة المرور",
+    changePasswordHint: "تغيير كلمة المرور يُسجّل الخروج من جميع الأجهزة الأخرى.",
+    currentPassword: "كلمة المرور الحالية",
+    newPassword: "كلمة المرور الجديدة",
+    pwTooShort: "8 أحرف على الأقل.",
+    confirmPassword: "تأكيد كلمة المرور الجديدة",
+    pwMismatch: "كلمتا المرور غير متطابقتين.",
+    updatePassword: "تحديث كلمة المرور",
+    dangerZone: "منطقة الخطر",
+    dangerDescription:
+      "يؤدي حذف حسابك إلى إزالة ملفك الشخصي وكل مشروع تملكه نهائيًا، إلى جانب مهامها وتحديثاتها ومراحلها. لا يمكن التراجع عن هذا الإجراء.",
+    deleteAccount: "حذف الحساب",
+  },
+  delete: {
+    title: "هل تريد حذف حسابك؟",
+    typeUsername: "يؤدي هذا إلى حذف ملفك الشخصي وجميع المشاريع التي تملكها نهائيًا. اكتب اسم المستخدم",
+    toContinue: "للمتابعة.",
+    usernameAria: "اكتب اسم المستخدم للتأكيد",
+    confirmTitle: "أكّد بكلمة المرور",
+    confirmDescription: "هذه الخطوة الأخيرة — أدخل كلمة المرور لحذف حسابك وكل مشروع تملكه نهائيًا.",
+    passwordPlaceholder: "كلمة المرور",
+    passwordAria: "أكّد كلمة المرور",
+    continue: "متابعة",
+    deleteForever: "حذف نهائي",
+  },
+  notificationsTab: {
+    projectActivity: {
+      title: "نشاط المشاريع",
+      description: "المهام والتحديثات والإصدارات والمراحل الجديدة في المشاريع التي تشارك فيها.",
+    },
+    collaboration: {
+      title: "طلبات التعاون",
+      description: "الطلبات الواردة إلى مشاريعك والقرارات بشأن الطلبات التي أرسلتها.",
+    },
+    social: {
+      title: "النشاط الاجتماعي",
+      description: "المتابِعون الجدد وغيرهم من الأنشطة عبر شبكتك.",
+    },
+    toggleAria: "تبديل {name}",
+  },
+  privacyTab: {
+    safetyTitle: "سلامة المجتمع",
+    safetyIntro: "إشراف TEKA NEXUS قائم على سلوكيات حقيقية وشفافة — لا وعود.",
+    safety: {
+      reporting: {
+        title: "الإبلاغ",
+        text: "أبلغ عن أي مشروع أو تعليق أو مستخدم من قائمته. تذهب البلاغات إلى قائمة مراجعة — لا يُتخذ أي إجراء دون مراجعة بشرية.",
+      },
+      blocking: {
+        title: "الحظر",
+        text: "حظر شخصٍ ما يزيل المتابعة بينكما ويمنعه من متابعتك أو التفاعل مع أعمالك.",
+      },
+      moderation: {
+        title: "قائمة الإشراف",
+        text: "يراجع فريق TEKA كل بلاغ قبل اتخاذ أي إجراء على حساب أو مشروع.",
+      },
+      deletion: {
+        title: "حذف الحساب",
+        text: "يمكنك حذف حسابك ومشاريعك المملوكة نهائيًا في أي وقت من علامة الحساب.",
+      },
+    },
+    previewNote: "ملاحظة المعاينة: تتم إدارة أدوات مراجعة الإشراف بواسطة فريق TEKA خلال فترة التجربة.",
+    blockTitle: "حظر مستخدم",
+    blockDescription:
+      "أدخل اسم مستخدم لحظره. يزيل الحظر أيضًا المتابعة بينكما، ويعمل في الاتجاهين — إرسال اسم مستخدم حظرته مسبقًا سيُلغي حظره.",
+    usernamePlaceholder: "اسم المستخدم",
+    usernameAria: "اسم المستخدم المطلوب حظره",
+    blockButton: "حظر المستخدم",
+  },
+  toasts: {
+    profileUpdated: "تم تحديث الملف الشخصي",
+    passwordChanged: "تم تغيير كلمة المرور — تم تسجيل الخروج من الأجهزة الأخرى",
+    accountDeleted: "تم حذف حسابك.",
+    prefsUpdated: "تم تحديث تفضيلات الإشعارات",
+    blocked: "تم حظر @{name}",
+    unblocked: "تم إلغاء حظر @{name}",
+  },
+  errors: {
+    emptyDisplayName: "لا يمكن أن يكون الاسم المعروض فارغًا.",
+    saveFailed: "تعذّر حفظ ملفك الشخصي.",
+    enterCurrentPassword: "أدخل كلمة المرور الحالية.",
+    pwTooShort: "يجب أن تتكون كلمة المرور الجديدة من 8 أحرف على الأقل.",
+    pwMismatch: "كلمتا المرور الجديدتان غير متطابقتين.",
+    pwChangeFailed: "تعذّر تغيير كلمة المرور.",
+    deleteFailed: "تعذّر حذف حسابك.",
+    loadPrefsFailed: "تعذّر تحميل إعدادات الإشعارات.",
+    prefsUpdateFailed: "تعذّر تحديث التفضيلات.",
+    blockFailed: "تعذّر تحديث حالة الحظر.",
+  },
+};

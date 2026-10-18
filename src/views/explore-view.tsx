@@ -14,6 +14,7 @@ import { useApp } from "@/lib/store";
 import { get, qs } from "@/lib/api";
 import { type ProjectCard } from "@/lib/dto";
 import { PROJECT_CATEGORIES, PROJECT_STATUSES } from "@/lib/constants";
+import { useT, useLabeled } from "@/lib/i18n";
 
 import { EmptyState } from "@/components/shared/atoms";
 import { ProjectCardView, ProjectCardSkeleton } from "@/components/shared/project-card";
@@ -37,15 +38,17 @@ type DiscoveryResponse = {
   total: number;
 };
 
-const SORT_TABS: { value: SortKey; label: string }[] = [
-  { value: "recent", label: "Recent" },
-  { value: "updated", label: "Active" },
-  { value: "popular", label: "Popular" },
+const SORT_TABS: { value: SortKey; labelKey: string }[] = [
+  { value: "recent", labelKey: "explore.sortRecent" },
+  { value: "updated", labelKey: "explore.sortActive" },
+  { value: "popular", labelKey: "explore.sortPopular" },
 ];
 
 export function ExploreView() {
   const view = useApp((s) => s.view);
   const initialQuery = view.name === "explore" ? (view.query ?? "") : "";
+  const t = useT();
+  const lbl = useLabeled();
 
   const [input, setInput] = useState(initialQuery);
   const [q, setQ] = useState(initialQuery);
@@ -61,11 +64,11 @@ export function ExploreView() {
 
   // Debounce the search input (300ms) and reset to page 1.
   useEffect(() => {
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setQ(input);
       setPage(1);
     }, 300);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [input]);
 
   const fetchData = useCallback(async () => {
@@ -85,14 +88,14 @@ export function ExploreView() {
       if (reqId.current === id) setData(res);
     } catch (e) {
       if (reqId.current === id) {
-        const msg = e instanceof Error ? e.message : "Failed to load projects";
+        const msg = e instanceof Error ? e.message : t("explore.loadError");
         setError(msg);
         toast.error(msg);
       }
     } finally {
       if (reqId.current === id) setLoading(false);
     }
-  }, [q, category, status, sort, page]);
+  }, [q, category, status, sort, page, t]);
 
   useEffect(() => {
     fetchData();
@@ -118,9 +121,13 @@ export function ExploreView() {
       {/* Header */}
       <div className="flex items-end justify-between gap-4 mb-5">
         <div className="min-w-0">
-          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight">Explore</h1>
+          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight">{t("common.explore")}</h1>
           <p className="text-sm text-muted-foreground mt-1" aria-live="polite">
-            {loading && !data ? "Loading projects…" : `${data?.total ?? 0} project${data?.total === 1 ? "" : "s"}`}
+            {loading && !data
+              ? t("explore.loading")
+              : t((data?.total ?? 0) === 1 ? "explore.projectCount" : "explore.projectCountPlural", {
+                  count: data?.total ?? 0,
+                })}
           </p>
         </div>
       </div>
@@ -136,8 +143,8 @@ export function ExploreView() {
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Search projects, taglines, tags…"
-              aria-label="Search projects"
+              placeholder={t("explore.searchPlaceholder")}
+              aria-label={t("explore.searchAria")}
               className="pl-9 bg-white/[0.03] border-white/10 focus-visible:ring-cyan-500/30"
             />
           </div>
@@ -151,15 +158,15 @@ export function ExploreView() {
             >
               <SelectTrigger
                 className="w-[170px] bg-white/[0.03] border-white/10"
-                aria-label="Filter by category"
+                aria-label={t("explore.filterCategoryAria")}
               >
-                <SelectValue placeholder="All categories" />
+                <SelectValue placeholder={t("explore.allCategories")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All categories</SelectItem>
+                <SelectItem value="all">{t("explore.allCategories")}</SelectItem>
                 {PROJECT_CATEGORIES.map((c) => (
                   <SelectItem key={c.slug} value={c.slug}>
-                    {c.name}
+                    {lbl("project.categories", c.slug, c.name)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -174,15 +181,15 @@ export function ExploreView() {
             >
               <SelectTrigger
                 className="w-[150px] bg-white/[0.03] border-white/10"
-                aria-label="Filter by status"
+                aria-label={t("explore.filterStatusAria")}
               >
-                <SelectValue placeholder="All statuses" />
+                <SelectValue placeholder={t("explore.allStatuses")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="all">{t("explore.allStatuses")}</SelectItem>
                 {PROJECT_STATUSES.map((s) => (
                   <SelectItem key={s.slug} value={s.slug}>
-                    {s.name}
+                    {lbl("project.status", s.slug, s.name)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -195,7 +202,7 @@ export function ExploreView() {
               className={hasFilters ? "" : "invisible"}
               tabIndex={hasFilters ? 0 : -1}
             >
-              <X className="h-3.5 w-3.5" /> Clear
+              <X className="h-3.5 w-3.5" /> {t("explore.clear")}
             </Button>
           </div>
         </div>
@@ -208,10 +215,10 @@ export function ExploreView() {
           }}
           className="mt-3"
         >
-          <TabsList className="bg-white/[0.04] h-9" aria-label="Sort projects">
-            {SORT_TABS.map((t) => (
-              <TabsTrigger key={t.value} value={t.value} className="text-xs px-3.5">
-                {t.label}
+          <TabsList className="bg-white/[0.04] h-9" aria-label={t("explore.sortAria")}>
+            {SORT_TABS.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value} className="text-xs px-3.5">
+                {t(tab.labelKey)}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -223,7 +230,7 @@ export function ExploreView() {
         <div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
           aria-busy="true"
-          aria-label="Loading projects"
+          aria-label={t("explore.loadingAria")}
         >
           {Array.from({ length: 6 }).map((_, i) => (
             <ProjectCardSkeleton key={i} />
@@ -232,22 +239,22 @@ export function ExploreView() {
       ) : error ? (
         <EmptyState
           icon={Telescope}
-          title="Could not load projects"
+          title={t("explore.errorTitle")}
           description={error}
           action={
             <Button variant="outline" onClick={fetchData}>
-              Try again
+              {t("common.retry")}
             </Button>
           }
         />
       ) : projects && projects.length === 0 ? (
         <EmptyState
           icon={Telescope}
-          title="No projects match"
-          description="Try clearing filters or a different search."
+          title={t("explore.emptyTitle")}
+          description={t("explore.emptyDescription")}
           action={
             <Button variant="outline" onClick={clearFilters}>
-              <X className="h-4 w-4" /> Clear filters
+              <X className="h-4 w-4" /> {t("explore.clearFilters")}
             </Button>
           }
         />
@@ -268,10 +275,10 @@ export function ExploreView() {
                 disabled={page <= 1 || loading}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
-                <ChevronLeft className="h-4 w-4" /> Prev
+                <ChevronLeft className="h-4 w-4" /> {t("explore.prev")}
               </Button>
               <span className="text-xs text-muted-foreground font-mono" aria-live="polite">
-                Page {data.page} of {data.pages}
+                {t("explore.pageStatus", { page: data.page, pages: data.pages })}
               </span>
               <Button
                 variant="outline"
@@ -279,7 +286,7 @@ export function ExploreView() {
                 disabled={page >= data.pages || loading}
                 onClick={() => setPage((p) => Math.min(data.pages, p + 1))}
               >
-                Next <ChevronRight className="h-4 w-4" />
+                {t("explore.next")} <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           )}

@@ -1,0 +1,44 @@
+// TEKA NEXUS — Simplified Chinese dictionary. Shared namespace.
+// Owned by the orchestrator.
+
+import type { CommonDict } from "../en/common";
+
+export const common: CommonDict = {
+  brand: "TEKA NEXUS",
+  loading: "加载中…",
+  cancel: "取消",
+  save: "保存",
+  saveChanges: "保存更改",
+  delete: "删除",
+  close: "关闭",
+  back: "返回",
+  retry: "重试",
+  optional: "可选",
+  error: "出了点问题，请重试。",
+  networkError: "无法连接服务器，请检查网络后重试。",
+  search: "搜索",
+  language: "语言",
+  signIn: "登录",
+  signUp: "创建账号",
+  logOut: "退出登录",
+  settings: "设置",
+  members: "成员",
+  project: "项目",
+  projects: "项目",
+  people: "用户",
+  seeAll: "查看全部",
+  viewAll: "查看全部",
+  comingSoon: "即将推出",
+  saved: "收藏",
+  explore: "探索",
+  home: "首页",
+  notifications: "通知",
+  profile: "个人主页",
+  teams: "团队",
+  goals: {
+    build: "创建自己的项目",
+    contribute: "参与别人的项目",
+    learn: "学习新技术",
+    discover: "发现新项目",
+  },
+};

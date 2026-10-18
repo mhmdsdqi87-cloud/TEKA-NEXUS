@@ -1,0 +1,1425 @@
+     1→     1→# TEKA NEXUS — ULTIMATE MASTER BUILD PROMPT
+     2→     2→## Build a Global Developer Ecosystem, Not Just Another Social Network
+     3→     3→
+     4→     4→You are an elite software engineering team consisting of a principal software architect, senior full-stack developer, native mobile developer, UI/UX designer, database engineer, cybersecurity specialist, QA engineer, DevOps engineer, and startup product strategist.
+     5→     5→
+     6→     6→Your mission is to design, implement, test, and prepare for production a real, scalable technology platform called **TEKA NEXUS**, built under the TEKA brand.
+     7→     7→
+     8→     8→Do not deliver only a plan, static mockup, landing page, or collection of disconnected components. Build a working application with real authentication, persistent database storage, secure authorization, functional interactions, responsive design, and a maintainable architecture.
+     9→     9→
+    10→    10→Work directly inside the available project repository. Inspect existing files and preserve useful code. If the repository contains an existing TEKA project, understand its structure before making changes.
+    11→    11→
+    12→    12→Do not claim a feature, test, build, deployment, or integration is complete unless it has actually been implemented and verified.
+    13→    13→
+    14→    14→# 1. VISION AND MISSION
+    15→    15→
+    16→    16→TEKA NEXUS is a global, developer-first platform where people discover technology projects, find collaborators, build software together, publish products, develop professional reputations, and eventually earn money from their work.
+    17→    17→
+    18→    18→It combines the most useful concepts from developer communities, project management platforms, professional portfolios, collaboration networks, and digital product marketplaces into one connected ecosystem.
+    19→    19→
+    20→    20→The platform must connect:
+    21→    21→
+    22→    22→- Frontend and backend developers.
+    23→    23→- Mobile application developers.
+    24→    24→- AI and machine-learning developers.
+    25→    25→- Open-source contributors.
+    26→    26→- Indie game developers.
+    27→    27→- UI/UX designers.
+    28→    28→- Product designers.
+    29→    29→- Technical writers.
+    30→    30→- Startup founders.
+    31→    31→- Hardware and IoT creators.
+    32→    32→- Students and people learning technology.
+    33→    33→
+    34→    34→Core workflow:
+    35→    35→
+    36→    36→IDEA → DISCOVER → FIND A TEAM → BUILD → COLLABORATE → PUBLISH → GROW → MONETIZE.
+    37→    37→
+    38→    38→Brand name: TEKA NEXUS
+    39→    39→
+    40→    40→Primary slogan: Imagine. Build. Connect.
+    41→    41→
+    42→    42→Secondary message: Where Ideas Become Real Technology.
+    43→    43→
+    44→    44→Long-term mission: Make TEKA NEXUS a trusted global home for technology creators and a central part of the broader TEKA technology ecosystem.
+    45→    45→
+    46→    46→Build a differentiated product that rewards actual creation and meaningful collaboration instead of focusing only on likes, followers, and superficial engagement.
+    47→    47→
+    48→    48→Do not make unsupported claims about becoming the world's leading platform. Validate the product through real usage and measurable outcomes.
+    49→    49→
+    50→    50→# 2. PLATFORM REQUIREMENTS
+    51→    51→
+    52→    52→Build two independent client applications connected to the same backend:
+    53→    53→
+    54→    54→1. Web application: React, TypeScript, and Vite.
+    55→    55→2. Native Android application: React Native, Expo, and TypeScript.
+    56→    56→
+    57→    57→Use a shared Supabase backend for authentication, PostgreSQL data, authorization, and storage.
+    58→    58→
+    59→    59→Both applications must support the same user accounts, projects, teams, permissions, and core business rules.
+    60→    60→
+    61→    61→The Android app must be a genuine React Native application, not merely a WebView wrapping the website.
+    62→    62→
+    63→    63→Create a monorepo with shared domain types, validation schemas, and reusable non-UI logic.
+    64→    64→
+    65→    65→Use compatible stable dependencies and consult current official documentation before selecting package versions.
+    66→    66→
+    67→    67→Initial product language: English.
+    68→    68→
+    69→    69→Design the application so that Persian, Russian, and other languages can be added later through internationalization rather than rewriting interface text.
+    70→    70→
+    71→    71→Initial market: global technology creators.
+    72→    72→
+    73→    73→Initial budget assumption: a bootstrapped startup with limited funds. Prefer free development tools and services with practical free tiers, while documenting limits and future costs. Never promise that third-party services will remain free indefinitely.
+    74→    74→
+    75→    75→# 3. BRAND IDENTITY AND VISUAL DESIGN
+    76→    76→
+    77→    77→Create a distinctive, premium, futuristic, developer-focused identity for TEKA NEXUS.
+    78→    78→
+    79→    79→Design direction:
+    80→    80→- Dark graphite and near-black surfaces.
+    81→    81→- Configurable cyan and violet accent colors as provisional brand tokens.
+    82→    82→- Crisp typography.
+    83→    83→- Excellent spacing and alignment.
+    84→    84→- Subtle borders and controlled shadows.
+    85→    85→- Restrained gradients and animations.
+    86→    86→- High information density without visual clutter.
+    87→    87→- Professional desktop layouts and carefully adapted mobile interfaces.
+    88→    88→
+    89→    89→If official TEKA logo assets exist in the repository, inspect and use them. Never replace the official logo without permission.
+    90→    90→
+    91→    91→If the official logo is unavailable, use a clean TEKA NEXUS text wordmark and a provisional geometric symbol. Do not pretend the invented logo or provisional colors are the official brand identity.
+    92→    92→
+    93→    93→Build a centralized design system with:
+    94→    94→- Color tokens.
+    95→    95→- Typography scale.
+    96→    96→- Spacing scale.
+    97→    97→- Border radii.
+    98→    98→- Shadows.
+    99→    99→- Focus rings.
+   100→   100→- Motion tokens.
+   101→   101→- Responsive breakpoints.
+   102→   102→- Light and dark theme support where practical.
+   103→   103→- Reusable buttons, forms, cards, dialogs, menus, tabs, tooltips, badges, avatars, skeletons, toasts, and empty states.
+   104→   104→
+   105→   105→Provide consistent hover, focus, active, disabled, loading, success, and error states.
+   106→   106→
+   107→   107→Use a coherent icon library rather than relying on emoji as primary interface icons.
+   108→   108→
+   109→   109→Meet practical accessibility requirements, including keyboard navigation, visible focus, semantic HTML, accessible labels, adequate contrast, screen-reader support, reduced-motion preferences, and touch-friendly mobile controls.
+   110→   110→
+   111→   111→Do not sacrifice usability for visual effects.
+   112→   112→
+   113→   113→# 4. PRODUCT ARCHITECTURE AND NAVIGATION
+   114→   114→
+   115→   115→Web navigation:
+   116→   116→- Home.
+   117→   117→- Explore.
+   118→   118→- Projects.
+   119→   119→- Teams.
+   120→   120→- Notifications.
+   121→   121→- Profile.
+   122→   122→- Settings.
+   123→   123→
+   124→   124→Provide a global search field, user menu, and clear create-project action.
+   125→   125→
+   126→   126→Use a three-region desktop layout when useful:
+   127→   127→- Left navigation.
+   128→   128→- Central content.
+   129→   129→- Optional right contextual panel.
+   130→   130→
+   131→   131→Mobile navigation:
+   132→   132→- Compact top bar.
+   133→   133→- Search access.
+   134→   134→- Bottom navigation for primary destinations.
+   135→   135→- Mobile-friendly drawers, sheets, and dialogs.
+   136→   136→- Proper safe-area and keyboard handling.
+   137→   137→
+   138→   138→Create the following routes:
+   139→   139→
+   140→   140→Public:
+   141→   141→- /
+   142→   142→- /explore
+   143→   143→- /projects/:projectSlug
+   144→   144→- /u/:username
+   145→   145→- /login
+   146→   146→- /signup
+   147→   147→- /forgot-password
+   148→   148→- /reset-password
+   149→   149→- /terms
+   150→   150→- /privacy
+   151→   151→- /guidelines
+   152→   152→
+   153→   153→Authenticated:
+   154→   154→- /home
+   155→   155→- /projects
+   156→   156→- /projects/new
+   157→   157→- /projects/:projectId/settings
+   158→   158→- /notifications
+   159→   159→- /settings/profile
+   160→   160→- /settings/account
+   161→   161→- /settings/privacy
+   162→   162→- /settings/security
+   163→   163→
+   164→   164→Teams:
+   165→   165→- /teams
+   166→   166→- /teams/:teamId
+   167→   167→
+   168→   168→Use appropriate route guards, but never rely on route guards alone to secure private data. Every backend query and mutation must enforce authorization.
+   169→   169→
+   170→   170→Provide useful loading screens, error pages, and a proper 404 page.
+   171→   171→
+   172→   172→# 5. LANDING PAGE AND PRODUCT INTRODUCTION
+   173→   173→
+   174→   174→Create a production-quality landing page.
+   175→   175→
+   176→   176→Hero:
+   177→   177→Headline: "Where Ideas Become Real Technology."
+   178→   178→
+   179→   179→Description:
+   180→   180→"Discover projects, find your people, and build what comes next."
+   181→   181→
+   182→   182→Primary CTA: Explore Projects.
+   183→   183→
+   184→   184→Secondary CTA: Start Building.
+   185→   185→
+   186→   186→Include:
+   187→   187→- Product preview.
+   188→   188→- Project discovery explanation.
+   189→   189→- Team collaboration explanation.
+   190→   190→- Project workspace preview.
+   191→   191→- Creator portfolio and reputation.
+   192→   192→- Product release and showcase section.
+   193→   193→- Community safety and trust.
+   194→   194→- Frequently asked questions.
+   195→   195→- Footer with product, company, legal, and support links.
+   196→   196→
+   197→   197→Use realistic, clearly labeled demo content until real users exist.
+   198→   198→
+   199→   199→Never fabricate testimonials, user numbers, partnerships, rankings, revenue, or successful projects.
+   200→   200→
+   201→   201→Ensure that the website explains the actual product instead of making vague promises about revolutionizing technology.
+   202→   202→
+   203→   203→# 6. AUTHENTICATION AND ONBOARDING
+   204→   204→
+   205→   205→Use Supabase Auth.
+   206→   206→
+   207→   207→Implement:
+   208→   208→- Email and password registration.
+   209→   209→- Login and logout.
+   210→   210→- Email verification.
+   211→   211→- Password reset.
+   212→   212→- Session restoration.
+   213→   213→- Protected screens.
+   214→   214→- Clear authentication errors.
+   215→   215→- Account deletion workflow.
+   216→   216→- Optional OAuth providers only when correctly configured.
+   217→   217→
+   218→   218→Onboarding steps:
+   219→   219→1. Choose a unique username.
+   220→   220→2. Enter a display name.
+   221→   221→3. Add a short biography.
+   222→   222→4. Select interests.
+   223→   223→5. Select skills.
+   224→   224→6. Choose goals such as building, contributing, learning, or discovering.
+   225→   225→7. Optionally upload an avatar.
+   226→   226→8. Optionally add a website or portfolio.
+   227→   227→9. Finish onboarding.
+   228→   228→
+   229→   229→Make optional steps skippable.
+   230→   230→
+   231→   231→Normalize and validate usernames. Prevent duplicate usernames and handle concurrent registration safely.
+   232→   232→
+   233→   233→Use supported Supabase session mechanisms on both platforms. Use appropriate secure platform storage for mobile sessions.
+   234→   234→
+   235→   235→Never create an insecure custom password database.
+   236→   236→
+   237→   237→# 7. CORE FEATURE ONE: NEXUS DISCOVERY
+   238→   238→
+   239→   239→Build a global directory of technology projects.
+   240→   240→
+   241→   241→Categories:
+   242→   242→- Web Development.
+   243→   243→- Mobile Development.
+   244→   244→- Artificial Intelligence.
+   245→   245→- Developer Tools.
+   246→   246→- Open Source.
+   247→   247→- Indie Games.
+   248→   248→- Cybersecurity.
+   249→   249→- Blockchain.
+   250→   250→- Hardware and IoT.
+   251→   251→- Data Science.
+   252→   252→- Design Tools.
+   253→   253→- Other Technology.
+   254→   254→
+   255→   255→Project information:
+   256→   256→- Name.
+   257→   257→- Unique slug.
+   258→   258→- Tagline.
+   259→   259→- Description.
+   260→   260→- Category.
+   261→   261→- Tags.
+   262→   262→- Owner.
+   263→   263→- Cover image.
+   264→   264→- Project status.
+   265→   265→- Visibility.
+   266→   266→- Required skills.
+   267→   267→- Team members.
+   268→   268→- Repository URL.
+   269→   269→- Live demo URL.
+   270→   270→- Website URL.
+   271→   271→- Creation date.
+   272→   272→- Last update.
+   273→   273→- Releases and milestones when available.
+   274→   274→
+   275→   275→Project statuses:
+   276→   276→- Idea.
+   277→   277→- Planning.
+   278→   278→- In Development.
+   279→   279→- Beta.
+   280→   280→- Released.
+   281→   281→- Paused.
+   282→   282→- Archived.
+   283→   283→
+   284→   284→Project visibility:
+   285→   285→- Public.
+   286→   286→- Private.
+   287→   287→- Unlisted, only with explicitly defined access rules.
+   288→   288→
+   289→   289→Discovery features:
+   290→   290→- Search by title, description, tags, and skills.
+   291→   291→- Filter by category and status.
+   292→   292→- Sort by recently created and recently updated.
+   293→   293→- Pagination or cursor-based loading.
+   294→   294→- Shareable URLs.
+   295→   295→- Project reporting.
+   296→   296→- Clear loading, empty, and error states.
+   297→   297→
+   298→   298→Never expose private projects in public search results or recommendations.
+   299→   299→
+   300→   300→# 8. CORE FEATURE TWO: PROJECT WORKSPACES
+   301→   301→
+   302→   302→Every project must have a structured workspace, not merely a social post.
+   303→   303→
+   304→   304→Include:
+   305→   305→- Overview.
+   306→   306→- Project status.
+   307→   307→- Owner and collaborators.
+   308→   308→- Required skills.
+   309→   309→- Project updates.
+   310→   310→- Tasks.
+   311→   311→- Milestones.
+   312→   312→- Team membership.
+   313→   313→- Activity history.
+   314→   314→- Public links.
+   315→   315→- Discussion.
+   316→   316→- Contribution information.
+   317→   317→- Release information when implemented.
+   318→   318→
+   319→   319→Project owners can edit project settings and manage membership.
+   320→   320→
+   321→   321→Project administrators can perform explicitly permitted management actions.
+   322→   322→
+   323→   323→Contributors can access and modify permitted project resources.
+   324→   324→
+   325→   325→Viewers can read only resources their role permits.
+   326→   326→
+   327→   327→Ownership transfer must require explicit confirmation and preserve consistent database relationships.
+   328→   328→
+   329→   329→# 9. CORE FEATURE THREE: TASK MANAGEMENT
+   330→   330→
+   331→   331→Implement a useful lightweight project management system.
+   332→   332→
+   333→   333→Task fields:
+   334→   334→- Title.
+   335→   335→- Description.
+   336→   336→- Status.
+   337→   337→- Priority.
+   338→   338→- Assignee.
+   339→   339→- Creator.
+   340→   340→- Optional due date.
+   341→   341→- Position.
+   342→   342→- Creation and update timestamps.
+   343→   343→
+   344→   344→Statuses:
+   345→   345→- Backlog.
+   346→   346→- To Do.
+   347→   347→- In Progress.
+   348→   348→- In Review.
+   349→   349→- Done.
+   350→   350→
+   351→   351→Priorities:
+   352→   352→- Low.
+   353→   353→- Normal.
+   354→   354→- High.
+   355→   355→- Urgent.
+   356→   356→
+   357→   357→Views:
+   358→   358→- Task list.
+   359→   359→- Kanban board.
+   360→   360→- Task detail.
+   361→   361→- Task comments.
+   362→   362→
+   363→   363→Features:
+   364→   364→- Create and edit tasks.
+   365→   365→- Assign tasks to project members.
+   366→   366→- Change status.
+   367→   367→- Filter by status and assignee.
+   368→   368→- Add comments.
+   369→   369→- Show relevant activity.
+   370→   370→- Confirm destructive operations.
+   371→   371→
+   372→   372→Validate task assignments against project membership.
+   373→   373→
+   374→   374→Start with reliable list and board views. Do not overbuild complex enterprise project management before validating demand.
+   375→   375→
+   376→   376→# 10. CORE FEATURE FOUR: TEAM FORMATION
+   377→   377→
+   378→   378→Help users discover and join projects where their skills are needed.
+   379→   379→
+   380→   380→Profile skills:
+   381→   381→- Frontend Development.
+   382→   382→- Backend Development.
+   383→   383→- Mobile Development.
+   384→   384→- Game Development.
+   385→   385→- AI and Data.
+   386→   386→- UI/UX.
+   387→   387→- QA and Testing.
+   388→   388→- DevOps.
+   389→   389→- Technical Writing.
+   390→   390→- Product Management.
+   391→   391→- Other skills.
+   392→   392→
+   393→   393→Implement:
+   394→   394→- Required skill lists.
+   395→   395→- Project role listings.
+   396→   396→- Collaboration requests.
+   397→   397→- Application status.
+   398→   398→- Owner review.
+   399→   399→- Acceptance or rejection.
+   400→   400→- Request withdrawal.
+   401→   401→- Invitation links with expiration and revocation when implemented.
+   402→   402→- Public portfolios.
+   403→   403→- Team member management.
+   404→   404→
+   405→   405→A collaboration request contains:
+   406→   406→- Project ID.
+   407→   407→- Requested role.
+   408→   408→- Short introduction.
+   409→   409→- Relevant skills.
+   410→   410→- Optional portfolio URL.
+   411→   411→
+   412→   412→Prevent duplicate active requests for the same project and applicant.
+   413→   413→
+   414→   414→Only authorized project managers can accept or reject applications.
+   415→   415→
+   416→   416→Accepting an application must create membership safely and atomically, without duplicate membership or privilege escalation.
+   417→   417→
+   418→   418→# 11. CORE FEATURE FIVE: DEVELOPER SOCIAL NETWORK
+   419→   419→
+   420→   420→Build a project-centered social feed.
+   421→   421→
+   422→   422→Feed events:
+   423→   423→- New project.
+   424→   424→- Project update.
+   425→   425→- Milestone completion.
+   426→   426→- New release.
+   427→   427→- Collaboration opportunity.
+   428→   428→- Meaningful project achievement.
+   429→   429→
+   430→   430→Interactions:
+   431→   431→- Like or unlike.
+   432→   432→- Comment.
+   433→   433→- Reply to comments where supported.
+   434→   434→- Follow or unfollow users.
+   435→   435→- Save projects.
+   436→   436→- Share public project URLs.
+   437→   437→- Report inappropriate content.
+   438→   438→
+   439→   439→The feed must use real persisted data.
+   440→   440→
+   441→   441→Implement pagination, deterministic ordering, duplicate prevention, input limits, and safe rendering.
+   442→   442→
+   443→   443→Prevent spam and repeated submissions.
+   444→   444→
+   445→   445→Never render untrusted user HTML as executable content.
+   446→   446→
+   447→   447→Allow users to edit or delete their own comments according to clear rules.
+   448→   448→
+   449→   449→Apply blocking and moderation restrictions consistently to relevant interactions.
+   450→   450→
+   451→   451→# 12. CORE FEATURE SIX: VERIFIED CONTRIBUTIONS AND REPUTATION
+   452→   452→
+   453→   453→Build a transparent system that rewards meaningful contributions.
+   454→   454→
+   455→   455→Separate:
+   456→   456→- XP: optional gamification.
+   457→   457→- Reputation: evidence-based contribution trust.
+   458→   458→- Achievements: rule-based milestones.
+   459→   459→- Followers: social connections.
+   460→   460→
+   461→   461→Potential contribution events:
+   462→   462→- Completing an authorized task.
+   463→   463→- Publishing a release.
+   464→   464→- Contributing to a documented project milestone.
+   465→   465→- Receiving an accepted contribution.
+   466→   466→- Completing a verified collaboration.
+   467→   467→
+   468→   468→Only award verified reputation through trusted logic.
+   469→   469→
+   470→   470→Prevent duplicate rewards using unique event identifiers and idempotent operations.
+   471→   471→
+   472→   472→Never allow a client to award itself arbitrary verified points.
+   473→   473→
+   474→   474→Do not allow users to buy reputation.
+   475→   475→
+   476→   476→Do not equate follower count with technical ability.
+   477→   477→
+   478→   478→Show contribution history and explain how each achievement was earned.
+   479→   479→
+   480→   480→# 13. NOTIFICATIONS
+   481→   481→
+   482→   482→Implement an in-app notification center.
+   483→   483→
+   484→   484→Notification types:
+   485→   485→- New follower.
+   486→   486→- Project comment.
+   487→   487→- Collaboration request.
+   488→   488→- Application accepted or rejected.
+   489→   489→- Task assignment.
+   490→   490→- Team invitation.
+   491→   491→- Mention when implemented.
+   492→   492→- Security and system notices.
+   493→   493→
+   494→   494→Features:
+   495→   495→- Unread count.
+   496→   496→- Mark as read.
+   497→   497→- Mark all as read.
+   498→   498→- Pagination.
+   499→   499→- User notification preferences.
+   500→   500→- Navigation to the relevant authorized resource.
+   501→   501→
+   502→   502→Protect private notification data.
+   503→   503→
+   504→   504→Never include secrets or unauthorized private project content in notification payloads.
+   505→   505→
+   506→   506→Push notifications may be added after the in-app system works reliably.
+   507→   507→
+   508→   508→# 14. GLOBAL SEARCH
+   509→   509→
+   510→   510→Implement search for:
+   511→   511→- Public projects.
+   512→   512→- Users.
+   513→   513→- Public teams.
+   514→   514→- Skills and tags.
+   515→   515→
+   516→   516→Use PostgreSQL full-text search or another appropriate indexed search approach initially.
+   517→   517→
+   518→   518→Implement:
+   519→   519→- Debounced queries.
+   520→   520→- Query length limits.
+   521→   521→- Filters.
+   522→   522→- Pagination.
+   523→   523→- Authorization-aware results.
+   524→   524→- Empty states.
+   525→   525→- Error states.
+   526→   526→- Predictable ranking.
+   527→   527→
+   528→   528→Do not expose private projects through search suggestions.
+   529→   529→
+   530→   530→Do not add a costly external search provider without demonstrated need.
+   531→   531→
+   532→   532→# 15. ADDITIONAL DIFFERENTIATING FEATURES
+   533→   533→
+   534→   534→Design the architecture so the following can be introduced incrementally.
+   535→   535→
+   536→   536→A. Creator Portfolio:
+   537→   537→Automatically assemble public projects, skills, milestones, releases, and verified contribution history into a shareable portfolio.
+   538→   538→
+   539→   539→B. Project Health:
+   540→   540→Show last activity, completed milestones, open tasks, and progress indicators. Do not present arbitrary percentages as factual progress.
+   541→   541→
+   542→   542→C. Smart Team Matching:
+   543→   543→Initially use transparent rules based on skills, project requirements, interests, and availability. Introduce machine-learning recommendations only after collecting sufficient appropriate data and evaluating privacy implications.
+   544→   544→
+   545→   545→D. Open-Source Mode:
+   546→   546→Allow projects to link public repositories and document contribution instructions. Add deeper GitHub integration later.
+   547→   547→
+   548→   548→E. Release Showcase:
+   549→   549→Allow creators to publish version announcements, screenshots, changelogs, demos, and release notes.
+   550→   550→
+   551→   551→F. Community Challenges:
+   552→   552→Support optional technology challenges, contribution goals, and community events with transparent participation rules.
+   553→   553→
+   554→   554→G. Knowledge Sharing:
+   555→   555→Add technical articles, tutorials, and project documentation only after the core project workflow has been validated.
+   556→   556→
+   557→   557→H. AI Assistance:
+   558→   558→Future optional features may summarize project updates, suggest task breakdowns, or help draft documentation. AI functionality must be optional, clearly identified, cost-controlled, and never required for core usage.
+   559→   559→
+   560→   560→I. Organization Workspaces:
+   561→   561→Future organizations can manage multiple projects, memberships, and permissions.
+   562→   562→
+   563→   563→Do not implement all these advanced features in the initial release. Keep the architecture extensible and prioritize the core user journey.
+   564→   564→
+   565→   565→# 16. FUTURE DIGITAL PRODUCT MARKETPLACE
+   566→   566→
+   567→   567→Design for a future marketplace where creators may offer:
+   568→   568→- Website templates.
+   569→   569→- UI kits.
+   570→   570→- Developer utilities.
+   571→   571→- Plugins.
+   572→   572→- Game assets.
+   573→   573→- Indie games.
+   574→   574→- Documentation templates.
+   575→   575→- Digital software products.
+   576→   576→
+   577→   577→Potential features:
+   578→   578→- Product pages.
+   579→   579→- Demo previews.
+   580→   580→- Version history.
+   581→   581→- License terms.
+   582→   582→- Seller profiles.
+   583→   583→- Reviews from verified purchasers.
+   584→   584→- Secure payment integration.
+   585→   585→- Delivery after confirmed payment.
+   586→   586→- Refund and dispute workflows.
+   587→   587→- Seller dashboards.
+   588→   588→
+   589→   589→Do not accept real payments until payment processing, refunds, seller verification, fraud prevention, applicable legal requirements, and webhook verification are implemented.
+   590→   590→
+   591→   591→Never trust a payment-success signal supplied by a client.
+   592→   592→
+   593→   593→Use a trusted payment provider where legally and operationally available.
+   594→   594→
+   595→   595→Treat marketplace functionality as a later phase.
+   596→   596→
+   597→   597→# 17. FUTURE BUSINESS MODEL
+   598→   598→
+   599→   599→The platform should initially be free to use for core collaboration.
+   600→   600→
+   601→   601→Potential revenue streams:
+   602→   602→- Nexus Pro subscriptions.
+   603→   603→- Advanced project analytics.
+   604→   604→- Premium organization workspaces.
+   605→   605→- Marketplace transaction fees.
+   606→   606→- Optional paid creator tools.
+   607→   607→- Clearly labeled sponsored placements.
+   608→   608→- Enterprise collaboration features.
+   609→   609→
+   610→   610→Do not paywall essential community participation at launch.
+   611→   611→
+   612→   612→Do not use deceptive subscription flows.
+   613→   613→
+   614→   614→Clearly disclose prices, renewal terms, cancellation methods, and applicable taxes.
+   615→   615→
+   616→   616→Do not guarantee revenue or assume users will pay before demand has been validated.
+   617→   617→
+   618→   618→# 18. TEKA TOKEN AND CRYPTOCURRENCY BOUNDARIES
+   619→   619→
+   620→   620→TEKA is a broader technology brand with separate blockchain interests.
+   621→   621→
+   622→   622→Do not make the TEKA token mandatory for registration, project creation, collaboration, reputation, or access to essential features.
+   623→   623→
+   624→   624→Do not introduce token payments, staking, speculative rewards, or investment claims into the MVP.
+   625→   625→
+   626→   626→Keep any future token integration isolated from the core product architecture.
+   627→   627→
+   628→   628→Before introducing token-based payments or rewards, obtain appropriate legal, security, accounting, and smart-contract reviews.
+   629→   629→
+   630→   630→Never imply that the token will appreciate or guarantee financial returns.
+   631→   631→
+   632→   632→Core NEXUS functionality must work without cryptocurrency.
+   633→   633→
+   634→   634→# 19. TECHNOLOGY STACK
+   635→   635→
+   636→   636→WEB:
+   637→   637→- React.
+   638→   638→- TypeScript strict mode.
+   639→   639→- Vite.
+   640→   640→- React Router.
+   641→   641→- TanStack Query.
+   642→   642→- React Hook Form.
+   643→   643→- Zod.
+   644→   644→- An accessible component system.
+   645→   645→- Vitest.
+   646→   646→- React Testing Library.
+   647→   647→
+   648→   648→ANDROID:
+   649→   649→- React Native.
+   650→   650→- Expo.
+   651→   651→- TypeScript.
+   652→   652→- Expo Router.
+   653→   653→- TanStack Query where appropriate.
+   654→   654→- React Hook Form.
+   655→   655→- Zod.
+   656→   656→- Supported secure session persistence.
+   657→   657→- Compatible automated testing tools.
+   658→   658→
+   659→   659→BACKEND:
+   660→   660→- Supabase Auth.
+   661→   661→- PostgreSQL.
+   662→   662→- Row Level Security.
+   663→   663→- Supabase Storage.
+   664→   664→- Supabase Realtime for justified use cases.
+   665→   665→- SQL migrations under version control.
+   666→   666→- Trusted server-side functions for privileged operations.
+   667→   667→
+   668→   668→DEVELOPMENT:
+   669→   669→- Git.
+   670→   670→- GitHub.
+   671→   671→- ESLint.
+   672→   672→- Prettier.
+   673→   673→- Type checking.
+   674→   674→- Automated tests.
+   675→   675→- CI.
+   676→   676→- Vercel or another appropriate web hosting service.
+   677→   677→- EAS Build or another reproducible Android build workflow.
+   678→   678→
+   679→   679→Choose compatible stable versions using current official documentation.
+   680→   680→
+   681→   681→Avoid unnecessary dependencies and infrastructure.
+   682→   682→
+   683→   683→# 20. MONOREPO STRUCTURE
+   684→   684→
+   685→   685→Create:
+   686→   686→
+   687→   687→teka-nexus/
+   688→   688→  apps/
+   689→   689→    web/
+   690→   690→      src/
+   691→   691→        app/
+   692→   692→        routes/
+   693→   693→        components/
+   694→   694→        features/
+   695→   695→        lib/
+   696→   696→        styles/
+   697→   697→        tests/
+   698→   698→      public/
+   699→   699→    mobile/
+   700→   700→      app/
+   701→   701→      src/
+   702→   702→        components/
+   703→   703→        features/
+   704→   704→        hooks/
+   705→   705→        lib/
+   706→   706→        theme/
+   707→   707→        tests/
+   708→   708→      assets/
+   709→   709→  packages/
+   710→   710→    shared/
+   711→   711→      src/
+   712→   712→        types/
+   713→   713→        schemas/
+   714→   714→        validation/
+   715→   715→        constants/
+   716→   716→  supabase/
+   717→   717→    migrations/
+   718→   718→    tests/
+   719→   719→    seed.sql
+   720→   720→    config.toml
+   721→   721→  docs/
+   722→   722→    architecture.md
+   723→   723→    database.md
+   724→   724→    security.md
+   725→   725→    deployment.md
+   726→   726→    testing.md
+   727→   727→  .github/
+   728→   728→    workflows/
+   729→   729→  .env.example
+   730→   730→  package.json
+   731→   731→  README.md
+   732→   732→
+   733→   733→Feature modules should include:
+   734→   734→- auth
+   735→   735→- onboarding
+   736→   736→- profiles
+   737→   737→- discovery
+   738→   738→- feed
+   739→   739→- projects
+   740→   740→- teams
+   741→   741→- tasks
+   742→   742→- collaboration-requests
+   743→   743→- notifications
+   744→   744→- search
+   745→   745→- settings
+   746→   746→- moderation
+   747→   747→
+   748→   748→Adapt this structure if the existing repository already has a better working architecture.
+   749→   749→
+   750→   750→# 21. DATABASE ARCHITECTURE
+   751→   751→
+   752→   752→Use PostgreSQL with UUID identifiers, explicit foreign keys, timestamps, unique constraints, check constraints, and indexes.
+   753→   753→
+   754→   754→Create incremental SQL migrations.
+   755→   755→
+   756→   756→Required tables:
+   757→   757→
+   758→   758→1. profiles
+   759→   759→   - id referencing auth.users.
+   760→   760→   - username.
+   761→   761→   - display_name.
+   762→   762→   - bio.
+   763→   763→   - avatar_path.
+   764→   764→   - website_url.
+   765→   765→   - onboarding_completed.
+   766→   766→   - created_at.
+   767→   767→   - updated_at.
+   768→   768→
+   769→   769→2. skills
+   770→   770→   - id.
+   771→   771→   - slug.
+   772→   772→   - name.
+   773→   773→
+   774→   774→3. profile_skills
+   775→   775→   - profile_id.
+   776→   776→   - skill_id.
+   777→   777→   - optional self-reported proficiency.
+   778→   778→
+   779→   779→4. projects
+   780→   780→   - id.
+   781→   781→   - owner_id.
+   782→   782→   - slug.
+   783→   783→   - name.
+   784→   784→   - tagline.
+   785→   785→   - description.
+   786→   786→   - category.
+   787→   787→   - status.
+   788→   788→   - visibility.
+   789→   789→   - cover_image_path.
+   790→   790→   - repository_url.
+   791→   791→   - demo_url.
+   792→   792→   - website_url.
+   793→   793→   - created_at.
+   794→   794→   - updated_at.
+   795→   795→   - archived_at.
+   796→   796→
+   797→   797→5. project_tags
+   798→   798→   - id.
+   799→   799→   - project_id.
+   800→   800→   - tag.
+   801→   801→
+   802→   802→6. project_required_skills
+   803→   803→   - project_id.
+   804→   804→   - skill_id.
+   805→   805→
+   806→   806→7. project_members
+   807→   807→   - project_id.
+   808→   808→   - user_id.
+   809→   809→   - role.
+   810→   810→   - joined_at.
+   811→   811→
+   812→   812→8. collaboration_requests
+   813→   813→   - id.
+   814→   814→   - project_id.
+   815→   815→   - applicant_id.
+   816→   816→   - requested_role.
+   817→   817→   - introduction.
+   818→   818→   - portfolio_url.
+   819→   819→   - status.
+   820→   820→   - reviewed_by.
+   821→   821→   - reviewed_at.
+   822→   822→   - created_at.
+   823→   823→   - updated_at.
+   824→   824→
+   825→   825→9. project_updates
+   826→   826→   - id.
+   827→   827→   - project_id.
+   828→   828→   - author_id.
+   829→   829→   - title.
+   830→   830→   - body.
+   831→   831→   - timestamps.
+   832→   832→
+   833→   833→10. tasks
+   834→   834→    - id.
+   835→   835→    - project_id.
+   836→   836→    - title.
+   837→   837→    - description.
+   838→   838→    - status.
+   839→   839→    - priority.
+   840→   840→    - assignee_id.
+   841→   841→    - created_by.
+   842→   842→    - due_at.
+   843→   843→    - position.
+   844→   844→    - timestamps.
+   845→   845→
+   846→   846→11. task_comments
+   847→   847→    - id.
+   848→   848→    - task_id.
+   849→   849→    - author_id.
+   850→   850→    - body.
+   851→   851→    - timestamps.
+   852→   852→
+   853→   853→12. project_milestones
+   854→   854→    - id.
+   855→   855→    - project_id.
+   856→   856→    - title.
+   857→   857→    - description.
+   858→   858→    - due_at.
+   859→   859→    - completed_at.
+   860→   860→    - created_by.
+   861→   861→
+   862→   862→13. follows
+   863→   863→    - follower_id.
+   864→   864→    - following_id.
+   865→   865→    - created_at.
+   866→   866→
+   867→   867→14. project_likes
+   868→   868→    - user_id.
+   869→   869→    - project_id.
+   870→   870→    - created_at.
+   871→   871→
+   872→   872→15. project_saves
+   873→   873→    - user_id.
+   874→   874→    - project_id.
+   875→   875→    - created_at.
+   876→   876→
+   877→   877→16. project_comments
+   878→   878→    - id.
+   879→   879→    - project_id.
+   880→   880→    - author_id.
+   881→   881→    - parent_comment_id.
+   882→   882→    - body.
+   883→   883→    - created_at.
+   884→   884→    - updated_at.
+   885→   885→    - deleted_at.
+   886→   886→
+   887→   887→17. notifications
+   888→   888→    - id.
+   889→   889→    - recipient_id.
+   890→   890→    - actor_id.
+   891→   891→    - type.
+   892→   892→    - entity_type.
+   893→   893→    - entity_id.
+   894→   894→    - safe_payload.
+   895→   895→    - created_at.
+   896→   896→    - read_at.
+   897→   897→
+   898→   898→18. reports
+   899→   899→    - id.
+   900→   900→    - reporter_id.
+   901→   901→    - target_type.
+   902→   902→    - target_id.
+   903→   903→    - reason.
+   904→   904→    - details.
+   905→   905→    - status.
+   906→   906→    - timestamps.
+   907→   907→
+   908→   908→19. project_activity
+   909→   909→    - id.
+   910→   910→    - project_id.
+   911→   911→    - actor_id.
+   912→   912→    - event_type.
+   913→   913→    - safe_metadata.
+   914→   914→    - created_at.
+   915→   915→
+   916→   916→20. contribution_events
+   917→   917→    - id.
+   918→   918→    - user_id.
+   919→   919→    - project_id.
+   920→   920→    - event_type.
+   921→   921→    - source_type.
+   922→   922→    - source_id.
+   923→   923→    - verified_at.
+   924→   924→    - created_at.
+   925→   925→
+   926→   926→21. user_blocks
+   927→   927→    - blocker_id.
+   928→   928→    - blocked_id.
+   929→   929→    - created_at.
+   930→   930→
+   931→   931→22. user_notification_preferences
+   932→   932→    - user_id.
+   933→   933→    - project_activity.
+   934→   934→    - collaboration_requests.
+   935→   935→    - social_activity.
+   936→   936→    - updated_at.
+   937→   937→
+   938→   938→Define additional tables for organizations, releases, product listings, payments, subscriptions, messages, or moderation actions only when those features are implemented.
+   939→   939→
+   940→   940→Use relational columns for frequently queried information. Use JSONB only for suitable flexible metadata.
+   941→   941→
+   942→   942→Enforce unique usernames, valid status values, unique likes, unique saves, unique follows, and duplicate-request prevention.
+   943→   943→
+   944→   944→Validate project slug uniqueness and ownership rules.
+   945→   945→
+   946→   946→Add indexes for project discovery, feed ordering, membership lookups, task queries, notifications, and search.
+   947→   947→
+   948→   948→Use transactions for multi-step operations that must succeed or fail together.
+   949→   949→
+   950→   950→Do not implement a fake schema that is never connected to the application.
+   951→   951→
+   952→   952→# 22. SECURITY AND ROW LEVEL SECURITY
+   953→   953→
+   954→   954→Enable RLS on every exposed application table.
+   955→   955→
+   956→   956→Write explicit SELECT, INSERT, UPDATE, and DELETE policies where required.
+   957→   957→
+   958→   958→PROFILES:
+   959→   959→- Users can edit only their own permitted profile fields.
+   960→   960→- Public profile views expose only approved fields.
+   961→   961→- Users cannot assign themselves privileged roles.
+   962→   962→
+   963→   963→PROJECTS:
+   964→   964→- Public projects are readable according to public access rules.
+   965→   965→- Private projects are visible only to authorized members.
+   966→   966→- Owners and authorized managers control project settings.
+   967→   967→- Clients cannot assign ownership to another user.
+   968→   968→
+   969→   969→PROJECT MEMBERS:
+   970→   970→- Users cannot make themselves owners or administrators.
+   971→   971→- Role changes require appropriate authorization.
+   972→   972→- The final owner cannot be accidentally removed.
+   973→   973→- Ownership transfer must be explicit and auditable.
+   974→   974→
+   975→   975→TASKS:
+   976→   976→- Access follows project visibility and membership.
+   977→   977→- Task changes require the appropriate project role.
+   978→   978→- Assignment is restricted to eligible members.
+   979→   979→
+   980→   980→COLLABORATION REQUESTS:
+   981→   981→- Applicants access their own requests.
+   982→   982→- Authorized project managers review applications.
+   983→   983→- Requesters cannot approve their own requests as project managers.
+   984→   984→- Membership creation must be safe and atomic.
+   985→   985→
+   986→   986→COMMENTS:
+   987→   987→- Reads follow project visibility.
+   988→   988→- Mutations require authorization.
+   989→   989→- Input must be length-limited and safely rendered.
+   990→   990→
+   991→   991→LIKES AND SAVES:
+   992→   992→- Users manage only their own records.
+   993→   993→- Duplicate actions are prevented by constraints.
+   994→   994→- Private projects remain private.
+   995→   995→
+   996→   996→NOTIFICATIONS:
+   997→   997→- Users can read and update only their own notifications.
+   998→   998→- Trusted event creation cannot be forged by the client.
+   999→   999→
+  1000→  1000→REPORTS:
+  1001→  1001→- Users can submit reports under rate limits.
+  1002→  1002→- Private moderation information is restricted.
+  1003→  1003→
+  1004→  1004→CONTRIBUTIONS:
+  1005→  1005→- Verified awards can only be created through trusted logic.
+  1006→  1006→- Duplicate awards must be prevented.
+  1007→  1007→
+  1008→  1008→BLOCKS:
+  1009→  1009→- Users manage only their own block records.
+  1010→  1010→- Blocking restrictions must be applied consistently.
+  1011→  1011→
+  1012→  1012→Use SECURITY DEFINER functions only when justified, with a safe search_path and restricted execution permissions.
+  1013→  1013→
+  1014→  1014→Never disable RLS to make a feature work.
+  1015→  1015→
+  1016→  1016→Never expose a Supabase service-role key in a web bundle, mobile application, public repository, or client-side environment variable.
+  1017→  1017→
+  1018→  1018→Use a trusted backend or Edge Function for privileged workflows.
+  1019→  1019→
+  1020→  1020→# 23. ENVIRONMENT CONFIGURATION
+  1021→  1021→
+  1022→  1022→Create a safe .env.example with placeholders.
+  1023→  1023→
+  1024→  1024→Example variables:
+  1025→  1025→
+  1026→  1026→VITE_SUPABASE_URL=
+  1027→  1027→VITE_SUPABASE_ANON_KEY=
+  1028→  1028→EXPO_PUBLIC_SUPABASE_URL=
+  1029→  1029→EXPO_PUBLIC_SUPABASE_ANON_KEY=
+  1030→  1030→
+  1031→  1031→A server-side service-role secret may be configured only in a trusted server environment when needed. Never ship it to clients.
+  1032→  1032→
+  1033→  1033→Use the appropriate public Supabase key format supported by the selected project configuration.
+  1034→  1034→
+  1035→  1035→Validate required configuration at startup and display clear setup instructions.
+  1036→  1036→
+  1037→  1037→Never invent real credentials.
+  1038→  1038→
+  1039→  1039→Never commit .env files containing secrets.
+  1040→  1040→
+  1041→  1041→# 24. STORAGE AND UPLOADS
+  1042→  1042→
+  1043→  1043→Implement authorized uploads for:
+  1044→  1044→- Profile avatars.
+  1045→  1045→- Public project covers.
+  1046→  1046→- Private project attachments when supported.
+  1047→  1047→
+  1048→  1048→Requirements:
+  1049→  1049→- File-size limits.
+  1050→  1050→- MIME-type validation.
+  1051→  1051→- Generated storage paths.
+  1052→  1052→- Ownership and membership authorization.
+  1053→  1053→- Public versus private bucket separation.
+  1054→  1054→- Signed URLs where appropriate.
+  1055→  1055→- Safe replacement and deletion.
+  1056→  1056→- Orphan cleanup where feasible.
+  1057→  1057→
+  1058→  1058→Never assume that a file is safe merely because its extension appears valid.
+  1059→  1059→
+  1060→  1060→Never expose private project files through a public bucket.
+  1061→  1061→
+  1062→  1062→# 25. PRIVACY AND COMMUNITY SAFETY
+  1063→  1063→
+  1064→  1064→Implement:
+  1065→  1065→- Report functionality.
+  1066→  1066→- User blocking.
+  1067→  1067→- Content moderation workflows.
+  1068→  1068→- Account deletion.
+  1069→  1069→- Privacy settings.
+  1070→  1070→- Profile visibility rules.
+  1071→  1071→- Notification preferences.
+  1072→  1072→- Community guidelines.
+  1073→  1073→- Appropriate rate limits.
+  1074→  1074→- Input length restrictions.
+  1075→  1075→- Safe rendering.
+  1076→  1076→- Clear user feedback.
+  1077→  1077→
+  1078→  1078→Minimize personal data collection.
+  1079→  1079→
+  1080→  1080→Do not request precise location unless a clearly justified feature requires it.
+  1081→  1081→
+  1082→  1082→Do not expose private collaboration applications or team content.
+  1083→  1083→
+  1084→  1084→Design account deletion and project ownership handling so that deleting an account does not silently destroy other users' work.
+  1085→  1085→
+  1086→  1086→Create documentation explaining data retention and known limitations.
+  1087→  1087→
+  1088→  1088→Do not claim legal compliance simply because policy pages exist.
+  1089→  1089→
+  1090→  1090→# 26. REAL FUNCTIONALITY AND ERROR HANDLING
+  1091→  1091→
+  1092→  1092→Every visible button and interactive control must have a defined behavior.
+  1093→  1093→
+  1094→  1094→No dead buttons.
+  1095→  1095→No fake save actions.
+  1096→  1096→No decorative forms pretending to submit.
+  1097→  1097→No fabricated live activity.
+  1098→  1098→No mock authentication presented as real authentication.
+  1099→  1099→No static fake analytics presented as actual production metrics.
+  1100→  1100→
+  1101→  1101→For every asynchronous operation, implement:
+  1102→  1102→- Loading state.
+  1103→  1103→- Success state.
+  1104→  1104→- Error state.
+  1105→  1105→- Retry where appropriate.
+  1106→  1106→- Duplicate-submission prevention.
+  1107→  1107→- Correct cache updates.
+  1108→  1108→- Unauthorized handling.
+  1109→  1109→
+  1110→  1110→Use optimistic UI only when rollback and error recovery are implemented.
+  1111→  1111→
+  1112→  1112→Show success messages only after the operation succeeds, or clearly communicate that the operation is pending.
+  1113→  1113→
+  1114→  1114→Provide empty states with useful next actions.
+  1115→  1115→
+  1116→  1116→# 27. PERFORMANCE AND ACCESSIBILITY
+  1117→  1117→
+  1118→  1118→Use:
+  1119→  1119→- Pagination.
+  1120→  1120→- Database indexes.
+  1121→  1121→- Efficient query selection.
+  1122→  1122→- Image optimization.
+  1123→  1123→- Lazy loading where appropriate.
+  1124→  1124→- Sensible server-state caching.
+  1125→  1125→- Avoidance of unnecessary rerenders.
+  1126→  1126→- Request cancellation when supported.
+  1127→  1127→- Clear cache invalidation.
+  1128→  1128→- Measured performance improvements.
+  1129→  1129→
+  1130→  1130→Support:
+  1131→  1131→- Keyboard navigation.
+  1132→  1132→- Screen readers.
+  1133→  1133→- Accessible labels.
+  1134→  1134→- Visible focus.
+  1135→  1135→- Reduced motion.
+  1136→  1136→- Responsive text and layouts.
+  1137→  1137→- Appropriate touch targets.
+  1138→  1138→- Clear error announcements.
+  1139→  1139→
+  1140→  1140→Do not invent Lighthouse scores or claim perfect performance without testing.
+  1141→  1141→
+  1142→  1142→# 28. TESTING AND QUALITY ASSURANCE
+  1143→  1143→
+  1144→  1144→Add unit tests, component tests, database tests, and end-to-end tests.
+  1145→  1145→
+  1146→  1146→Test:
+  1147→  1147→- Registration and login.
+  1148→  1148→- Onboarding.
+  1149→  1149→- Profile updates.
+  1150→  1150→- Project creation and editing.
+  1151→  1151→- Public project discovery.
+  1152→  1152→- Private project access restrictions.
+  1153→  1153→- Likes and comments.
+  1154→  1154→- Collaboration requests.
+  1155→  1155→- Project membership.
+  1156→  1156→- Task assignment.
+  1157→  1157→- Notification privacy.
+  1158→  1158→- Account switching.
+  1159→  1159→- Expired sessions.
+  1160→  1160→- Invalid inputs.
+  1161→  1161→- Duplicate submissions.
+  1162→  1162→- Unauthorized requests.
+  1163→  1163→- Upload restrictions.
+  1164→  1164→
+  1165→  1165→Use multiple test identities:
+  1166→  1166→- Anonymous visitor.
+  1167→  1167→- Ordinary user.
+  1168→  1168→- Project owner.
+  1169→  1169→- Project administrator.
+  1170→  1170→- Contributor.
+  1171→  1171→- Viewer.
+  1172→  1172→- Unauthorized user.
+  1173→  1173→- Authorized moderator.
+  1174→  1174→
+  1175→  1175→Attempt cross-user and cross-project access in automated tests.
+  1176→  1176→
+  1177→  1177→Run linting, TypeScript checks, unit tests, and production builds where supported.
+  1178→  1178→
+  1179→  1179→Fix errors rather than merely reporting them.
+  1180→  1180→
+  1181→  1181→Document any tests that could not be executed.
+  1182→  1182→
+  1183→  1183→# 29. GITHUB AND DEVELOPER ECOSYSTEM INTEGRATION
+  1184→  1184→
+  1185→  1185→Design future integration points for GitHub.
+  1186→  1186→
+  1187→  1187→Potential features:
+  1188→  1188→- Link a repository to a project.
+  1189→  1189→- Display repository metadata where permitted.
+  1190→  1190→- Link releases and commits.
+  1191→  1191→- Synchronize selected issues.
+  1192→  1192→- Display verified contribution evidence.
+  1193→  1193→- Import project information with user consent.
+  1194→  1194→
+  1195→  1195→Do not request broad repository permissions unnecessarily.
+  1196→  1196→
+  1197→  1197→Use secure OAuth or supported authorization flows when implementing the integration.
+  1198→  1198→
+  1199→  1199→Do not store access tokens in publicly accessible database columns.
+  1200→  1200→
+  1201→  1201→Do not pretend a repository is connected when only a URL has been entered.
+  1202→  1202→
+  1203→  1203→Implement repository integration after the core product works.
+  1204→  1204→
+  1205→  1205→# 30. ANALYTICS AND VALIDATION
+  1206→  1206→
+  1207→  1207→Add privacy-conscious event tracking only when configured appropriately.
+  1208→  1208→
+  1209→  1209→Track meaningful product events:
+  1210→  1210→- Registration completed.
+  1211→  1211→- Onboarding completed.
+  1212→  1212→- Project created.
+  1213→  1213→- Collaboration request sent.
+  1214→  1214→- Collaboration request accepted.
+  1215→  1215→- Task completed.
+  1216→  1216→- Project updated.
+  1217→  1217→- User returned.
+  1218→  1218→
+  1219→  1219→Measure:
+  1220→  1220→- Time to first useful project action.
+  1221→  1221→- Project creation rate.
+  1222→  1222→- Collaboration conversion.
+  1223→  1223→- Returning creators.
+  1224→  1224→- Projects that receive meaningful updates.
+  1225→  1225→- Retention of activated users.
+  1226→  1226→
+  1227→  1227→Do not optimize only for signups, likes, or follower counts.
+  1228→  1228→
+  1229→  1229→Do not fabricate analytics data.
+  1230→  1230→
+  1231→  1231→Use real usage data to decide which features deserve further investment.
+  1232→  1232→
+  1233→  1233→# 31. DEVELOPMENT ROADMAP
+  1234→  1234→
+  1235→  1235→PHASE 0 — INSPECT AND PLAN
+  1236→  1236→- Inspect the repository.
+  1237→  1237→- Preserve existing working code.
+  1238→  1238→- Inspect TEKA logo assets.
+  1239→  1239→- Verify toolchain and dependencies.
+  1240→  1240→- Create an implementation checklist.
+  1241→  1241→
+  1242→  1242→PHASE 1 — FOUNDATION
+  1243→  1243→- Set up the monorepo.
+  1244→  1244→- Set up the web app and native Android app.
+  1245→  1245→- Configure shared types and validation.
+  1246→  1246→- Build the design system.
+  1247→  1247→- Create responsive navigation.
+  1248→  1248→- Build authentication screens.
+  1249→  1249→
+  1250→  1250→PHASE 2 — DATABASE AND SECURITY
+  1251→  1251→- Create SQL migrations.
+  1252→  1252→- Configure Supabase Auth.
+  1253→  1253→- Create profiles, projects, and membership tables.
+  1254→  1254→- Enable and test RLS.
+  1255→  1255→- Configure initial storage policies.
+  1256→  1256→- Add seed data clearly labeled as demo content.
+  1257→  1257→
+  1258→  1258→PHASE 3 — CORE WEB MVP
+  1259→  1259→- Implement profiles.
+  1260→  1260→- Implement project creation.
+  1261→  1261→- Implement discovery and search.
+  1262→  1262→- Implement project details.
+  1263→  1263→- Implement likes, comments, saves, and follows.
+  1264→  1264→- Implement collaboration requests.
+  1265→  1265→- Implement tasks and membership permissions.
+  1266→  1266→
+  1267→  1267→PHASE 4 — NATIVE ANDROID
+  1268→  1268→- Implement authentication.
+  1269→  1269→- Implement onboarding.
+  1270→  1270→- Implement feed and discovery.
+  1271→  1271→- Implement project details.
+  1272→  1272→- Implement profiles and collaboration requests.
+  1273→  1273→- Implement notifications.
+  1274→  1274→- Test on Android emulator and physical devices.
+  1275→  1275→
+  1276→  1276→PHASE 5 — COMMUNITY AND QUALITY
+  1277→  1277→- Add moderation.
+  1278→  1278→- Add reporting and blocking.
+  1279→  1279→- Improve errors and accessibility.
+  1280→  1280→- Add authorization tests.
+  1281→  1281→- Add automated CI.
+  1282→  1282→- Fix high-impact usability problems.
+  1283→  1283→
+  1284→  1284→PHASE 6 — CLOSED BETA
+  1285→  1285→- Recruit a small group of real creators.
+  1286→  1286→- Observe how they discover projects and collaborate.
+  1287→  1287→- Gather feedback.
+  1288→  1288→- Fix onboarding and usability issues.
+  1289→  1289→- Validate product demand.
+  1290→  1290→
+  1291→  1291→PHASE 7 — PUBLIC LAUNCH
+  1292→  1292→- Configure production hosting.
+  1293→  1293→- Configure the production domain and HTTPS.
+  1294→  1294→- Verify authentication redirects.
+  1295→  1295→- Apply reviewed production migrations.
+  1296→  1296→- Configure monitoring and backups.
+  1297→  1297→- Build a signed Android release.
+  1298→  1298→- Prepare app-store listing assets.
+  1299→  1299→- Publish only after required testing and platform requirements are satisfied.
+  1300→  1300→
+  1301→  1301→PHASE 8 — GROWTH
+  1302→  1302→- Real-time messaging.
+  1303→  1303→- GitHub integration.
+  1304→  1304→- Releases and advanced contribution tracking.
+  1305→  1305→- Digital product marketplace.
+  1306→  1306→- Pro subscriptions.
+  1307→  1307→- Organization workspaces.
+  1308→  1308→- Advanced discovery.
+  1309→  1309→- Optional AI assistance.
+  1310→  1310→- Additional languages.
+  1311→  1311→
+  1312→  1312→Do not attempt every phase simultaneously.
+  1313→  1313→
+  1314→  1314→# 32. DEPLOYMENT
+  1315→  1315→
+  1316→  1316→WEB:
+  1317→  1317→- Production build succeeds.
+  1318→  1318→- HTTPS works.
+  1319→  1319→- Environment variables are correctly configured.
+  1320→  1320→- Routes and deep links work.
+  1321→  1321→- Public and protected pages behave correctly.
+  1322→  1322→- No privileged secrets appear in client bundles.
+  1323→  1323→
+  1324→  1324→SUPABASE:
+  1325→  1325→- Migrations are applied.
+  1326→  1326→- RLS policies are tested.
+  1327→  1327→- Auth redirects are configured.
+  1328→  1328→- Storage policies are verified.
+  1329→  1329→- Backup and recovery expectations are documented.
+  1330→  1330→- Quotas and operational costs are reviewed.
+  1331→  1331→
+  1332→  1332→ANDROID:
+  1333→  1333→- Unique stable application ID.
+  1334→  1334→- Correct application name and icon.
+  1335→  1335→- Valid build configuration.
+  1336→  1336→- Authentication works in the release build.
+  1337→  1337→- Deep links work.
+  1338→  1338→- Minimal necessary permissions.
+  1339→  1339→- No development secrets or test endpoints.
+  1340→  1340→
+  1341→  1341→Never claim an APK, website deployment, or store release exists unless the actual build or deployment has completed.
+  1342→  1342→
+  1343→  1343→# 33. REQUIRED DELIVERABLES
+  1344→  1344→
+  1345→  1345→Deliver:
+  1346→  1346→- Complete runnable source code.
+  1347→  1347→- Monorepo configuration.
+  1348→  1348→- Web application.
+  1349→  1349→- Native Android application.
+  1350→  1350→- Shared validation and domain types.
+  1351→  1351→- Supabase SQL migrations.
+  1352→  1352→- RLS policies.
+  1353→  1353→- Seed data.
+  1354→  1354→- Storage policies.
+  1355→  1355→- Environment template.
+  1356→  1356→- Automated tests.
+  1357→  1357→- README.
+  1358→  1358→- Architecture documentation.
+  1359→  1359→- Database documentation.
+  1360→  1360→- Security documentation.
+  1361→  1361→- Deployment instructions.
+  1362→  1362→- Android build instructions.
+  1363→  1363→- Troubleshooting guide.
+  1364→  1364→- Feature completion checklist.
+  1365→  1365→- Known limitations and remaining risks.
+  1366→  1366→
+  1367→  1367→Provide exact commands to install dependencies, configure the environment, run the web application, start the Android application, execute tests, and build production artifacts.
+  1368→  1368→
+  1369→  1369→Do not invent successful results.
+  1370→  1370→
+  1371→  1371→# 34. DEFINITION OF DONE
+  1372→  1372→
+  1373→  1373→The first production-minded MVP is complete only when:
+  1374→  1374→1. The repository can be set up using documented commands.
+  1375→  1375→2. The web client runs and builds.
+  1376→  1376→3. The Android client runs and builds.
+  1377→  1377→4. Both clients use the same configured backend.
+  1378→  1378→5. Authentication and profiles work.
+  1379→  1379→6. Project creation and discovery use real database records.
+  1380→  1380→7. Social interactions persist.
+  1381→  1381→8. Collaboration requests work.
+  1382→  1382→9. Team permissions are enforced.
+  1383→  1383→10. Private data is protected by tested RLS policies.
+  1384→  1384→11. Forms and asynchronous operations handle errors.
+  1385→  1385→12. Automated tests pass where the environment supports them.
+  1386→  1386→13. No privileged server secrets are shipped to clients.
+  1387→  1387→14. Setup and deployment documentation is accurate.
+  1388→  1388→15. Unimplemented features are explicitly disclosed.
+  1389→  1389→
+  1390→  1390→# 35. EXECUTION MODE
+  1391→  1391→
+  1392→  1392→Start by inspecting the actual repository and its files.
+  1393→  1393→
+  1394→  1394→Do not respond with only a plan.
+  1395→  1395→
+  1396→  1396→Do not generate hundreds of disconnected files without testing them.
+  1397→  1397→
+  1398→  1398→Implement a complete vertical slice first:
+  1399→  1399→- Authentication.
+  1400→  1400→- Profile.
+  1401→  1401→- Project creation.
+  1402→  1402→- Project discovery.
+  1403→  1403→- Project detail.
+  1404→  1404→- Secure database access.
+  1405→  1405→- Basic collaboration.
+  1406→  1406→
+  1407→  1407→Then test it and expand incrementally.
+  1408→  1408→
+  1409→  1409→For each milestone:
+  1410→  1410→1. Explain the scope briefly.
+  1411→  1411→2. Implement the code.
+  1412→  1412→3. Run the available checks.
+  1413→  1413→4. Fix errors.
+  1414→  1414→5. List changed files.
+  1415→  1415→6. Report actual test and build results.
+  1416→  1416→7. Document configuration still required.
+  1417→  1417→8. Continue to the next milestone.
+  1418→  1418→
+  1419→  1419→If credentials, official branding assets, or external services are missing, document the requirement and implement the appropriate integration boundary.
+  1420→  1420→
+  1421→  1421→Prefer real functionality over mock-only UI.
+  1422→  1422→
+  1423→  1423→The goal is to build TEKA NEXUS as a credible, secure, extensible global technology collaboration product—not simply a visually attractive prototype.
+  1424→  1424→
+  1425→  1425→Begin implementation now.

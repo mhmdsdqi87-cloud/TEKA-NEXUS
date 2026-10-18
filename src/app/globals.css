@@ -1,0 +1,282 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-space-grotesk), var(--font-geist-sans), sans-serif;
+  --font-mono: var(--font-jetbrains-mono), monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-brand-cyan: var(--brand-cyan);
+  --color-brand-violet: var(--brand-violet);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* ── TEKA NEXUS dark graphite palette ─────────────────────── */
+:root {
+  --radius: 0.75rem;
+  --brand-cyan: #22d3ee;
+  --brand-violet: #a78bfa;
+  --background: #08080d;
+  --foreground: #e8e8ef;
+  --card: #0e0e16;
+  --card-foreground: #e8e8ef;
+  --popover: #101019;
+  --popover-foreground: #e8e8ef;
+  --primary: #22d3ee;
+  --primary-foreground: #051016;
+  --secondary: #1a1a26;
+  --secondary-foreground: #d5d5e2;
+  --muted: #17171f;
+  --muted-foreground: #8b8b9e;
+  --accent: #1c1530;
+  --accent-foreground: #d9ccff;
+  --destructive: #f43f5e;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: rgba(34, 211, 238, 0.5);
+  --chart-1: #22d3ee;
+  --chart-2: #a78bfa;
+  --chart-3: #34d399;
+  --chart-4: #fbbf24;
+  --chart-5: #f43f5e;
+  --sidebar: #0a0a11;
+  --sidebar-foreground: #e8e8ef;
+  --sidebar-primary: #22d3ee;
+  --sidebar-primary-foreground: #051016;
+  --sidebar-accent: #16161f;
+  --sidebar-accent-foreground: #e8e8ef;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
+  --sidebar-ring: rgba(34, 211, 238, 0.5);
+}
+
+.dark {
+  --background: #08080d;
+  --foreground: #e8e8ef;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "ss01" on, "cv05" on;
+}
+
+/* ── Brand utilities ──────────────────────────────────────── */
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.text-gradient {
+  background: linear-gradient(94deg, #67e8f9 0%, #22d3ee 34%, #a78bfa 78%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-soft {
+  background: linear-gradient(94deg, #a5f3fc, #e9d5ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Frosted glass panel used across the app shell */
+.glass {
+  background: rgba(14, 14, 22, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-card {
+  background: linear-gradient(160deg, rgba(24, 24, 36, 0.9), rgba(12, 12, 19, 0.94));
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(34, 211, 238, 0.28);
+  box-shadow: 0 8px 32px -12px rgba(34, 211, 238, 0.15), 0 8px 40px -18px rgba(167, 139, 250, 0.2);
+}
+
+/* Ambient background: fine grid + aurora glows */
+.nexus-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 55% 40% at 12% -8%, rgba(34, 211, 238, 0.09), transparent 60%),
+    radial-gradient(ellipse 50% 38% at 88% 4%, rgba(139, 92, 246, 0.1), transparent 62%),
+    radial-gradient(ellipse 60% 46% at 50% 112%, rgba(34, 211, 238, 0.05), transparent 60%),
+    #08080d;
+}
+
+.nexus-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 100%);
+}
+
+/* Neon focus ring */
+.focus-glow:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #08080d, 0 0 0 4px rgba(34, 211, 238, 0.55);
+}
+
+/* Primary gradient button */
+.btn-hero {
+  background: linear-gradient(92deg, #0ea5c9, #22d3ee 45%, #8b5cf6 110%);
+  color: #06121a;
+  font-weight: 600;
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 24px -6px rgba(34, 211, 238, 0.45);
+}
+.btn-hero:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 6px 30px -6px rgba(34, 211, 238, 0.6);
+}
+.btn-hero:disabled {
+  filter: saturate(0.4) brightness(0.7);
+  cursor: not-allowed;
+}
+
+/* Aurora border card */
+.aurora-border {
+  position: relative;
+  background: rgba(14, 14, 22, 0.85);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+.aurora-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, rgba(34, 211, 238, 0.6), rgba(167, 139, 250, 0.55), rgba(34, 211, 238, 0.15));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Status pulse dot */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.pulse-dot {
+  animation: pulse-dot 2.2s ease-in-out infinite;
+}
+
+/* Slow spin for hero orbital ring */
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.orbit-slow { animation: orbit 26s linear infinite; }
+.orbit-rev { animation: orbit 38s linear infinite reverse; }
+
+/* Floating animation */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.float-y { animation: float-y 6s ease-in-out infinite; }
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.35);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Kanban column scroll area */
+.kanban-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .orbit-slow, .orbit-rev, .float-y, .pulse-dot {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Toast on brand */
+[data-sonner-toast] {
+  background: #12121c !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #e8e8ef !important;
+}
+
+/* Safe area for mobile bottom nav */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

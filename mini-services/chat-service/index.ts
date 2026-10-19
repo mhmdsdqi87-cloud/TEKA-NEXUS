@@ -23,11 +23,10 @@
 
 import { createServer, type IncomingMessage } from "node:http";
 import { Server, type Socket } from "socket.io";
-import { Database } from "bun:sqlite";
+import postgres from "postgres";
 import { appendFileSync, existsSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 
 const PORT = 3030;
-const DB_PATH = "/home/z/my-project/db/custom.db";
 const STORE_PATH = new URL("./messages.json", import.meta.url).pathname;
 
 const MAX_TEXT = 1000;
@@ -39,16 +38,18 @@ const RATE_MAX = 10;
 const MEMBER_ROLES = ["OWNER", "ADMIN", "CONTRIBUTOR", "VIEWER"];
 const REACTIONS = ["👍", "❤️", "🔥", "😂", "🎉", "🤔"];
 
-// ─── Read-only DB access ─────────────────────────────────────────────────────
+// ─── Read-only DB access (Supabase Postgres — same DB as the main app) ──────
 
-let db: Database | null = null;
-function getDb(): Database {
-  if (!db) db = new Database(DB_PATH, { readonly: true });
-  return db;
-}
+// Prisma creates quoted camelCase identifiers, hence the explicit quoting.
+const sql = postgres(
+  process.env.DATABASE_URL ??
+    "postgresql://postgres.ljevcviygnknjmhzvtjk:alfairan123%40@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres",
+  { max: 5, idle_timeout: 30, prepare: false } // transaction-pooler-safe
+);
 
-/** Prisma stores SQLite DateTimes as epoch-ms numbers; tolerate strings anyway. */
+/** Prisma stores timestamps as timestamps; normalize anything to epoch ms. */
 function toMs(value: unknown): number {
+  if (value instanceof Date) return value.getTime();
   if (typeof value === "number") return value;
   if (typeof value === "string") {
     const n = Number(value);
@@ -80,19 +81,17 @@ function parseCookies(header: string | undefined): Record<string, string> {
   return out;
 }
 
-function verifySession(token: string | undefined): ChatUser | null {
+async function verifySession(token: string | undefined): Promise<ChatUser | null> {
   if (!token || token.length < 16) return null;
   try {
-    const row = getDb()
-      .query(
-        `SELECT s.expiresAt AS expiresAt, u.id AS id, u.username AS username,
-                u.displayName AS displayName, u.avatarColor AS avatarColor, u.avatarUrl AS avatarUrl
-           FROM Session s JOIN User u ON u.id = s.userId
-          WHERE s.token = ? LIMIT 1`
-      )
-      .get(token) as
+    const rows = await sql`
+      SELECT s."expiresAt" AS "expiresAt", u."id" AS id, u."username" AS username,
+             u."displayName" AS "displayName", u."avatarColor" AS "avatarColor", u."avatarUrl" AS "avatarUrl"
+        FROM "Session" s JOIN "User" u ON u."id" = s."userId"
+       WHERE s."token" = ${token} LIMIT 1`;
+    const row = rows[0] as
       | { expiresAt: unknown; id: string; username: string; displayName: string; avatarColor: string; avatarUrl: string | null }
-      | null;
+      | undefined;
     if (!row) return null;
     const exp = toMs(row.expiresAt);
     if (!Number.isFinite(exp) || exp <= Date.now()) return null;
@@ -114,15 +113,14 @@ function verifySession(token: string | undefined): ChatUser | null {
 const membershipCache = new Map<string, { ok: boolean; until: number }>();
 const MEMBER_TTL_MS = 60_000;
 
-function isProjectMember(userId: string, projectId: string): boolean {
+async function isProjectMember(userId: string, projectId: string): Promise<boolean> {
   const key = `${userId}:${projectId}`;
   const hit = membershipCache.get(key);
   if (hit && hit.until > Date.now()) return hit.ok;
   let ok = false;
   try {
-    const row = getDb()
-      .query(`SELECT role FROM ProjectMember WHERE userId = ? AND projectId = ? LIMIT 1`)
-      .get(userId, projectId) as { role: string } | null;
+    const rows = await sql`SELECT "role" FROM "ProjectMember" WHERE "userId" = ${userId} AND "projectId" = ${projectId} LIMIT 1`;
+    const row = rows[0] as { role: string } | undefined;
     ok = !!row && MEMBER_ROLES.includes(row.role);
   } catch (err) {
     console.error("[chat-service] membership lookup failed:", err);
@@ -267,7 +265,8 @@ function checkRate(userId: string): { ok: boolean; retryAfterMs: number } {
   const times = (sendTimes.get(userId) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
   if (times.length >= RATE_MAX) {
     sendTimes.set(userId, times);
-    return { ok: false, retryAfterMs: RATE_WINDOW_MS - (now - times[0]) };
+    const oldest = times[0] ?? now;
+    return { ok: false, retryAfterMs: RATE_WINDOW_MS - (now - oldest) };
   }
   times.push(now);
   sendTimes.set(userId, times);
@@ -352,10 +351,10 @@ const io = new Server(httpServer, {
 
 type SocketData = { user: ChatUser; rooms: Set<string> };
 
-io.use((socket, next) => {
+io.use(async (socket, next) => {
   const cookies = parseCookies(socket.handshake.headers.cookie);
   const token = cookies["teka_session"] ?? socket.handshake.auth?.token;
-  const user = verifySession(token);
+  const user = await verifySession(token);
   if (!user) return next(new Error("unauthorized: login required"));
   (socket.data as SocketData) = { user, rooms: new Set() };
   next();
@@ -380,13 +379,13 @@ io.on("connection", (socket: Socket) => {
   console.log(`[chat-service] connected ${socket.id} user=@${user.username}`);
 
   // ── join a project room ──
-  socket.on("chat:join", (payload: { projectId?: unknown }, ack?: (r: unknown) => void) => {
+  socket.on("chat:join", async (payload: { projectId?: unknown }, ack?: (r: unknown) => void) => {
     const projectId = payload?.projectId;
     if (typeof projectId !== "string" || !/^[a-z0-9]{10,40}$/i.test(projectId)) {
       ack?.({ ok: false, error: "badProject" });
       return;
     }
-    if (!isProjectMember(user.id, projectId)) {
+    if (!(await isProjectMember(user.id, projectId))) {
       ack?.({ ok: false, error: "notMember" });
       return;
     }

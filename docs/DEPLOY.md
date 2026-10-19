@@ -45,7 +45,7 @@ bun run db:switch:postgres && bunx prisma db push
 
 ```bash
 bun install
-bun run build            # خروجی standalone در .next/standalone
+bun run build:standalone # خروجی standalone در .next/standalone
 DATABASE_URL="postgresql://..." bun run start   # پورت ۳۰۰۰
 # جلوی آن Caddy/Nginx با HTTPS بگذارید (فایل Caddyfile همین ریپو یک نمونهٔ آماده است)
 ```

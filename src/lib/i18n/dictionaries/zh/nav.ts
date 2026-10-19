@@ -5,6 +5,7 @@ import type { NavDict } from "../en/nav";
 export const nav: NavDict = {
   newProject: "新建项目",
   academy: "学院",
+  portal: "学习门户",
   founder: "创始人控制台",
   primaryNavAria: "主导航",
   mainAria: "导航",

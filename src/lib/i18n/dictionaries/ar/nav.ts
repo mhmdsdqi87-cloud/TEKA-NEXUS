@@ -5,6 +5,7 @@ import type { NavDict } from "../en/nav";
 export const nav: NavDict = {
   newProject: "مشروع جديد",
   academy: "الأكاديمية",
+  portal: "بوابة التعلم",
   founder: "لوحة المؤسس",
   primaryNavAria: "التنقل الرئيسي",
   mainAria: "الرئيسي",

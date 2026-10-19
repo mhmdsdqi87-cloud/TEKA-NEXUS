@@ -25,6 +25,7 @@ import { NotificationsView } from "@/views/notifications-view";
 import { SettingsView } from "@/views/settings-view";
 import { SavedView } from "@/views/saved-view";
 import { AcademyView } from "@/views/academy-view";
+import { AcademyPortalView } from "@/views/academy-portal-view";
 import { FounderView } from "@/views/founder-view";
 import { LogoMark } from "@/components/brand/logo";
 import { MotionRoot, PageTransition } from "@/components/shared/motion";
@@ -165,6 +166,9 @@ export default function Page() {
     case "academy":
       content = <AcademyView key={`${view.course ?? ""}:${view.lesson ?? ""}`} courseSlug={view.course} lessonId={view.lesson} />;
       break;
+    case "academyPortal":
+      content = <AcademyPortalView key={view.section ?? "hub"} section={view.section} />;
+      break;
     case "founder":
       content = <FounderView />;
       break;
@@ -172,7 +176,7 @@ export default function Page() {
       content = <LandingView />;
   }
 
-  const shellViews = new Set(["home", "explore", "projectNew", "project", "teams", "notifications", "profile", "settings", "saved", "academy", "founder"]);
+  const shellViews = new Set(["home", "explore", "projectNew", "project", "teams", "notifications", "profile", "settings", "saved", "academy", "academyPortal", "founder"]);
   const inShell = shellViews.has(view.name);
 
   const viewKey =
@@ -180,7 +184,8 @@ export default function Page() {
     (view.name === "project" ? `:${view.slug}:${view.tab ?? ""}` : "") +
     (view.name === "profile" ? `:${view.username}` : "") +
     (view.name === "settings" ? `:${view.tab ?? ""}` : "") +
-    (view.name === "academy" ? `:${view.course ?? ""}:${view.lesson ?? ""}` : "");
+    (view.name === "academy" ? `:${view.course ?? ""}:${view.lesson ?? ""}` : "") +
+    (view.name === "academyPortal" ? `:${view.section ?? ""}` : "");
 
   return (
     <MotionRoot>

@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Award, ChevronDown, GraduationCap, Lock, PlayCircle, ShieldCheck, Sparkles, Trophy } from "lucide-react";
+import { Award, ChevronDown, Compass, GraduationCap, Lock, PlayCircle, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
@@ -308,6 +308,13 @@ function Hub({ onOpenCourse, progress, certs, exams, leaders, onShowCert }: {
                   <p className="font-semibold text-violet-300">🏆 ×2</p>
                 </div>
               </div>
+              <button
+                onClick={() => navigateHub({ name: "academyPortal" })}
+                className="glass-card inline-flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-cyan-200 transition-colors hover:bg-white/[0.06] focus-glow"
+              >
+                <Compass className="h-4 w-4 text-cyan-300" />
+                {t("nav.portal")}
+              </button>
             </div>
           </div>
         </div>

@@ -15,10 +15,12 @@ import { notifications } from "./notifications";
 import { profile } from "./profile";
 import { settings } from "./settings";
 import { academy } from "./academy";
+import { founder } from "./founder";
 
 export const fr = {
   common,
   academy,
+  founder,
   landing,
   auth,
   onboarding,

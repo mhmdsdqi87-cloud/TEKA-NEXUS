@@ -48,5 +48,8 @@ export const auth: AuthDict = {
     passwordShort: "密码至少需要 8 个字符。",
     emailInvalid: "请输入有效的邮箱地址。",
     passwordRequired: "请输入密码。",
+    emailTaken: "该邮箱已注册。请直接登录。",
+    usernameTaken: "该用户名已被占用。换一个吧。",
+    invalidCredentials: "邮箱或密码错误。",
   },
 };

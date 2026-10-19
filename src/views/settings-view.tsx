@@ -3,13 +3,14 @@
 // TEKA NEXUS — SettingsView (Task 2-d): settings hub (spec §25).
 // Runs inside AppShell — no nav of its own.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import { toast } from "sonner";
 import {
   Ban,
   Bell,
   Flag,
+  ImagePlus,
   KeyRound,
   Loader2,
   Lock,
@@ -31,7 +32,7 @@ import { AVATAR_GRADIENTS, AVATAR_GRADIENT_KEYS, LIMITS, SKILLS } from "@/lib/co
 import { cn } from "@/lib/utils";
 import { EmptyState, UserAvatar } from "@/components/shared/atoms";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
-import { EASE, Reveal, TapScale } from "@/components/shared/motion";
+import { EASE, FadeIn, Reveal, TapScale } from "@/components/shared/motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -180,6 +181,67 @@ function SettingsContent({ user, initialTab }: { user: SessionUser; initialTab?:
 
 // ─── PROFILE ────────────────────────────────────────────────────
 
+// ── Avatar upload helpers (client-side resize → data URL) ──────
+
+// Must match the API's data-URL budget (src/app/api/me/avatar/route.ts).
+const MAX_AVATAR_LENGTH = 400 * 1024;
+const AVATAR_SIZE = 256; // final square size, cover-cropped
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("read-failed"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("decode-failed"));
+    img.src = src;
+  });
+}
+
+// Draw the image cover-cropped into a 256×256 square and encode it as WebP
+// (PNG when the browser can't encode WebP), stepping quality down until the
+// data URL fits the 400 KB budget. Returns null when even the lowest quality
+// is still too large.
+async function resizeAvatarFile(file: File): Promise<string | null> {
+  const src = await readFileAsDataUrl(file);
+  const img = await loadImage(src);
+  const side = Math.min(img.naturalWidth, img.naturalHeight);
+  if (side <= 0) throw new Error("empty-image");
+
+  const canvas = document.createElement("canvas");
+  canvas.width = AVATAR_SIZE;
+  canvas.height = AVATAR_SIZE;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("canvas-unavailable");
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(
+    img,
+    (img.naturalWidth - side) / 2,
+    (img.naturalHeight - side) / 2,
+    side,
+    side,
+    0,
+    0,
+    AVATAR_SIZE,
+    AVATAR_SIZE
+  );
+
+  for (const quality of [0.92, 0.82, 0.72, 0.6, 0.5]) {
+    const out = canvas.toDataURL("image/webp", quality);
+    if (out.length <= MAX_AVATAR_LENGTH) return out;
+  }
+  const png = canvas.toDataURL("image/png");
+  return png.length <= MAX_AVATAR_LENGTH ? png : null;
+}
+
 function ProfileTab({ user }: { user: SessionUser }) {
   const setUser = useApp((s) => s.setUser);
   const t = useT();
@@ -193,6 +255,9 @@ function ProfileTab({ user }: { user: SessionUser }) {
   const [skillsLoaded, setSkillsLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [websiteError, setWebsiteError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // SessionUser doesn't carry skills — load them from the public profile.
   useEffect(() => {
@@ -246,8 +311,117 @@ function ProfileTab({ user }: { user: SessionUser }) {
     setSkills((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]));
   }
 
+  async function uploadAvatar(file: File) {
+    setUploading(true);
+    try {
+      const dataUrl = await resizeAvatarFile(file);
+      if (!dataUrl) {
+        toast.error(t("settings.avatar.tooBig"));
+        return;
+      }
+      const res = await post<{ user: SessionUser }>("/api/me/avatar", { dataUrl });
+      setUser(res.user);
+      toast.success(t("settings.avatar.toastSaved"));
+    } catch {
+      toast.error(t("settings.avatar.invalid"));
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function removeAvatar() {
+    setRemoving(true);
+    try {
+      const res = await del<{ user: SessionUser }>("/api/me/avatar");
+      setUser(res.user);
+      toast.success(t("settings.avatar.toastRemoved"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("settings.errors.saveFailed"));
+    } finally {
+      setRemoving(false);
+    }
+  }
+
   return (
     <div className="space-y-5">
+      <FadeIn y={10}>
+        <section className="glass-card space-y-4 rounded-xl p-5">
+          <div className="space-y-1">
+            <Label htmlFor="avatar-upload-input">{t("settings.avatar.title")}</Label>
+            <p className="text-xs text-muted-foreground">{t("settings.avatar.hint")}</p>
+          </div>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="relative shrink-0">
+              <UserAvatar user={user} size={88} />
+              {uploading && (
+                <div
+                  className="absolute inset-0 grid place-items-center rounded-full bg-black/55"
+                  aria-hidden="true"
+                >
+                  <Loader2 className="h-6 w-6 animate-spin text-cyan-200" />
+                </div>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <TapScale>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading || removing}
+                  className="focus-glow"
+                >
+                  {uploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <ImagePlus className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  {t("settings.avatar.upload")}
+                </Button>
+              </TapScale>
+              {user.avatarUrl ? (
+                <TapScale>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={removeAvatar}
+                    disabled={uploading || removing}
+                    className="text-rose-300 hover:bg-rose-500/10 hover:text-rose-200 focus-glow"
+                  >
+                    {removing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    )}
+                    {t("settings.avatar.remove")}
+                  </Button>
+                </TapScale>
+              ) : null}
+            </div>
+          </div>
+          <input
+            ref={fileInputRef}
+            id="avatar-upload-input"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            aria-label={t("settings.avatar.upload")}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = ""; // allow re-picking the same file
+              if (!file) return;
+              if (!file.type.startsWith("image/")) {
+                toast.error(t("settings.avatar.invalid"));
+                return;
+              }
+              void uploadAvatar(file);
+            }}
+          />
+        </section>
+      </FadeIn>
+
       <Reveal y={10}>
         <section className="glass-card space-y-5 rounded-xl p-5">
           <div className="space-y-2">

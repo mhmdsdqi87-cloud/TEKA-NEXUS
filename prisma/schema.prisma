@@ -61,6 +61,7 @@ model User {
   notificationPrefs    UserNotificationPrefs?
   academyProgress      AcademyProgress[]
   academyCertificates  AcademyCertificate[]
+  academyExams         AcademyExam[]
 }
 
 model Session {
@@ -428,4 +429,22 @@ model AcademyCertificate {
 
   @@unique([userId, courseId])
   @@index([userId])
+}
+
+model AcademyExam {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String    // "python-basics" | "html-basics"
+  status      String    @default("ACTIVE") // ACTIVE|PASSED|FAILED|VOID
+  score       Int       @default(0) // 0-100, graded server-side
+  answers     String    @default("{}") // JSON: { questionId: chosenOptionIndex }
+  questionIds String    @default("[]") // JSON array of exam-bank question ids (correct answers never leave the server)
+  startedAt   DateTime  @default(now())
+  expiresAt   DateTime // server timer: startedAt + 15 min
+  submittedAt DateTime?
+  attemptNo   Int       @default(1)
+
+  @@index([userId])
+  @@index([userId, courseId, status])
 }

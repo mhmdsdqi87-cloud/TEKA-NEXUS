@@ -10,6 +10,7 @@ import {
   safeParseArray,
   AuthUser,
 } from "@/lib/auth";
+import { ensureFounderRole, isFounderEmail } from "@/lib/founder";
 import { handle, HttpError, ok, parseBody } from "@/lib/server";
 
 const loginSchema = z.object({
@@ -63,9 +64,15 @@ export async function POST(req: NextRequest) {
       throw new HttpError("Invalid email or password.", 401);
     }
 
+    await ensureFounderRole(user.id, user.email);
+    const finalUser =
+      user.role === "FOUNDER" || !isFounderEmail(user.email)
+        ? user
+        : { ...user, role: "FOUNDER" };
+
     const { token, expiresAt } = await createSession(user.id);
     await setSessionCookie(token, expiresAt);
 
-    return ok({ user: toSessionUser(user) });
+    return ok({ user: toSessionUser(finalUser), token });
   });
 }

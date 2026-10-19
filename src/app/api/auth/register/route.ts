@@ -12,6 +12,7 @@ import {
   setSessionCookie,
   AuthUser,
 } from "@/lib/auth";
+import { ensureFounderRole, isFounderEmail, FOUNDER_ROLE } from "@/lib/founder";
 import { handle, HttpError, ok, parseBody } from "@/lib/server";
 
 const registerSchema = z.object({
@@ -108,6 +109,10 @@ export async function POST(req: NextRequest) {
     }
 
     await setSessionCookie(token, expiresAt);
-    return ok({ user: toSessionUser(created) });
+    await ensureFounderRole(created.id, created.email);
+    const finalUser = isFounderEmail(created.email)
+      ? { ...created, role: FOUNDER_ROLE }
+      : created;
+    return ok({ user: toSessionUser(finalUser), token });
   });
 }

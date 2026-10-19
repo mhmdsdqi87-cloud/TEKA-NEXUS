@@ -70,6 +70,30 @@ export const teams = {
     emptyTitle: "No projects listing required skills right now",
     emptyDesc: "Showing the latest projects instead — check back as new crews post their needs.",
   },
+  chat: {
+    title: "Team chat",
+    online: "{n} online",
+    onlineOne: "Just you online",
+    typing: "{names} is typing…",
+    typingMulti: "{names} are typing…",
+    placeholder: "Message your crew…",
+    send: "Send",
+    empty: "No messages yet — say hi 👋",
+    emptyHint: "Messages land here in real time for everyone in the crew.",
+    disconnected: "Connection lost",
+    reconnecting: "Reconnecting…",
+    deleted: "Message deleted",
+    loginRequired: "Sign in to join the conversation",
+    reactAdd: "Add reaction",
+    rateLimited: "Easy there — too many messages in a row",
+    charsLeft: "{n} characters left",
+    a11y: {
+      openChat: "Open team chat for {name}",
+      closeChat: "Close chat",
+      deleteMessage: "Delete message",
+      messages: "Messages",
+    },
+  },
 };
 
 export type TeamsDict = typeof teams;

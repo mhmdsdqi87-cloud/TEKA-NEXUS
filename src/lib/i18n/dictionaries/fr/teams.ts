@@ -77,4 +77,28 @@ export const teams: TeamsDict = {
     emptyDesc:
       "Les projets les plus récents s’affichent à la place — revenez quand de nouvelles équipes publieront leurs besoins.",
   },
+  chat: {
+    title: "Chat d’équipe",
+    online: "{n} en ligne",
+    onlineOne: "Tu es seul en ligne",
+    typing: "{names} écrit…",
+    typingMulti: "{names} écrivent…",
+    placeholder: "Écris à ton équipe…",
+    send: "Envoyer",
+    empty: "Aucun message — dis bonjour 👋",
+    emptyHint: "Les messages arrivent ici en direct pour toute l’équipe.",
+    disconnected: "Connexion perdue",
+    reconnecting: "Reconnexion…",
+    deleted: "Message supprimé",
+    loginRequired: "Connecte-toi pour rejoindre la discussion",
+    reactAdd: "Ajouter une réaction",
+    rateLimited: "Doucement — trop de messages d’affilée",
+    charsLeft: "{n} caractères restants",
+    a11y: {
+      openChat: "Ouvrir le chat de l’équipe {name}",
+      closeChat: "Fermer le chat",
+      deleteMessage: "Supprimer le message",
+      messages: "Messages",
+    },
+  },
 };

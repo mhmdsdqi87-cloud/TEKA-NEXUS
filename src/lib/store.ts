@@ -20,6 +20,7 @@ export type View =
   | { name: "settings"; tab?: "profile" | "account" | "notifications" | "privacy" }
   | { name: "saved" }
   | { name: "academy"; course?: string; lesson?: string }
+  | { name: "academyPortal"; section?: "dashboard" | "paths" | "tools" | "tutor" | "certificates" }
   | { name: "founder" };
 
 export type SessionUser = {

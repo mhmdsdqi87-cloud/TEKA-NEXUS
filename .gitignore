@@ -52,3 +52,14 @@ prompt
 server.log
 # Skills directory
 /skills/
+# force-include the env template even though .env* is ignored
+!.env.example
+
+# sandbox-local artifacts — never publish
+/db
+/upload
+/examples
+/agent-ctx
+/worklog.md
+/tmp-*
+/tool-results

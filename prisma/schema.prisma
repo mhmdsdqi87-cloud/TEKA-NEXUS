@@ -5,7 +5,10 @@
 // fields are stored as JSON strings.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // Vercel: build image and Lambda runtime use different OpenSSL flavors —
+  // ship both engines or every Prisma query 500s in production.
+  binaryTargets = ["native", "rhel-openssl-3.0.x", "rhel-openssl-1.0.x"]
 }
 
 datasource db {

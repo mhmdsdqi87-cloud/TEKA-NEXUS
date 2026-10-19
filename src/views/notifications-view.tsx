@@ -28,6 +28,7 @@ import { NotificationDTO } from "@/lib/dto";
 import { cn } from "@/lib/utils";
 import { EmptyState, UserAvatar } from "@/components/shared/atoms";
 import { ListSkeleton } from "@/components/shared/project-card";
+import { FadeIn, SPRING, staggerChild, staggerParent, TapScale } from "@/components/shared/motion";
 import { Button } from "@/components/ui/button";
 
 type NotifMeta = { icon: LucideIcon; fg: string; bg: string };
@@ -48,6 +49,23 @@ const FALLBACK_META: NotifMeta = {
   fg: "text-zinc-300",
   bg: "bg-zinc-500/10",
 };
+
+const STAGGER_CAP = 12;
+
+/** Gentle scale-settle wrapper for the "all caught up" icon. */
+function SettledBellOff({ className }: { className?: string }) {
+  return (
+    <motion.span
+      aria-hidden="true"
+      className="inline-flex"
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ ...SPRING, delay: 0.12 }}
+    >
+      <BellOff className={className} />
+    </motion.span>
+  );
+}
 
 /** Payload fields vary per notification type — read them defensively. */
 function str(v: unknown): string | null {
@@ -219,15 +237,29 @@ export function NotificationsView() {
                 : t("notifications.allCaughtUp")}
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={markAllRead}
-            disabled={markAllPending || unread === 0}
-            className="shrink-0"
-          >
-            {markAllPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCheck className="h-4 w-4" />}
-            {t("notifications.markAll")}
-          </Button>
+          <TapScale className="shrink-0">
+            <Button
+              variant="outline"
+              onClick={markAllRead}
+              disabled={markAllPending || unread === 0}
+              className="w-full"
+            >
+              {markAllPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <motion.span
+                  key={unread === 0 ? "clear" : "unread"}
+                  className="inline-flex"
+                  initial={{ scale: 0.4, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={SPRING}
+                >
+                  <CheckCheck className="h-4 w-4" />
+                </motion.span>
+              )}
+              {t("notifications.markAll")}
+            </Button>
+          </TapScale>
         </motion.div>
 
         {/* ── Filter chips ───────────────────────────────────── */}
@@ -239,17 +271,37 @@ export function NotificationsView() {
               onClick={() => setFilter(f)}
               aria-pressed={filter === f}
               className={cn(
-                "rounded-full border px-4 py-1.5 text-sm transition-colors focus-glow",
+                "relative rounded-full border px-4 py-1.5 text-sm transition-colors focus-glow",
                 filter === f
-                  ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-200"
+                  ? "border-transparent bg-transparent text-cyan-200"
                   : "border-white/10 bg-white/[0.03] text-muted-foreground hover:text-foreground"
               )}
             >
-              {f === "all"
-                ? t("notifications.filterAll")
-                : unread > 0
-                  ? t("notifications.filterUnreadCount", { n: unread })
-                  : t("notifications.filterUnread")}
+              {filter === f && (
+                <motion.span
+                  layoutId="notif-filter-pill"
+                  aria-hidden="true"
+                  className="absolute inset-0 rounded-full border border-cyan-500/40 bg-cyan-500/10"
+                  transition={SPRING}
+                />
+              )}
+              <span className="relative">
+                {f === "all" ? (
+                  t("notifications.filterAll")
+                ) : (
+                  <motion.span
+                    key={unread}
+                    className="inline-block"
+                    initial={{ scale: 1.3, opacity: 0.4 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={SPRING}
+                  >
+                    {unread > 0
+                      ? t("notifications.filterUnreadCount", { n: unread })
+                      : t("notifications.filterUnread")}
+                  </motion.span>
+                )}
+              </span>
             </button>
           ))}
         </div>
@@ -269,74 +321,95 @@ export function NotificationsView() {
             }
           />
         ) : visible.length === 0 ? (
-          <EmptyState
-            icon={BellOff}
-            title={t("notifications.allCaughtUp")}
-            description={
-              filter === "unread"
-                ? t("notifications.noUnreadDesc")
-                : t("notifications.emptyDesc")
-            }
-          />
+          <FadeIn>
+            <EmptyState
+              icon={SettledBellOff}
+              title={t("notifications.allCaughtUp")}
+              description={
+                filter === "unread"
+                  ? t("notifications.noUnreadDesc")
+                  : t("notifications.emptyDesc")
+              }
+            />
+          </FadeIn>
         ) : (
-          <ul className="space-y-3">
-            {visible.map((n) => {
+          <motion.ul
+            className="space-y-3"
+            variants={staggerParent}
+            initial="hidden"
+            animate="show"
+          >
+            {visible.map((n, i) => {
               const meta = NOTIF_META[n.type] ?? FALLBACK_META;
               const Icon = meta.icon;
-              return (
-                <li key={n.id}>
-                  <button
-                    type="button"
-                    onClick={() => openNotification(n)}
-                    aria-label={`${notifText(n, t)}${n.readAt ? "" : ` ${t("notifications.a11y.unreadSuffix")}`}`}
-                    className={cn(
-                      "flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors focus-glow",
-                      n.readAt
-                        ? "border-white/[0.06] hover:border-white/[0.16]"
-                        : "border-white/[0.08] bg-white/[0.04] hover:border-cyan-500/25"
-                    )}
-                  >
-                    {n.actor ? (
-                      <span className="relative shrink-0">
-                        <UserAvatar user={n.actor} size={36} />
-                        <span
-                          className={cn(
-                            "absolute -bottom-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full border border-[#0b0b12]",
-                            meta.bg
-                          )}
-                        >
-                          <Icon className={cn("h-2.5 w-2.5", meta.fg)} />
-                        </span>
-                      </span>
-                    ) : (
+              const content = (
+                <button
+                  type="button"
+                  onClick={() => openNotification(n)}
+                  aria-label={`${notifText(n, t)}${n.readAt ? "" : ` ${t("notifications.a11y.unreadSuffix")}`}`}
+                  className={cn(
+                    "relative flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors focus-glow",
+                    n.readAt
+                      ? "border-white/[0.06] hover:border-white/[0.16]"
+                      : "border-white/[0.08] bg-white/[0.04] hover:border-cyan-500/25"
+                  )}
+                >
+                  {!n.readAt && (
+                    <motion.span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 rounded-xl bg-cyan-500/10"
+                      initial={{ opacity: 0.5 }}
+                      animate={{ opacity: 0 }}
+                      transition={{ duration: 1.2, ease: "easeOut" }}
+                    />
+                  )}
+                  {n.actor ? (
+                    <span className="relative shrink-0">
+                      <UserAvatar user={n.actor} size={36} />
                       <span
                         className={cn(
-                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.08]",
+                          "absolute -bottom-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full border border-[#0b0b12]",
                           meta.bg
                         )}
                       >
-                        <Icon className={cn("h-4 w-4", meta.fg)} />
-                      </span>
-                    )}
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm leading-snug text-foreground/90">
-                        {notifText(n, t)}
-                      </span>
-                      <span className="mt-1 block text-xs text-muted-foreground">
-                        {rel(n.createdAt)}
+                        <Icon className={cn("h-2.5 w-2.5", meta.fg)} />
                       </span>
                     </span>
-                    {!n.readAt && (
-                      <span
-                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-cyan-400"
-                        aria-hidden="true"
-                      />
-                    )}
-                  </button>
-                </li>
+                  ) : (
+                    <span
+                      className={cn(
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.08]",
+                        meta.bg
+                      )}
+                    >
+                      <Icon className={cn("h-4 w-4", meta.fg)} />
+                    </span>
+                  )}
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm leading-snug text-foreground/90">
+                      {notifText(n, t)}
+                    </span>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      {rel(n.createdAt)}
+                    </span>
+                  </span>
+                  {!n.readAt && (
+                    <span
+                      className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-cyan-400"
+                      aria-hidden="true"
+                    />
+                  )}
+                </button>
+              );
+              return i < STAGGER_CAP ? (
+                <motion.li key={n.id} variants={staggerChild}>
+                  {content}
+                </motion.li>
+              ) : (
+                <li key={n.id}>{content}</li>
               );
             })}
-          </ul>
+          </motion.ul>
         )}
       </div>
     </MotionConfig>

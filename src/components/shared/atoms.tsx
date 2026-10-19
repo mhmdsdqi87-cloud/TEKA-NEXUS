@@ -2,8 +2,11 @@
 
 // TEKA NEXUS — shared UI atoms used across every view.
 
+import { motion } from "framer-motion";
+
 import { cn } from "@/lib/utils";
 import { useT, useLabeled } from "@/lib/i18n";
+import { EASE, AnimatedNumber } from "@/components/shared/motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AVATAR_GRADIENTS, PROJECT_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { UserCard } from "@/lib/dto";
@@ -42,7 +45,10 @@ export function StatusPill({ status, className }: { status: string; className?: 
   const lbl = useLabeled();
   const s = PROJECT_STATUSES.find((x) => x.slug === status) ?? PROJECT_STATUSES[0];
   return (
-    <span
+    <motion.span
+      initial={{ opacity: 0, scale: 0.92 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.25, ease: EASE }}
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium",
         s.bg,
@@ -52,7 +58,7 @@ export function StatusPill({ status, className }: { status: string; className?: 
     >
       <span className={cn("h-1.5 w-1.5 rounded-full", s.dot)} />
       {lbl("project.status", s.slug, s.name)}
-    </span>
+    </motion.span>
   );
 }
 
@@ -60,7 +66,10 @@ export function PriorityPill({ priority, className }: { priority: string; classN
   const lbl = useLabeled();
   const p = TASK_PRIORITIES.find((x) => x.slug === priority) ?? TASK_PRIORITIES[1];
   return (
-    <span
+    <motion.span
+      initial={{ opacity: 0, scale: 0.92 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.25, ease: EASE }}
       className={cn(
         "inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
         p.bg,
@@ -69,7 +78,7 @@ export function PriorityPill({ priority, className }: { priority: string; classN
       )}
     >
       {lbl("project.priority", p.slug, p.name)}
-    </span>
+    </motion.span>
   );
 }
 
@@ -142,12 +151,14 @@ export function ReputationChip({ xp, reputation, className }: { xp?: number; rep
     <span className={cn("inline-flex items-center gap-2 font-mono text-xs text-muted-foreground", className)}>
       {typeof xp === "number" && (
         <span className="inline-flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" /> {xp.toLocaleString()} XP
+          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />{" "}
+          <AnimatedNumber value={xp} format={(n) => Math.round(n).toLocaleString()} /> XP
         </span>
       )}
       {typeof reputation === "number" && (
         <span className="inline-flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-violet-400" /> {reputation.toLocaleString()} REP
+          <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />{" "}
+          <AnimatedNumber value={reputation} format={(n) => Math.round(n).toLocaleString()} /> REP
         </span>
       )}
     </span>

@@ -32,6 +32,7 @@ import { useT, useRelativeTime } from "@/lib/i18n";
 
 import { EmptyState, StatusPill, UserAvatar } from "@/components/shared/atoms";
 import { ListSkeleton } from "@/components/shared/project-card";
+import { FadeIn, HoverLift, PulsingDot, SPRING, Stagger, StaggerItem } from "@/components/shared/motion";
 import { Button } from "@/components/ui/button";
 
 // ─── Feed event styling per eventType ────────────────────────
@@ -93,19 +94,20 @@ function FeedEventCard({ event }: { event: FeedEvent }) {
   };
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={openProject}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          openProject();
-        }
-      }}
-      aria-label={t("home.openProjectAria", { name: event.project.name })}
-      className="glass-card rounded-xl p-4 flex items-start gap-3.5 cursor-pointer outline-none focus-glow group"
-    >
+    <HoverLift className="w-full">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={openProject}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openProject();
+          }
+        }}
+        aria-label={t("home.openProjectAria", { name: event.project.name })}
+        className="glass-card rounded-xl p-4 flex items-start gap-3.5 cursor-pointer outline-none focus-glow group"
+      >
       <span
         aria-hidden="true"
         className={cn("h-10 w-10 rounded-full border flex items-center justify-center shrink-0", meta.wrap)}
@@ -147,7 +149,8 @@ function FeedEventCard({ event }: { event: FeedEvent }) {
           <UserAvatar user={event.actor} size={32} className="transition-transform hover:scale-105" />
         </button>
       )}
-    </div>
+      </div>
+    </HoverLift>
   );
 }
 
@@ -206,19 +209,25 @@ export function HomeView() {
       transition={{ duration: 0.3, ease: "easeOut" }}
     >
       {/* Header row */}
-      <div className="flex items-end justify-between gap-4 mb-6">
+      <FadeIn className="flex items-end justify-between gap-4 mb-6">
         <div className="min-w-0">
           <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight">{t("common.home")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t("home.subtitle")}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            <span aria-hidden="true" className="me-2 inline-flex translate-y-px align-middle">
+              <PulsingDot dotClassName="bg-cyan-400" />
+            </span>
+            {t("home.subtitle")}
+          </p>
         </div>
         <Button className="btn-hero shrink-0" size="sm" onClick={() => navigate({ name: "projectNew" })}>
           <Plus className="h-4 w-4" /> {t("nav.newProject")}
         </Button>
-      </div>
+      </FadeIn>
 
       {/* Welcome strip */}
       {user && (
-        <div className="glass-card rounded-xl p-4 md:p-5 flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+        <HoverLift className="mb-6">
+          <div className="glass-card rounded-xl p-4 md:p-5 flex flex-col sm:flex-row sm:items-center gap-4">
           <UserAvatar user={user} size={44} />
           <div className="flex-1 min-w-0">
             <p className="font-display font-semibold">{t("home.welcomeBack", { name: user.displayName })}</p>
@@ -239,7 +248,8 @@ export function HomeView() {
               <Users className="h-3.5 w-3.5" /> {t("common.teams")}
             </Button>
           </div>
-        </div>
+          </div>
+        </HoverLift>
       )}
 
       {/* Filter chips */}
@@ -250,13 +260,21 @@ export function HomeView() {
             onClick={() => setFilter(chip)}
             aria-pressed={filter === chip}
             className={cn(
-              "rounded-full border px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors outline-none focus-glow min-h-[32px]",
+              "relative rounded-full border px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors outline-none focus-glow min-h-[32px]",
               filter === chip
-                ? "border-cyan-400/40 bg-cyan-500/10 text-cyan-300"
+                ? "border-transparent bg-transparent text-cyan-300"
                 : "border-white/10 bg-white/[0.02] text-muted-foreground hover:border-white/20 hover:text-foreground"
             )}
           >
-            {t(FILTER_LABEL_KEYS[chip])}
+            {filter === chip && (
+              <motion.span
+                layoutId="home-filter-pill"
+                aria-hidden="true"
+                className="absolute inset-0 rounded-full border border-cyan-400/40 bg-cyan-500/10"
+                transition={SPRING}
+              />
+            )}
+            <span className="relative">{t(FILTER_LABEL_KEYS[chip])}</span>
           </button>
         ))}
       </div>
@@ -278,11 +296,19 @@ export function HomeView() {
           <ListSkeleton rows={4} />
         )
       ) : filtered && filtered.length > 0 ? (
-        <div className="flex flex-col gap-3">
-          {filtered.map((e) => (
-            <FeedEventCard key={e.id} event={e} />
-          ))}
-        </div>
+        <Stagger key={filter} className="flex flex-col gap-3" gap={0.04}>
+          {filtered.map((e, i) =>
+            i < 12 ? (
+              <StaggerItem key={e.id}>
+                <FeedEventCard event={e} />
+              </StaggerItem>
+            ) : (
+              <FadeIn key={e.id} y={12} duration={0.4}>
+                <FeedEventCard event={e} />
+              </FadeIn>
+            )
+          )}
+        </Stagger>
       ) : events.length === 0 ? (
         <EmptyState
           icon={Sparkles}

@@ -5,7 +5,7 @@
 // tags (Enter to add, max 8), required-skill toggles, link validation.
 
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   BarChart3,
   Boxes,
@@ -35,6 +35,7 @@ import { useT, useLabeled } from "@/lib/i18n";
 import { LIMITS, PROJECT_CATEGORIES, PROJECT_STATUSES, SKILLS } from "@/lib/constants";
 
 import { EmptyState } from "@/components/shared/atoms";
+import { HoverLift, SPRING, staggerChild, staggerParent, TapScale } from "@/components/shared/motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -222,9 +223,16 @@ export function ProjectNewView() {
         <p className="text-sm text-muted-foreground mt-1">{t("projectNew.subtitle")}</p>
       </div>
 
-      <form onSubmit={handleSubmit} noValidate className="glass-card rounded-2xl p-5 md:p-8 max-w-3xl flex flex-col gap-7">
+      <motion.form
+        onSubmit={handleSubmit}
+        noValidate
+        variants={staggerParent}
+        initial="hidden"
+        animate="show"
+        className="glass-card rounded-2xl p-5 md:p-8 max-w-3xl flex flex-col gap-7"
+      >
         {/* Name + live slug preview */}
-        <div className="flex flex-col gap-2">
+        <motion.div variants={staggerChild} className="flex flex-col gap-2">
           <Label htmlFor="project-name" className="text-sm font-medium">
             {t("projectNew.form.name")} <span className="text-rose-400" aria-hidden="true">*</span>
           </Label>
@@ -249,10 +257,10 @@ export function ProjectNewView() {
             <span className="font-mono text-[11px] text-muted-foreground">{name.length}/80</span>
           </div>
           {fieldError("name")}
-        </div>
+        </motion.div>
 
         {/* Tagline */}
-        <div className="flex flex-col gap-2">
+        <motion.div variants={staggerChild} className="flex flex-col gap-2">
           <Label htmlFor="project-tagline" className="text-sm font-medium">
             {t("projectNew.form.tagline")} <span className="text-rose-400" aria-hidden="true">*</span>
           </Label>
@@ -276,10 +284,10 @@ export function ProjectNewView() {
             </span>
           </div>
           {fieldError("tagline")}
-        </div>
+        </motion.div>
 
         {/* Description */}
-        <div className="flex flex-col gap-2">
+        <motion.div variants={staggerChild} className="flex flex-col gap-2">
           <Label htmlFor="project-description" className="text-sm font-medium">
             {t("projectNew.form.description")}
           </Label>
@@ -295,10 +303,10 @@ export function ProjectNewView() {
           <p className="text-[11px] text-muted-foreground">
             {t("projectNew.form.descriptionHint")} {description.length}/{LIMITS.projectDescription}
           </p>
-        </div>
+        </motion.div>
 
         {/* Category grid */}
-        <div className="flex flex-col gap-2">
+        <motion.div variants={staggerChild} className="flex flex-col gap-2">
           <Label className="text-sm font-medium">
             {t("projectNew.form.category")} <span className="text-rose-400" aria-hidden="true">*</span>
           </Label>
@@ -311,40 +319,48 @@ export function ProjectNewView() {
               const Icon = CATEGORY_ICONS[c.icon] ?? Sparkles;
               const selected = category === c.slug;
               return (
-                <button
-                  key={c.slug}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  onClick={() => {
-                    setCategory(c.slug);
-                    setErrors((prev) => ({ ...prev, category: "" }));
-                  }}
-                  className={cn(
-                    "flex flex-col items-start gap-1.5 rounded-lg border p-3 text-left transition-colors outline-none focus-glow min-h-[64px]",
-                    selected
-                      ? "border-cyan-400/60 bg-cyan-500/10"
-                      : "border-white/10 bg-white/[0.02] hover:border-white/25"
-                  )}
-                >
-                  <Icon className={cn("h-4 w-4", selected ? "text-cyan-300" : "text-muted-foreground")} />
-                  <span
+                <HoverLift key={c.slug} y={-2} scale={1.02} className="h-full">
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => {
+                      setCategory(c.slug);
+                      setErrors((prev) => ({ ...prev, category: "" }));
+                    }}
                     className={cn(
-                      "text-xs leading-tight",
-                      selected ? "text-cyan-200 font-medium" : "text-muted-foreground"
+                      "relative flex h-full w-full flex-col items-start gap-1.5 rounded-lg border p-3 text-left transition-colors outline-none focus-glow min-h-[64px]",
+                      selected
+                        ? "border-cyan-400/60 bg-cyan-500/10"
+                        : "border-white/10 bg-white/[0.02] hover:border-white/25"
                     )}
                   >
-                    {lbl("project.categories", c.slug, c.name)}
-                  </span>
-                </button>
+                    <motion.span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 rounded-lg ring-2 ring-inset ring-cyan-400/60"
+                      initial={false}
+                      animate={{ opacity: selected ? 1 : 0, scale: selected ? 1 : 0.94 }}
+                      transition={SPRING}
+                    />
+                    <Icon className={cn("h-4 w-4", selected ? "text-cyan-300" : "text-muted-foreground")} />
+                    <span
+                      className={cn(
+                        "text-xs leading-tight",
+                        selected ? "text-cyan-200 font-medium" : "text-muted-foreground"
+                      )}
+                    >
+                      {lbl("project.categories", c.slug, c.name)}
+                    </span>
+                  </button>
+                </HoverLift>
               );
             })}
           </div>
           {fieldError("category")}
-        </div>
+        </motion.div>
 
         {/* Status */}
-        <div className="flex flex-col gap-2">
+        <motion.div variants={staggerChild} className="flex flex-col gap-2">
           <Label htmlFor="project-status" className="text-sm font-medium">
             {t("projectNew.form.status")}
           </Label>
@@ -360,10 +376,10 @@ export function ProjectNewView() {
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </motion.div>
 
         {/* Visibility */}
-        <div className="flex flex-col gap-2">
+        <motion.div variants={staggerChild} className="flex flex-col gap-2">
           <Label className="text-sm font-medium">{t("projectNew.form.visibility")}</Label>
           <RadioGroup
             value={visibility}
@@ -390,31 +406,38 @@ export function ProjectNewView() {
               </Label>
             ))}
           </RadioGroup>
-        </div>
+        </motion.div>
 
         {/* Tags */}
-        <div className="flex flex-col gap-2">
+        <motion.div variants={staggerChild} className="flex flex-col gap-2">
           <Label htmlFor="project-tags" className="text-sm font-medium">
             {t("projectNew.form.tags")} <span className="text-muted-foreground font-normal">({tags.length}/{maxTags})</span>
           </Label>
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-1 rounded-full border border-cyan-500/25 bg-cyan-500/10 px-2.5 py-1 font-mono text-xs text-cyan-300"
-                >
-                  #{tag}
-                  <button
-                    type="button"
-                    onClick={() => removeTag(tag)}
-                    aria-label={t("projectNew.a11y.removeTag", { tag })}
-                    className="text-cyan-300/70 hover:text-cyan-200 outline-none focus-glow rounded-full"
+              <AnimatePresence initial={false}>
+                {tags.map((tag) => (
+                  <motion.span
+                    key={tag}
+                    layout
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={SPRING}
+                    className="inline-flex items-center gap-1 rounded-full border border-cyan-500/25 bg-cyan-500/10 px-2.5 py-1 font-mono text-xs text-cyan-300"
                   >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
+                    #{tag}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
+                      aria-label={t("projectNew.a11y.removeTag", { tag })}
+                      className="text-cyan-300/70 hover:text-cyan-200 outline-none focus-glow rounded-full"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </motion.span>
+                ))}
+              </AnimatePresence>
             </div>
           )}
           <Input
@@ -435,10 +458,10 @@ export function ProjectNewView() {
             }
             className="bg-white/[0.03] border-white/10"
           />
-        </div>
+        </motion.div>
 
         {/* Required skills */}
-        <div className="flex flex-col gap-2">
+        <motion.div variants={staggerChild} className="flex flex-col gap-2">
           <Label className="text-sm font-medium">
             {t("projectNew.form.requiredSkills")} <span className="text-muted-foreground font-normal">{t("projectNew.form.optional")}</span>
           </Label>
@@ -463,10 +486,10 @@ export function ProjectNewView() {
               );
             })}
           </div>
-        </div>
+        </motion.div>
 
         {/* Links */}
-        <div className="flex flex-col gap-4">
+        <motion.div variants={staggerChild} className="flex flex-col gap-4">
           <Label className="text-sm font-medium">
             {t("projectNew.form.links")} <span className="text-muted-foreground font-normal">{t("projectNew.form.optional")}</span>
           </Label>
@@ -494,26 +517,28 @@ export function ProjectNewView() {
               {fieldError(f.key)}
             </div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Actions */}
-        <div className="flex items-center gap-3 pt-2 border-t border-white/[0.06]">
-          <Button type="submit" className="btn-hero" disabled={submitting}>
-            {submitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" /> {t("projectNew.submitting")}
-              </>
-            ) : (
-              <>
-                <Rocket className="h-4 w-4" /> {t("projectNew.submit")}
-              </>
-            )}
-          </Button>
+        <motion.div variants={staggerChild} className="flex items-center gap-3 pt-2 border-t border-white/[0.06]">
+          <TapScale>
+            <Button type="submit" className="btn-hero" disabled={submitting}>
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t("projectNew.submitting")}
+                </>
+              ) : (
+                <>
+                  <Rocket className="h-4 w-4" /> {t("projectNew.submit")}
+                </>
+              )}
+            </Button>
+          </TapScale>
           <Button type="button" variant="outline" onClick={back} disabled={submitting}>
             {t("common.cancel")}
           </Button>
-        </div>
-      </form>
+        </motion.div>
+      </motion.form>
     </motion.div>
   );
 }

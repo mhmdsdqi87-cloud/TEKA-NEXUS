@@ -5,6 +5,7 @@
 // Submit flows hit the real /api/auth endpoints and update the session store.
 
 import { useState } from "react";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { toast } from "sonner";
 import { ArrowLeft, Compass, Eye, EyeOff, Loader2, ShieldCheck, Users } from "lucide-react";
 
@@ -13,6 +14,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogoMark, Wordmark } from "@/components/brand/logo";
+import {
+  FadeIn,
+  SPRING,
+  Stagger,
+  StaggerItem,
+  TapScale,
+  staggerChild,
+  staggerParent,
+} from "@/components/shared/motion";
 import { useApp, type SessionUser } from "@/lib/store";
 import { post } from "@/lib/api";
 import { useT } from "@/lib/i18n";
@@ -20,6 +30,16 @@ import { cn } from "@/lib/utils";
 
 const USERNAME_RE = /^[a-z0-9_]{3,24}$/;
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
+
+// Brand bullet icon boxes settle with a tiny spring after each bullet rises.
+const bulletIconVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.5 },
+  show: {
+    opacity: 1,
+    scale: 1,
+    transition: { type: "spring", stiffness: 420, damping: 18, delay: 0.16 },
+  },
+};
 
 export function AuthView({ mode }: { mode: "login" | "signup" }) {
   const navigate = useApp((s) => s.navigate);
@@ -108,15 +128,25 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
         aria-hidden="true"
         className="relative hidden flex-col justify-between overflow-hidden border-r border-white/[0.06] bg-gradient-to-br from-cyan-500/[0.07] via-transparent to-violet-500/[0.12] p-10 lg:flex xl:p-14"
       >
-        <div aria-hidden className="absolute -left-20 top-1/3 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl" />
-        <div aria-hidden className="absolute -right-16 bottom-10 h-64 w-64 rounded-full bg-violet-500/10 blur-3xl" />
+        <motion.div
+          aria-hidden
+          className="absolute -left-20 top-1/3 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl"
+          animate={{ y: [0, 24, 0], scale: [1, 1.12, 1] }}
+          transition={{ duration: 13, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          aria-hidden
+          className="absolute -right-16 bottom-10 h-64 w-64 rounded-full bg-violet-500/10 blur-3xl"
+          animate={{ y: [0, -24, 0], scale: [1.12, 1, 1.12] }}
+          transition={{ duration: 13, repeat: Infinity, ease: "easeInOut" }}
+        />
 
         <div className="relative flex items-center gap-2.5">
           <LogoMark size={34} />
           <Wordmark className="text-xl" />
         </div>
 
-        <div className="relative">
+        <FadeIn className="relative" delay={0.1}>
           <p className="font-display text-4xl font-bold leading-tight tracking-tight xl:text-5xl">
             {t("auth.brand.p1")}
             <span className="text-gradient">{t("auth.brand.p2")}</span>
@@ -125,42 +155,53 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
           <p className="mt-4 max-w-md text-muted-foreground">
             {t("auth.brandLine")}
           </p>
-        </div>
+        </FadeIn>
 
-        <ul className="relative space-y-4">
+        <motion.ul
+          className="relative space-y-4"
+          variants={staggerParent}
+          initial="hidden"
+          animate="show"
+        >
           {BRAND_BULLETS.map((b) => (
-            <li key={b.title} className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04]">
+            <motion.li key={b.title} variants={staggerChild} className="flex items-start gap-3">
+              <motion.span
+                variants={bulletIconVariants}
+                className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04]"
+              >
                 <b.icon className="h-4 w-4 text-cyan-300" />
-              </span>
+              </motion.span>
               <span>
                 <span className="block text-sm font-medium text-foreground">{b.title}</span>
                 <span className="block text-xs text-muted-foreground">{b.body}</span>
               </span>
-            </li>
+            </motion.li>
           ))}
-        </ul>
+        </motion.ul>
       </aside>
 
       {/* ── RIGHT form panel ── */}
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-8 sm:px-8">
         <div className="w-full max-w-md">
-          <Button
-            variant="ghost"
-            className="-ml-2 h-10 text-muted-foreground hover:text-foreground"
-            onClick={() => navigate({ name: "landing" })}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t("auth.backHome")}
-          </Button>
+          <FadeIn>
+            <Button
+              variant="ghost"
+              className="-ml-2 h-10 text-muted-foreground hover:text-foreground"
+              onClick={() => navigate({ name: "landing" })}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t("auth.backHome")}
+            </Button>
+          </FadeIn>
 
           {/* mobile brand row (left panel is hidden on small screens) */}
-          <div className="mt-4 flex items-center gap-2 lg:hidden">
+          <FadeIn delay={0.06} className="mt-4 flex items-center gap-2 lg:hidden">
             <LogoMark size={26} />
             <Wordmark className="text-base" />
-          </div>
+          </FadeIn>
 
-          <Card className="glass-card mt-4 rounded-2xl border-white/[0.07] py-6">
+          <FadeIn delay={0.08} y={18}>
+            <Card className="glass-card mt-4 rounded-2xl border-white/[0.07] py-6">
             <CardHeader>
               <CardTitle className="font-display text-2xl font-bold tracking-tight">
                 {isSignup ? t("auth.signupTitle") : t("auth.loginTitle")}
@@ -171,114 +212,111 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
             </CardHeader>
 
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-                {isSignup && (
-                  <div className="space-y-2">
-                    <Label htmlFor="username">{t("auth.username")}</Label>
-                    <Input
-                      id="username"
-                      name="username"
-                      autoComplete="username"
-                      placeholder="nexus_builder"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ""))}
-                      className={cn(
-                        "h-11",
-                        username.length > 0 &&
-                          (usernameValid ? "border-emerald-400/50" : "border-rose-400/50")
-                      )}
-                    />
-                    <p
-                      className={cn(
-                        "text-xs",
-                        username.length === 0
-                          ? "text-muted-foreground"
-                          : usernameValid
-                            ? "text-emerald-300/90"
-                            : "text-rose-300/90"
-                      )}
-                    >
-                      {t("auth.usernameHint")}
-                    </p>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">{t("auth.email")}</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@devmail.io"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-11"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">{t("auth.password")}</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      autoComplete={isSignup ? "new-password" : "current-password"}
-                      placeholder={isSignup ? t("auth.passwordPlaceholderSignup") : t("auth.passwordPlaceholderLogin")}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="h-11 pr-11"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
-                      className="focus-glow absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
+              {/* Fields rise in a light stagger as the card lands */}
+              <form onSubmit={handleSubmit} noValidate>
+                <Stagger className="space-y-4" gap={0.07} delayChildren={0.18}>
                   {isSignup && (
-                    <p className="text-xs text-muted-foreground">{t("auth.passwordMinHint")}</p>
+                    <StaggerItem className="space-y-2">
+                      <Label htmlFor="username">{t("auth.username")}</Label>
+                      <Input
+                        id="username"
+                        name="username"
+                        autoComplete="username"
+                        placeholder="nexus_builder"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ""))}
+                        className={cn(
+                          "h-11",
+                          username.length > 0 &&
+                            (usernameValid ? "border-emerald-400/50" : "border-rose-400/50")
+                        )}
+                      />
+                      <p
+                        className={cn(
+                          "text-xs",
+                          username.length === 0
+                            ? "text-muted-foreground"
+                            : usernameValid
+                              ? "text-emerald-300/90"
+                              : "text-rose-300/90"
+                        )}
+                      >
+                        {t("auth.usernameHint")}
+                      </p>
+                    </StaggerItem>
                   )}
-                </div>
 
-                <Button type="submit" disabled={loading} className="btn-hero h-11 w-full">
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      {isSignup ? t("auth.creatingAccount") : t("auth.signingIn")}
-                    </>
-                  ) : isSignup ? (
-                    t("common.signUp")
-                  ) : (
-                    t("common.signIn")
-                  )}
-                </Button>
+                  <StaggerItem className="space-y-2">
+                    <Label htmlFor="email">{t("auth.email")}</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@devmail.io"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-11"
+                    />
+                  </StaggerItem>
+
+                  <StaggerItem className="space-y-2">
+                    <Label htmlFor="password">{t("auth.password")}</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        autoComplete={isSignup ? "new-password" : "current-password"}
+                        placeholder={isSignup ? t("auth.passwordPlaceholderSignup") : t("auth.passwordPlaceholderLogin")}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="h-11 pr-11"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
+                        className="focus-glow absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <AnimatePresence mode="wait" initial={false}>
+                          <motion.span
+                            key={showPassword ? "eye-off" : "eye-on"}
+                            aria-hidden="true"
+                            initial={{ opacity: 0, scale: 0.55 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.55 }}
+                            transition={{ duration: 0.14, ease: "easeOut" }}
+                            className="flex"
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </motion.span>
+                        </AnimatePresence>
+                      </button>
+                    </div>
+                    {isSignup && (
+                      <p className="text-xs text-muted-foreground">{t("auth.passwordMinHint")}</p>
+                    )}
+                  </StaggerItem>
+
+                  <StaggerItem>
+                    <TapScale className="w-full">
+                      <Button type="submit" disabled={loading} className="btn-hero h-11 w-full">
+                        {loading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            {isSignup ? t("auth.creatingAccount") : t("auth.signingIn")}
+                          </>
+                        ) : isSignup ? (
+                          t("common.signUp")
+                        ) : (
+                          t("common.signIn")
+                        )}
+                      </Button>
+                    </TapScale>
+                  </StaggerItem>
+                </Stagger>
               </form>
-
-              {mode === "login" && (
-                <div className="mt-5 rounded-lg border border-violet-400/20 bg-violet-500/[0.06] p-3.5">
-                  <p className="text-xs font-medium text-violet-300">{t("auth.demoTitle")}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {t("auth.demoBody")}{" "}
-                    <span className="font-mono text-foreground/80">demo1234</span>
-                  </p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="mt-2.5 h-9"
-                    onClick={() => {
-                      setEmail("maya@teka.dev");
-                      setPassword("demo1234");
-                    }}
-                  >
-                    {t("auth.demoUse", { email: "maya@teka.dev" })}
-                  </Button>
-                </div>
-              )}
 
               <p className="mt-5 text-center text-sm text-muted-foreground">
                 {isSignup ? t("auth.haveAccount") : t("auth.newToTeka")}{" "}
@@ -291,7 +329,8 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
                 </button>
               </p>
             </CardContent>
-          </Card>
+            </Card>
+          </FadeIn>
         </div>
       </main>
     </div>

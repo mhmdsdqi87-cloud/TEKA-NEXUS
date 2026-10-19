@@ -4,7 +4,7 @@
 // Runs inside AppShell — no nav of its own.
 
 import { useEffect, useState } from "react";
-import { motion, MotionConfig } from "framer-motion";
+import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import { toast } from "sonner";
 import {
   Ban,
@@ -31,6 +31,7 @@ import { AVATAR_GRADIENTS, AVATAR_GRADIENT_KEYS, LIMITS, SKILLS } from "@/lib/co
 import { cn } from "@/lib/utils";
 import { EmptyState, UserAvatar } from "@/components/shared/atoms";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
+import { EASE, Reveal, TapScale } from "@/components/shared/motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -127,18 +128,48 @@ function SettingsContent({ user, initialTab }: { user: SessionUser; initialTab?:
             </TabsList>
 
             <div className="min-w-0">
-              <TabsContent value="profile" className="mt-0">
-                <ProfileTab user={user} />
-              </TabsContent>
-              <TabsContent value="account" className="mt-0">
-                <AccountTab user={user} />
-              </TabsContent>
-              <TabsContent value="notifications" className="mt-0">
-                <NotificationsTab />
-              </TabsContent>
-              <TabsContent value="privacy" className="mt-0">
-                <PrivacyTab />
-              </TabsContent>
+              <AnimatePresence mode="wait" initial={false}>
+                <TabsContent key="profile" value="profile" className="mt-0">
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2, ease: EASE }}
+                  >
+                    <ProfileTab user={user} />
+                  </motion.div>
+                </TabsContent>
+                <TabsContent key="account" value="account" className="mt-0">
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2, ease: EASE }}
+                  >
+                    <AccountTab user={user} />
+                  </motion.div>
+                </TabsContent>
+                <TabsContent key="notifications" value="notifications" className="mt-0">
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2, ease: EASE }}
+                  >
+                    <NotificationsTab />
+                  </motion.div>
+                </TabsContent>
+                <TabsContent key="privacy" value="privacy" className="mt-0">
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2, ease: EASE }}
+                  >
+                    <PrivacyTab />
+                  </motion.div>
+                </TabsContent>
+              </AnimatePresence>
             </div>
           </div>
         </Tabs>
@@ -217,9 +248,10 @@ function ProfileTab({ user }: { user: SessionUser }) {
 
   return (
     <div className="space-y-5">
-      <section className="glass-card space-y-5 rounded-xl p-5">
-        <div className="space-y-2">
-          <Label htmlFor="display-name">{t("settings.profileTab.displayName")}</Label>
+      <Reveal y={10}>
+        <section className="glass-card space-y-5 rounded-xl p-5">
+          <div className="space-y-2">
+            <Label htmlFor="display-name">{t("settings.profileTab.displayName")}</Label>
           <Input
             id="display-name"
             value={displayName}
@@ -297,7 +329,9 @@ function ProfileTab({ user }: { user: SessionUser }) {
           </div>
         </div>
       </section>
+      </Reveal>
 
+      <Reveal y={10} delay={0.06}>
       <section className="glass-card space-y-3 rounded-xl p-5">
         <div>
           <Label>{t("settings.profileTab.skills")}</Label>
@@ -327,12 +361,15 @@ function ProfileTab({ user }: { user: SessionUser }) {
           })}
         </div>
       </section>
+      </Reveal>
 
       <div className="flex justify-end">
-        <Button onClick={saveProfile} disabled={saving} className="btn-hero min-w-32">
-          {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-          {t("common.saveChanges")}
-        </Button>
+        <TapScale>
+          <Button onClick={saveProfile} disabled={saving} className="btn-hero min-w-32">
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            {t("common.saveChanges")}
+          </Button>
+        </TapScale>
       </div>
     </div>
   );
@@ -417,6 +454,7 @@ function AccountTab({ user }: { user: SessionUser }) {
 
   return (
     <div className="space-y-5">
+      <Reveal y={10}>
       <section className="glass-card space-y-4 rounded-xl p-5">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
@@ -433,7 +471,9 @@ function AccountTab({ user }: { user: SessionUser }) {
           </div>
         </div>
       </section>
+      </Reveal>
 
+      <Reveal y={10} delay={0.05}>
       <section className="glass-card space-y-5 rounded-xl p-5">
         <div className="space-y-2">
           <Label htmlFor="account-email">{t("settings.accountTab.email")}</Label>
@@ -449,7 +489,9 @@ function AccountTab({ user }: { user: SessionUser }) {
           </p>
         </div>
       </section>
+      </Reveal>
 
+      <Reveal y={10} delay={0.1}>
       <section className="glass-card space-y-4 rounded-xl p-5">
         <div>
           <h3 className="font-display font-semibold">{t("settings.accountTab.changePassword")}</h3>
@@ -495,16 +537,19 @@ function AccountTab({ user }: { user: SessionUser }) {
           </div>
         </div>
         <div className="flex justify-end">
-          <Button
-            onClick={changePassword}
-            disabled={pwPending || !pwCurrent || !pwNew || !pwConfirm}
-            className="min-w-36"
-          >
-            {pwPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            {t("settings.accountTab.updatePassword")}
-          </Button>
+          <TapScale>
+            <Button
+              onClick={changePassword}
+              disabled={pwPending || !pwCurrent || !pwNew || !pwConfirm}
+              className="min-w-36"
+            >
+              {pwPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t("settings.accountTab.updatePassword")}
+            </Button>
+          </TapScale>
         </div>
       </section>
+      </Reveal>
 
       {/* Danger zone */}
       <section className="rounded-xl border border-rose-500/25 bg-rose-500/[0.04] p-5">
@@ -675,24 +720,25 @@ function NotificationsTab() {
 
   return (
     <div className="space-y-3">
-      {rows.map((row) => (
-        <div
-          key={row.field}
-          className="glass-card flex items-center justify-between gap-4 rounded-xl p-4"
-        >
-          <div className="min-w-0">
-            <p className="text-sm font-medium">{row.title}</p>
-            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-              {row.description}
-            </p>
+      {rows.map((row, i) => (
+        <Reveal key={row.field} y={10} delay={i * 0.05}>
+          <div
+            className="glass-card flex items-center justify-between gap-4 rounded-xl p-4"
+          >
+            <div className="min-w-0">
+              <p className="text-sm font-medium">{row.title}</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                {row.description}
+              </p>
+            </div>
+            <Switch
+              checked={prefs[row.field]}
+              disabled={pendingField !== null}
+              onCheckedChange={(v) => togglePref(row.field, v)}
+              aria-label={t("settings.notificationsTab.toggleAria", { name: row.title })}
+            />
           </div>
-          <Switch
-            checked={prefs[row.field]}
-            disabled={pendingField !== null}
-            onCheckedChange={(v) => togglePref(row.field, v)}
-            aria-label={t("settings.notificationsTab.toggleAria", { name: row.title })}
-          />
-        </div>
+        </Reveal>
       ))}
     </div>
   );
@@ -756,6 +802,7 @@ function PrivacyTab() {
 
   return (
     <div className="space-y-5">
+      <Reveal y={10}>
       <section className="glass-card rounded-xl p-5">
         <div className="flex items-start gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10">
@@ -790,7 +837,9 @@ function PrivacyTab() {
           {t("settings.privacyTab.previewNote")}
         </p>
       </section>
+      </Reveal>
 
+      <Reveal y={10} delay={0.06}>
       <section className="glass-card rounded-xl p-5">
         <h3 className="flex items-center gap-2 font-display font-semibold">
           <Ban className="h-4 w-4 text-rose-300" />
@@ -808,17 +857,19 @@ function PrivacyTab() {
             aria-label={t("settings.privacyTab.usernameAria")}
             className="font-mono focus-glow"
           />
-          <Button
-            type="submit"
-            variant="outline"
-            disabled={blockPending || !blockUsername.trim()}
-            className="shrink-0"
-          >
-            {blockPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}
-            {t("settings.privacyTab.blockButton")}
-          </Button>
+          <TapScale className="shrink-0">
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={blockPending || !blockUsername.trim()}
+            >
+              {blockPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}
+              {t("settings.privacyTab.blockButton")}
+            </Button>
+          </TapScale>
         </form>
       </section>
+      </Reveal>
     </div>
   );
 }

@@ -5,7 +5,7 @@
 // (top bar actions + bottom nav), global search dialog, notification polling.
 
 import { useEffect, useRef, useState } from "react";
-import { motion, MotionConfig } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Bell,
   Bookmark,
@@ -28,6 +28,7 @@ import {
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
+import { SPRING, TapScale } from "@/components/shared/motion";
 import { useApp, type View } from "@/lib/store";
 import { get, post, qs } from "@/lib/api";
 import {
@@ -72,7 +73,17 @@ function UnreadBadge({ count, className }: { count: number; className?: string }
       )}
       aria-label={t("nav.unreadNotificationsAria", { count })}
     >
-      {count > 99 ? "99+" : count}
+      {/* keyed by count so every change replays the spring pop */}
+      <motion.span
+        key={count}
+        aria-hidden="true"
+        initial={{ scale: 0.4, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={SPRING}
+        className="inline-flex items-center"
+      >
+        {count > 99 ? "99+" : count}
+      </motion.span>
     </span>
   );
 }
@@ -98,19 +109,24 @@ function NavItem({
       className={cn(
         "relative flex items-center gap-3 w-full rounded-lg px-3 py-2.5 min-h-[44px] text-sm font-medium transition-colors outline-none focus-glow",
         active
-          ? "text-cyan-300 bg-white/5"
+          ? "text-cyan-300"
           : "text-muted-foreground hover:text-foreground hover:bg-white/[0.04]"
       )}
     >
+      {/* sliding active pill (vertical slide between items — RTL safe) */}
       {active && (
-        <span
+        <motion.span
+          layoutId="navPillDesktop"
           aria-hidden="true"
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-cyan-400"
-        />
+          transition={SPRING}
+          className="absolute inset-0 rounded-lg bg-white/[0.05] ring-1 ring-inset ring-cyan-400/15"
+        >
+          <span className="absolute start-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-e-full bg-cyan-400" />
+        </motion.span>
       )}
-      <Icon className={cn("h-[18px] w-[18px] shrink-0", active ? "text-cyan-300" : "text-muted-foreground")} />
-      <span className="truncate">{label}</span>
-      {typeof badge === "number" && badge > 0 && <UnreadBadge count={badge} className="ml-auto" />}
+      <Icon className={cn("relative h-[18px] w-[18px] shrink-0", active ? "text-cyan-300" : "text-muted-foreground")} />
+      <span className="relative truncate">{label}</span>
+      {typeof badge === "number" && badge > 0 && <UnreadBadge count={badge} className="relative ml-auto" />}
     </button>
   );
 }
@@ -143,13 +159,14 @@ function LeftNav() {
           onClick={go({ name: "explore" })}
         />
 
-        <button
+        <motion.button
           onClick={go({ name: "projectNew" })}
+          whileTap={{ scale: 0.98 }}
           className="btn-hero inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 min-h-[44px] text-sm mt-3 mb-2 w-full focus-glow"
         >
           <Plus className="h-4 w-4" />
           {t("nav.newProject")}
-        </button>
+        </motion.button>
 
         {user && (
           <>
@@ -222,30 +239,34 @@ function TopBar() {
       </button>
 
       {/* Desktop global search trigger */}
-      <button
-        onClick={() => setSearchOpen(true)}
-        className="hidden md:flex items-center gap-2.5 h-9 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-colors w-full max-w-md ml-1 outline-none focus-glow"
-        aria-label={t("search.description")}
-      >
-        <Search className="h-4 w-4 shrink-0" />
-        <span className="truncate">{t("search.placeholder")}</span>
-        <kbd className="ml-auto font-mono text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.05]" aria-hidden="true">
-          /
-        </kbd>
-      </button>
+      <TapScale className="hidden md:flex w-full max-w-md ml-1">
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="flex items-center gap-2.5 h-9 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-colors outline-none focus-glow"
+          aria-label={t("search.description")}
+        >
+          <Search className="h-4 w-4 shrink-0" />
+          <span className="truncate">{t("search.placeholder")}</span>
+          <kbd className="ml-auto font-mono text-[10px] px-1.5 py-0.5 rounded border border-white/10 bg-white/[0.05]" aria-hidden="true">
+            /
+          </kbd>
+        </button>
+      </TapScale>
 
       <div className="flex-1" />
 
       {/* Mobile actions: language + search + bell */}
       <div className="flex md:hidden items-center gap-1">
         <LanguageSwitcher />
-        <button
-          onClick={() => setSearchOpen(true)}
-          className="flex items-center justify-center h-11 w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/[0.05] transition-colors outline-none focus-glow"
-          aria-label={t("common.search")}
-        >
-          <Search className="h-5 w-5" />
-        </button>
+        <TapScale>
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="flex items-center justify-center h-11 w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/[0.05] transition-colors outline-none focus-glow"
+            aria-label={t("common.search")}
+          >
+            <Search className="h-5 w-5" />
+          </button>
+        </TapScale>
         <button
           onClick={() => navigate({ name: "notifications" })}
           className="relative flex items-center justify-center h-11 w-11 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/[0.05] transition-colors outline-none focus-glow"
@@ -263,7 +284,10 @@ function TopBar() {
           <ReputationChip xp={user.xp} reputation={user.reputation} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                transition={SPRING}
                 className="flex items-center gap-2.5 rounded-lg pl-1.5 pr-2 py-1.5 min-h-[44px] hover:bg-white/[0.05] transition-colors outline-none focus-glow"
                 aria-label={t("nav.accountMenuAria")}
               >
@@ -272,7 +296,7 @@ function TopBar() {
                   <span className="text-sm font-medium text-foreground">{user.displayName}</span>
                   <span className="text-[11px] text-muted-foreground">@{user.username}</span>
                 </span>
-              </button>
+              </motion.button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>{t("nav.account")}</DropdownMenuLabel>
@@ -335,13 +359,22 @@ function MobileTab({
         active ? "text-cyan-300" : "text-muted-foreground"
       )}
     >
+      {/* sliding active pill (separate layoutId namespace from desktop) */}
+      {active && (
+        <motion.span
+          layoutId="navPillMobile"
+          aria-hidden="true"
+          transition={SPRING}
+          className="absolute inset-x-2 top-1.5 bottom-1.5 rounded-xl bg-cyan-400/[0.09] ring-1 ring-inset ring-cyan-400/20"
+        />
+      )}
       <span className="relative">
         <Icon className="h-5 w-5" />
         {typeof badge === "number" && badge > 0 && (
           <UnreadBadge count={badge} className="absolute -top-1.5 -right-2.5" />
         )}
       </span>
-      {label}
+      <span className="relative">{label}</span>
     </button>
   );
 }
@@ -362,13 +395,16 @@ function MobileNav() {
         <MobileTab icon={House} label={t("common.home")} active={view.name === "home"} onClick={() => navigate({ name: "home" })} />
         <MobileTab icon={Compass} label={t("common.explore")} active={view.name === "explore"} onClick={() => navigate({ name: "explore" })} />
         <div className="flex items-start justify-center">
-          <button
+          <motion.button
             onClick={() => navigate({ name: "projectNew" })}
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.94 }}
+            transition={SPRING}
             className="btn-hero h-14 w-14 rounded-full flex items-center justify-center -translate-y-3 outline-none focus-glow"
             aria-label={t("nav.newProject")}
           >
             <Plus className="h-6 w-6" />
-          </button>
+          </motion.button>
         </div>
         <MobileTab
           icon={Bell}
@@ -715,32 +751,30 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [setSearchOpen]);
 
   return (
-    <MotionConfig reducedMotion="user">
-      <div className="min-h-screen flex">
-        <LeftNav />
+    <div className="min-h-screen flex">
+      <LeftNav />
 
-        <div className="flex-1 flex flex-col min-w-0">
-          <TopBar />
-          <main className="flex-1 pb-24 md:pb-10" id="main-content">
-            <div className="max-w-5xl mx-auto px-4 md:px-8 py-6">
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              >
-                {children}
-              </motion.div>
-            </div>
-          </main>
-          <footer className="py-4 text-center text-xs text-muted-foreground/70 select-none" aria-label={t("nav.footerAria")}>
-            {t("nav.footerTagline")}
-          </footer>
-        </div>
-
-        <RightRail />
-        <MobileNav />
-        <SearchDialog />
+      <div className="flex-1 flex flex-col min-w-0">
+        <TopBar />
+        <main className="flex-1 pb-24 md:pb-10" id="main-content">
+          <div className="max-w-5xl mx-auto px-4 md:px-8 py-6">
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              {children}
+            </motion.div>
+          </div>
+        </main>
+        <footer className="py-4 text-center text-xs text-muted-foreground/70 select-none" aria-label={t("nav.footerAria")}>
+          {t("nav.footerTagline")}
+        </footer>
       </div>
-    </MotionConfig>
+
+      <RightRail />
+      <MobileNav />
+      <SearchDialog />
+    </div>
   );
 }

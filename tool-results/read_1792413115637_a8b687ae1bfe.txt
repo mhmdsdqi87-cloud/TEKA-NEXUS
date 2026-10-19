@@ -1,0 +1,701 @@
+     1→"use client";
+     2→
+     3→// TEKA NEXUS — ProfileView (Task 2-d): public creator portfolio (spec §15A).
+     4→// Runs inside AppShell — no nav of its own.
+     5→
+     6→import { useCallback, useEffect, useState } from "react";
+     7→import { motion, MotionConfig } from "framer-motion";
+     8→import { toast } from "sonner";
+     9→import { useT, useRelativeTime, useFormatDate, useLabeled } from "@/lib/i18n";
+    10→import {
+    11→  Ban,
+    12→  CalendarDays,
+    13→  CheckCircle2,
+    14→  ExternalLink,
+    15→  Flag,
+    16→  FileText,
+    17→  Globe,
+    18→  Info,
+    19→  Loader2,
+    20→  MoreHorizontal,
+    21→  Rocket,
+    22→  Settings2,
+    23→  Sparkles,
+    24→  UserCheck,
+    25→  UserPlus,
+    26→  UserRound,
+    27→  UserX,
+    28→  type LucideIcon,
+    29→} from "lucide-react";
+    30→
+    31→import { ApiError, get, post } from "@/lib/api";
+    32→import { useApp } from "@/lib/store";
+    33→import { ContributionDTO, ProfileDetail, ProjectCard } from "@/lib/dto";
+    34→import { GOALS, PROJECT_CATEGORIES, SKILLS } from "@/lib/constants";
+    35→import { cn } from "@/lib/utils";
+    36→import { EmptyState, ReputationChip, UserAvatar } from "@/components/shared/atoms";
+    37→import { ProjectCardView } from "@/components/shared/project-card";
+    38→import { Skeleton } from "@/components/ui/skeleton";
+    39→import { Button } from "@/components/ui/button";
+    40→import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+    41→import {
+    42→  Dialog,
+    43→  DialogContent,
+    44→  DialogDescription,
+    45→  DialogFooter,
+    46→  DialogHeader,
+    47→  DialogTitle,
+    48→} from "@/components/ui/dialog";
+    49→import {
+    50→  DropdownMenu,
+    51→  DropdownMenuContent,
+    52→  DropdownMenuItem,
+    53→  DropdownMenuSeparator,
+    54→  DropdownMenuTrigger,
+    55→} from "@/components/ui/dropdown-menu";
+    56→import { Input } from "@/components/ui/input";
+    57→import { Label } from "@/components/ui/label";
+    58→import { Textarea } from "@/components/ui/textarea";
+    59→import {
+    60→  Select,
+    61→  SelectContent,
+    62→  SelectItem,
+    63→  SelectTrigger,
+    64→  SelectValue,
+    65→} from "@/components/ui/select";
+    66→
+    67→type ProfileResponse = {
+    68→  user: ProfileDetail;
+    69→  projects: ProjectCard[];
+    70→  contributions: ContributionDTO[];
+    71→};
+    72→
+    73→const CONTRIBUTION_META: Record<string, { icon: LucideIcon; labelKey: string }> = {
+    74→  TASK_COMPLETED: { icon: CheckCircle2, labelKey: "task" },
+    75→  RELEASE_PUBLISHED: { icon: Rocket, labelKey: "release" },
+    76→  MILESTONE_COMPLETED: { icon: Flag, labelKey: "milestone" },
+    77→  UPDATE_POSTED: { icon: FileText, labelKey: "update" },
+    78→  COLLABORATION_ACCEPTED: { icon: UserPlus, labelKey: "collab" },
+    79→  PROJECT_CREATED: { icon: Sparkles, labelKey: "created" },
+    80→};
+    81→
+    82→const REPORT_REASONS = [
+    83→  { value: "SPAM", labelKey: "spam" },
+    84→  { value: "HARASSMENT", labelKey: "harassment" },
+    85→  { value: "INAPPROPRIATE", labelKey: "inappropriate" },
+    86→  { value: "COPYRIGHT", labelKey: "copyright" },
+    87→  { value: "OTHER", labelKey: "other" },
+    88→] as const;
+    89→
+    90→function ChipRow({
+    91→  label,
+    92→  items,
+    93→  tone,
+    94→}: {
+    95→  label: string;
+    96→  items: string[];
+    97→  tone: "default" | "cyan" | "violet";
+    98→}) {
+    99→  if (items.length === 0) return null;
+   100→  const toneClass =
+   101→    tone === "violet"
+   102→      ? "border-violet-500/25 bg-violet-500/10 text-violet-300"
+   103→      : tone === "cyan"
+   104→        ? "border-cyan-500/20 bg-cyan-500/10 text-cyan-200"
+   105→        : "border-white/10 bg-white/[0.04] text-foreground/80";
+   106→  return (
+   107→    <div className="flex flex-wrap items-center gap-2">
+   108→      <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/80">
+   109→        {label}
+   110→      </span>
+   111→      {items.map((item) => (
+   112→        <span key={item} className={cn("rounded-full border px-2.5 py-0.5 text-xs", toneClass)}>
+   113→          {item}
+   114→        </span>
+   115→      ))}
+   116→    </div>
+   117→  );
+   118→}
+   119→
+   120→function StatCard({ label, value }: { label: string; value: number }) {
+   121→  return (
+   122→    <div className="glass-card rounded-xl p-4">
+   123→      <p className="font-display text-2xl font-bold tabular-nums">{value.toLocaleString()}</p>
+   124→      <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
+   125→    </div>
+   126→  );
+   127→}
+   128→
+   129→export function ProfileView({ username }: { username: string }) {
+   130→  const user = useApp((s) => s.user);
+   131→  const navigate = useApp((s) => s.navigate);
+   132→  const t = useT();
+   133→  const lbl = useLabeled();
+   134→  const rel = useRelativeTime();
+   135→  const fd = useFormatDate();
+   136→
+   137→  const [data, setData] = useState<ProfileResponse | null>(null);
+   138→  const [loading, setLoading] = useState(true);
+   139→  const [notFound, setNotFound] = useState(false);
+   140→  const [loadFailed, setLoadFailed] = useState(false);
+   141→
+   142→  const [followPending, setFollowPending] = useState(false);
+   143→  const [blockedByMe, setBlockedByMe] = useState(false);
+   144→  const [blockPending, setBlockPending] = useState(false);
+   145→  const [menuOpen, setMenuOpen] = useState(false);
+   146→
+   147→  const [reportOpen, setReportOpen] = useState(false);
+   148→  const [reportReason, setReportReason] = useState<string>("SPAM");
+   149→  const [reportDetails, setReportDetails] = useState("");
+   150→  const [reportPending, setReportPending] = useState(false);
+   151→
+   152→  const load = useCallback(
+   153→    async (silent = false) => {
+   154→      if (!silent) {
+   155→        setLoading(true);
+   156→        setData(null);
+   157→      }
+   158→      setNotFound(false);
+   159→      setLoadFailed(false);
+   160→      try {
+   161→        const res = await get<ProfileResponse>(`/api/users/${encodeURIComponent(username)}`);
+   162→        setData(res);
+   163→      } catch (e) {
+   164→        if (e instanceof ApiError && e.status === 404) setNotFound(true);
+   165→        else {
+   166→          setLoadFailed(true);
+   167→          toast.error(e instanceof Error ? e.message : t("profile.errors.loadFailed"));
+   168→        }
+   169→      } finally {
+   170→        setLoading(false);
+   171→      }
+   172→    },
+   173→    [username]
+   174→  );
+   175→
+   176→  useEffect(() => {
+   177→    load();
+   178→  }, [load]);
+   179→
+   180→  const profile = data?.user ?? null;
+   181→
+   182→  async function toggleFollow() {
+   183→    if (!profile || profile.isSelf) return;
+   184→    if (!user) {
+   185→      toast.error(t("profile.errors.signInToFollow"));
+   186→      navigate({ name: "login" });
+   187→      return;
+   188→    }
+   189→    setFollowPending(true);
+   190→    try {
+   191→      const res = await post<{ following: boolean; followerCount: number }>(
+   192→        `/api/users/${encodeURIComponent(profile.username)}/follow`
+   193→      );
+   194→      setData((prev) =>
+   195→        prev
+   196→          ? {
+   197→              ...prev,
+   198→              user: { ...prev.user, isFollowing: res.following, followerCount: res.followerCount },
+   199→            }
+   200→          : prev
+   201→      );
+   202→      toast.success(
+   203→        res.following
+   204→          ? t("profile.toasts.followed", { name: profile.displayName })
+   205→          : t("profile.toasts.unfollowed", { name: profile.displayName })
+   206→      );
+   207→    } catch (e) {
+   208→      toast.error(e instanceof Error ? e.message : t("profile.errors.followFailed"));
+   209→    } finally {
+   210→      setFollowPending(false);
+   211→    }
+   212→  }
+   213→
+   214→  async function toggleBlock() {
+   215→    if (!profile) return;
+   216→    if (!user) {
+   217→      toast.error(t("profile.errors.signInToBlock"));
+   218→      navigate({ name: "login" });
+   219→      return;
+   220→    }
+   221→    setBlockPending(true);
+   222→    try {
+   223→      const res = await post<{ blocked: boolean }>(
+   224→        `/api/users/${encodeURIComponent(profile.username)}/block`
+   225→      );
+   226→      setBlockedByMe(res.blocked);
+   227→      setMenuOpen(false);
+   228→      toast.success(
+   229→        res.blocked
+   230→          ? t("profile.toasts.blocked", { name: profile.username })
+   231→          : t("profile.toasts.unblocked", { name: profile.username })
+   232→      );
+   233→      // Refresh silently — blocking removes follows in both directions.
+   234→      await load(true);
+   235→    } catch (e) {
+   236→      toast.error(e instanceof Error ? e.message : t("profile.errors.blockFailed"));
+   237→    } finally {
+   238→      setBlockPending(false);
+   239→    }
+   240→  }
+   241→
+   242→  async function submitReport() {
+   243→    if (!profile) return;
+   244→    setReportPending(true);
+   245→    try {
+   246→      await post("/api/reports", {
+   247→        targetType: "user",
+   248→        targetId: profile.id,
+   249→        reason: reportReason,
+   250→        ...(reportDetails.trim() ? { details: reportDetails.trim() } : {}),
+   251→      });
+   252→      setReportOpen(false);
+   253→      setReportDetails("");
+   254→      setReportReason("SPAM");
+   255→      toast.success(t("profile.toasts.reportSubmitted"));
+   256→    } catch (e) {
+   257→      toast.error(e instanceof Error ? e.message : t("profile.errors.reportFailed"));
+   258→    } finally {
+   259→      setReportPending(false);
+   260→    }
+   261→  }
+   262→
+   263→  if (loading) {
+   264→    return (
+   265→      <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 md:py-8">
+   266→        <Skeleton className="h-48 w-full rounded-2xl bg-white/[0.05]" />
+   267→        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+   268→          {Array.from({ length: 4 }).map((_, i) => (
+   269→            <Skeleton key={i} className="h-20 rounded-xl bg-white/[0.05]" />
+   270→          ))}
+   271→        </div>
+   272→        <Skeleton className="h-44 w-full rounded-2xl bg-white/[0.05]" />
+   273→      </div>
+   274→    );
+   275→  }
+   276→
+   277→  if (notFound) {
+   278→    return (
+   279→      <div className="mx-auto w-full max-w-5xl px-4 py-6 md:py-8">
+   280→        <EmptyState
+   281→          icon={UserX}
+   282→          title={t("profile.notFound.title")}
+   283→          description={t("profile.notFound.description")}
+   284→          action={
+   285→            <Button variant="outline" onClick={() => navigate({ name: "explore" })}>
+   286→              {t("profile.notFound.action")}
+   287→            </Button>
+   288→          }
+   289→        />
+   290→      </div>
+   291→    );
+   292→  }
+   293→
+   294→  if (loadFailed || !profile) {
+   295→    return (
+   296→      <div className="mx-auto w-full max-w-5xl px-4 py-6 md:py-8">
+   297→        <EmptyState
+   298→          icon={Info}
+   299→          title={t("profile.loadFailed.title")}
+   300→          description={t("profile.loadFailed.description")}
+   301→          action={
+   302→            <Button variant="outline" onClick={() => load()}>
+   303→              {t("common.retry")}
+   304→            </Button>
+   305→          }
+   306→        />
+   307→      </div>
+   308→    );
+   309→  }
+   310→
+   311→  const goalNames = profile.goals.map((g) => lbl("common.goals", g, GOALS.find((x) => x.slug === g)?.name ?? g));
+   312→  const interestNames = profile.interests.map(
+   313→    (i) => lbl("project.categories", i, PROJECT_CATEGORIES.find((c) => c.slug === i)?.name ?? i)
+   314→  );
+   315→  const skillNames = profile.skills.map((s) => lbl("project.skills", s, SKILLS.find((x) => x.slug === s)?.name ?? s));
+   316→  const websiteHost = profile.websiteUrl
+   317→    ? profile.websiteUrl.replace(/^https?:\/\//i, "").replace(/\/$/, "")
+   318→    : "";
+   319→
+   320→  return (
+   321→    <MotionConfig reducedMotion="user">
+   322→      <div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 md:py-8">
+   323→        {/* ── Header ─────────────────────────────────────────── */}
+   324→        <motion.section
+   325→          initial={{ opacity: 0, y: 10 }}
+   326→          animate={{ opacity: 1, y: 0 }}
+   327→          transition={{ duration: 0.3, ease: "easeOut" }}
+   328→          className="aurora-border rounded-2xl p-5 md:p-7"
+   329→        >
+   330→          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+   331→            <div className="flex min-w-0 flex-1 flex-col gap-5 sm:flex-row sm:items-start">
+   332→              <UserAvatar user={profile} size={72} />
+   333→              <div className="min-w-0 flex-1 space-y-3">
+   334→                <div>
+   335→                  <h1 className="font-display text-2xl font-bold leading-tight md:text-3xl">
+   336→                    {profile.displayName}
+   337→                  </h1>
+   338→                  <p className="font-mono text-sm text-muted-foreground">@{profile.username}</p>
+   339→                </div>
+   340→
+   341→                {profile.bio && (
+   342→                  <p className="max-w-xl whitespace-pre-line text-sm leading-relaxed text-foreground/85">
+   343→                    {profile.bio}
+   344→                  </p>
+   345→                )}
+   346→
+   347→                {websiteHost && (
+   348→                  <a
+   349→                    href={profile.websiteUrl}
+   350→                    target="_blank"
+   351→                    rel="noopener noreferrer"
+   352→                    className="inline-flex items-center gap-1.5 rounded text-sm text-cyan-300 transition-colors hover:text-cyan-200 hover:underline focus-glow"
+   353→                  >
+   354→                    <ExternalLink className="h-3.5 w-3.5" />
+   355→                    <span className="max-w-[240px] truncate">{websiteHost}</span>
+   356→                  </a>
+   357→                )}
+   358→
+   359→                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+   360→                  <ReputationChip xp={profile.xp} reputation={profile.reputation} />
+   361→                  <span className="inline-flex items-center gap-1.5">
+   362→                    <CalendarDays className="h-3.5 w-3.5" />
+   363→                    {t("profile.header.memberSince", { date: fd(new Date(profile.createdAt), "MMM yyyy") })}
+   364→                  </span>
+   365→                </div>
+   366→
+   367→                <div className="space-y-2 pt-1">
+   368→                  <ChipRow label={t("profile.sections.goals")} items={goalNames} tone="default" />
+   369→                  <ChipRow label={t("profile.sections.interests")} items={interestNames} tone="cyan" />
+   370→                  <ChipRow label={t("profile.sections.skills")} items={skillNames} tone="violet" />
+   371→                </div>
+   372→              </div>
+   373→            </div>
+   374→
+   375→            <div className="flex shrink-0 items-center gap-2">
+   376→              {profile.isSelf ? (
+   377→                <Button onClick={() => navigate({ name: "settings", tab: "profile" })} className="btn-hero">
+   378→                  <Settings2 className="h-4 w-4" />
+   379→                  {t("profile.actions.editProfile")}
+   380→                </Button>
+   381→              ) : (
+   382→                <>
+   383→                  <Button
+   384→                    onClick={toggleFollow}
+   385→                    disabled={followPending || blockedByMe}
+   386→                    variant={profile.isFollowing ? "outline" : "default"}
+   387→                    className={cn("min-w-32", !profile.isFollowing && "btn-hero")}
+   388→                  >
+   389→                    {followPending ? (
+   390→                      <Loader2 className="h-4 w-4 animate-spin" />
+   391→                    ) : profile.isFollowing ? (
+   392→                      <UserCheck className="h-4 w-4" />
+   393→                    ) : (
+   394→                      <UserPlus className="h-4 w-4" />
+   395→                    )}
+   396→                    {blockedByMe
+   397→                      ? t("profile.actions.blocked")
+   398→                      : profile.isFollowing
+   399→                        ? t("profile.actions.following")
+   400→                        : t("profile.actions.follow")}
+   401→                  </Button>
+   402→                  <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+   403→                    <DropdownMenuTrigger asChild>
+   404→                      <Button variant="ghost" size="icon" aria-label={t("profile.actions.moreActions")} className="focus-glow">
+   405→                        <MoreHorizontal className="h-4 w-4" />
+   406→                      </Button>
+   407→                    </DropdownMenuTrigger>
+   408→                    <DropdownMenuContent align="end" className="w-48">
+   409→                      <DropdownMenuItem
+   410→                        onClick={toggleBlock}
+   411→                        disabled={blockPending}
+   412→                        className={cn("cursor-pointer", !blockedByMe && "text-rose-300 focus:text-rose-300")}
+   413→                      >
+   414→                        {blockPending ? (
+   415→                          <Loader2 className="h-4 w-4 animate-spin" />
+   416→                        ) : (
+   417→                          <Ban className="h-4 w-4" />
+   418→                        )}
+   419→                        {blockedByMe ? t("profile.actions.unblockUser") : t("profile.actions.blockUser")}
+   420→                      </DropdownMenuItem>
+   421→                      <DropdownMenuSeparator />
+   422→                      <DropdownMenuItem
+   423→                        onClick={() => setReportOpen(true)}
+   424→                        className="cursor-pointer"
+   425→                      >
+   426→                        <Flag className="h-4 w-4" />
+   427→                        {t("profile.actions.reportUser")}
+   428→                      </DropdownMenuItem>
+   429→                    </DropdownMenuContent>
+   430→                  </DropdownMenu>
+   431→                </>
+   432→              )}
+   433→            </div>
+   434→          </div>
+   435→        </motion.section>
+   436→
+   437→        {/* ── Stats ──────────────────────────────────────────── */}
+   438→        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+   439→          <StatCard label={t("profile.stats.followers")} value={profile.followerCount} />
+   440→          <StatCard label={t("profile.stats.following")} value={profile.followingCount} />
+   441→          <StatCard label={t("common.projects")} value={profile.projectCount} />
+   442→          <StatCard label={t("profile.stats.reputation")} value={profile.reputation ?? 0} />
+   443→        </div>
+   444→
+   445→        {/* ── Tabs ───────────────────────────────────────────── */}
+   446→        <Tabs defaultValue="projects">
+   447→          <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
+   448→            <TabsTrigger value="projects">{t("common.projects")}</TabsTrigger>
+   449→            <TabsTrigger value="contributions">{t("profile.tabs.contributions")}</TabsTrigger>
+   450→            <TabsTrigger value="about">{t("profile.tabs.about")}</TabsTrigger>
+   451→          </TabsList>
+   452→
+   453→          {/* Projects */}
+   454→          <TabsContent value="projects" className="mt-5">
+   455→            {data && data.projects.length > 0 ? (
+   456→              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+   457→                {data.projects.map((p) => (
+   458→                  <ProjectCardView key={p.id} project={p} />
+   459→                ))}
+   460→              </div>
+   461→            ) : (
+   462→              <EmptyState
+   463→                icon={Globe}
+   464→                title={t("profile.empty.projects.title")}
+   465→                description={t("profile.empty.projects.description", { name: profile.displayName })}
+   466→              />
+   467→            )}
+   468→          </TabsContent>
+   469→
+   470→          {/* Contributions */}
+   471→          <TabsContent value="contributions" className="mt-5">
+   472→            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
+   473→              <Info className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" />
+   474→              <p className="text-sm text-muted-foreground">
+   475→                {t("profile.contributions.notice")}
+   476→              </p>
+   477→            </div>
+   478→
+   479→            {data && data.contributions.length > 0 ? (
+   480→              <ol className="relative ml-3 space-y-6 border-l border-white/[0.08] pl-7">
+   481→                {data.contributions.map((c) => {
+   482→                  const meta = CONTRIBUTION_META[c.eventType] ?? {
+   483→                    icon: Sparkles,
+   484→                    labelKey: "other",
+   485→                  };
+   486→                  const Icon = meta.icon;
+   487→                  return (
+   488→                    <li key={c.id} className="relative">
+   489→                      <span className="absolute -left-10 top-0 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-[#0e0e16]">
+   490→                        <Icon className="h-3 w-3 text-cyan-300" />
+   491→                      </span>
+   492→                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+   493→                        <p className="text-sm">
+   494→                          {t(`profile.contributionTypes.${meta.labelKey}`)}
+   495→                          {c.project && (
+   496→                            <>
+   497→                              <span className="text-muted-foreground"> · </span>
+   498→                              <button
+   499→                                onClick={() =>
+   500→                                  c.project && navigate({ name: "project", slug: c.project.slug })
+   501→                                }
+   502→                                className="rounded font-medium hover:text-cyan-300 focus-glow"
+   503→                              >
+   504→                                {c.project.name}
+   505→                              </button>
+   506→                            </>
+   507→                          )}
+   508→                        </p>
+   509→                        <span className="rounded-md bg-violet-500/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-violet-300">
+   510→                          +{c.xp} XP
+   511→                        </span>
+   512→                        {c.reputation > 0 && (
+   513→                          <span className="rounded-md bg-cyan-500/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-cyan-300">
+   514→                            +{c.reputation} REP
+   515→                          </span>
+   516→                        )}
+   517→                        <span className="ml-auto text-xs text-muted-foreground">
+   518→                          {rel(new Date(c.createdAt))}
+   519→                        </span>
+   520→                      </div>
+   521→                    </li>
+   522→                  );
+   523→                })}
+   524→              </ol>
+   525→            ) : (
+   526→              <EmptyState
+   527→                icon={Flag}
+   528→                title={t("profile.empty.contributions.title")}
+   529→                description={t("profile.empty.contributions.description")}
+   530→              />
+   531→            )}
+   532→          </TabsContent>
+   533→
+   534→          {/* About */}
+   535→          <TabsContent value="about" className="mt-5">
+   536→            {!profile.bio && skillNames.length === 0 && goalNames.length === 0 && interestNames.length === 0 && !websiteHost ? (
+   537→              <EmptyState
+   538→                icon={UserRound}
+   539→                title={t("profile.empty.about.title")}
+   540→                description={t("profile.empty.about.description")}
+   541→              />
+   542→            ) : (
+   543→              <div className="grid gap-4 md:grid-cols-2">
+   544→                <div className="glass-card rounded-xl p-5 md:col-span-2">
+   545→                  <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+   546→                    {t("profile.about.bio")}
+   547→                  </h3>
+   548→                  <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-foreground/85">
+   549→                    {profile.bio || t("profile.about.noBio")}
+   550→                  </p>
+   551→                </div>
+   552→
+   553→                <div className="glass-card rounded-xl p-5">
+   554→                  <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+   555→                    {t("profile.sections.skills")}
+   556→                  </h3>
+   557→                  {skillNames.length > 0 ? (
+   558→                    <div className="mt-3 flex flex-wrap gap-2">
+   559→                      {skillNames.map((s) => (
+   560→                        <span
+   561→                          key={s}
+   562→                          className="rounded-full border border-violet-500/25 bg-violet-500/10 px-2.5 py-1 text-xs text-violet-300"
+   563→                        >
+   564→                          {s}
+   565→                        </span>
+   566→                      ))}
+   567→                    </div>
+   568→                  ) : (
+   569→                    <p className="mt-2 text-sm text-muted-foreground">{t("profile.about.noneListed")}</p>
+   570→                  )}
+   571→                </div>
+   572→
+   573→                <div className="glass-card rounded-xl p-5">
+   574→                  <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+   575→                    {t("profile.sections.goals")}
+   576→                  </h3>
+   577→                  {goalNames.length > 0 ? (
+   578→                    <div className="mt-3 flex flex-wrap gap-2">
+   579→                      {goalNames.map((g) => (
+   580→                        <span
+   581→                          key={g}
+   582→                          className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-foreground/80"
+   583→                        >
+   584→                          {g}
+   585→                        </span>
+   586→                      ))}
+   587→                    </div>
+   588→                  ) : (
+   589→                    <p className="mt-2 text-sm text-muted-foreground">{t("profile.about.noneListed")}</p>
+   590→                  )}
+   591→                </div>
+   592→
+   593→                <div className="glass-card rounded-xl p-5">
+   594→                  <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+   595→                    {t("profile.sections.interests")}
+   596→                  </h3>
+   597→                  {interestNames.length > 0 ? (
+   598→                    <div className="mt-3 flex flex-wrap gap-2">
+   599→                      {interestNames.map((i) => (
+   600→                        <span
+   601→                          key={i}
+   602→                          className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2.5 py-1 text-xs text-cyan-200"
+   603→                        >
+   604→                          {i}
+   605→                        </span>
+   606→                      ))}
+   607→                    </div>
+   608→                  ) : (
+   609→                    <p className="mt-2 text-sm text-muted-foreground">{t("profile.about.noneListed")}</p>
+   610→                  )}
+   611→                </div>
+   612→
+   613→                <div className="glass-card rounded-xl p-5">
+   614→                  <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+   615→                    {t("profile.about.details")}
+   616→                  </h3>
+   617→                  <ul className="mt-3 space-y-2.5 text-sm">
+   618→                    <li className="flex items-center gap-2 text-muted-foreground">
+   619→                      <CalendarDays className="h-4 w-4 shrink-0 text-cyan-300" />
+   620→                      {t("profile.about.joined", { date: fd(new Date(profile.createdAt), "MMMM d, yyyy") })}
+   621→                    </li>
+   622→                    <li className="flex items-center gap-2 text-muted-foreground">
+   623→                      <UserRound className="h-4 w-4 shrink-0 text-violet-300" />
+   624→                      <span className="font-mono">@{profile.username}</span>
+   625→                    </li>
+   626→                    {websiteHost && (
+   627→                      <li className="flex items-center gap-2">
+   628→                        <Globe className="h-4 w-4 shrink-0 text-cyan-300" />
+   629→                        <a
+   630→                          href={profile.websiteUrl}
+   631→                          target="_blank"
+   632→                          rel="noopener noreferrer"
+   633→                          className="truncate text-cyan-300 hover:underline focus-glow rounded"
+   634→                        >
+   635→                          {websiteHost}
+   636→                        </a>
+   637→                      </li>
+   638→                    )}
+   639→                  </ul>
+   640→                </div>
+   641→              </div>
+   642→            )}
+   643→          </TabsContent>
+   644→        </Tabs>
+   645→
+   646→        {/* ── Report dialog ──────────────────────────────────── */}
+   647→        <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+   648→          <DialogContent className="sm:max-w-md">
+   649→            <DialogHeader>
+   650→              <DialogTitle className="font-display">
+   651→                {t("profile.report.title", { name: profile.displayName })}
+   652→              </DialogTitle>
+   653→              <DialogDescription>
+   654→                {t("profile.report.description")}
+   655→              </DialogDescription>
+   656→            </DialogHeader>
+   657→            <div className="space-y-4">
+   658→              <div className="space-y-2">
+   659→                <Label htmlFor="report-reason">{t("profile.report.reason")}</Label>
+   660→                <Select value={reportReason} onValueChange={setReportReason}>
+   661→                  <SelectTrigger id="report-reason" className="w-full focus-glow">
+   662→                    <SelectValue placeholder={t("profile.report.pickReason")} />
+   663→                  </SelectTrigger>
+   664→                  <SelectContent>
+   665→                    {REPORT_REASONS.map((r) => (
+   666→                      <SelectItem key={r.value} value={r.value}>
+   667→                        {t(`profile.reportReasons.${r.labelKey}`)}
+   668→                      </SelectItem>
+   669→                    ))}
+   670→                  </SelectContent>
+   671→                </Select>
+   672→              </div>
+   673→              <div className="space-y-2">
+   674→                <Label htmlFor="report-details">{t("profile.report.detailsLabel")}</Label>
+   675→                <Textarea
+   676→                  id="report-details"
+   677→                  rows={4}
+   678→                  maxLength={2000}
+   679→                  value={reportDetails}
+   680→                  onChange={(e) => setReportDetails(e.target.value)}
+   681→                  placeholder={t("profile.report.detailsPlaceholder")}
+   682→                  className="focus-glow"
+   683→                />
+   684→              </div>
+   685→            </div>
+   686→            <DialogFooter>
+   687→              <Button variant="outline" onClick={() => setReportOpen(false)} disabled={reportPending}>
+   688→                {t("common.cancel")}
+   689→              </Button>
+   690→              <Button onClick={submitReport} disabled={reportPending} className="min-w-32">
+   691→                {reportPending && <Loader2 className="h-4 w-4 animate-spin" />}
+   692→                {t("profile.report.submit")}
+   693→              </Button>
+   694→            </DialogFooter>
+   695→          </DialogContent>
+   696→        </Dialog>
+   697→      </div>
+   698→    </MotionConfig>
+   699→  );
+   700→}
+   701→

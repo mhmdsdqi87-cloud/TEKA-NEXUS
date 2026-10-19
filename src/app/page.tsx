@@ -5,6 +5,7 @@
 // (src/lib/store.ts). See docs/FRONTEND_GUIDE.md + docs/API_CONTRACT.md.
 
 import { useEffect } from "react";
+import { motion } from "framer-motion";
 import { useApp } from "@/lib/store";
 import { get } from "@/lib/api";
 import { SessionUser } from "@/lib/store";
@@ -24,17 +25,41 @@ import { NotificationsView } from "@/views/notifications-view";
 import { SettingsView } from "@/views/settings-view";
 import { SavedView } from "@/views/saved-view";
 import { LogoMark } from "@/components/brand/logo";
+import { MotionRoot, PageTransition } from "@/components/shared/motion";
 
 const AUTHOptional_VIEWS = new Set(["landing", "login", "signup", "onboarding"]);
 const AUTH_REQUIRED_VIEWS = new Set(["home", "projectNew", "teams", "notifications", "settings", "saved"]);
 
 function BootScreen() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-      <LogoMark size={44} className="animate-pulse" />
-      <p className="font-mono text-xs text-muted-foreground tracking-widest uppercase">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6">
+      <motion.div
+        initial={{ scale: 0.6, opacity: 0, rotate: -12 }}
+        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 260, damping: 18 }}
+      >
+        <LogoMark size={48} />
+      </motion.div>
+      <motion.div
+        className="h-0.5 w-36 overflow-hidden rounded-full bg-white/[0.06]"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.15 }}
+      >
+        <motion.div
+          className="h-full w-1/3 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500"
+          animate={{ x: ["-120%", "360%"] }}
+          transition={{ repeat: Infinity, duration: 1.1, ease: "easeInOut" }}
+        />
+      </motion.div>
+      <motion.p
+        className="font-mono text-xs text-muted-foreground tracking-widest uppercase"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 1, 0.45, 1] }}
+        transition={{ delay: 0.25, duration: 1.4, repeat: Infinity, repeatDelay: 0.4 }}
+      >
         Connecting to the Nexus…
-      </p>
+      </motion.p>
     </div>
   );
 }
@@ -134,10 +159,26 @@ export default function Page() {
   const shellViews = new Set(["home", "explore", "projectNew", "project", "teams", "notifications", "profile", "settings", "saved"]);
   const inShell = shellViews.has(view.name);
 
+  const viewKey =
+    view.name +
+    (view.name === "project" ? `:${view.slug}:${view.tab ?? ""}` : "") +
+    (view.name === "profile" ? `:${view.username}` : "") +
+    (view.name === "settings" ? `:${view.tab ?? ""}` : "");
+
   return (
-    <div className="min-h-screen flex flex-col">
-      {inShell ? <AppShell>{content}</AppShell> : <main className="flex-1 flex flex-col">{content}</main>}
-      <SearchDialog />
-    </div>
+    <MotionRoot>
+      <div className="min-h-screen flex flex-col">
+        {inShell ? (
+          <AppShell>
+            <PageTransition viewKey={viewKey}>{content}</PageTransition>
+          </AppShell>
+        ) : (
+          <main className="flex-1 flex flex-col">
+            <PageTransition viewKey={viewKey}>{content}</PageTransition>
+          </main>
+        )}
+        <SearchDialog />
+      </div>
+    </MotionRoot>
   );
 }

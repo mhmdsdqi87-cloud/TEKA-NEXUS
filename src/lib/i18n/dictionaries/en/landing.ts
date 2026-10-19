@@ -7,7 +7,7 @@ export const landing = {
     startBuilding: "Start Building",
   },
   hero: {
-    badge: "TEKA NEXUS — beta preview with demo data",
+    badge: "TEKA NEXUS — now in open beta",
     title1: "Where Ideas Become ",
     title2: "Real Technology",
     title3: ".",
@@ -104,7 +104,7 @@ export const landing = {
     q1: "What is TEKA NEXUS?",
     a1: "A developer-first platform where ideas become real technology. Publish a project at any stage — from a rough idea to a released build — and find the people to build it with. Project discovery, team formation, and verified reputation live in one place.",
     q2: "Is it free?",
-    a2: "Yes. TEKA NEXUS is free to use during the beta preview. Monetization tools are planned for a later phase, and this preview environment runs entirely on clearly-labeled demo data.",
+    a2: "Yes. TEKA NEXUS is free while we're in open beta. Monetization tools are planned for a later phase — for now, the only currency is reputation.",
     q3: "How is reputation earned?",
     a3: "It is never self-reported. The server awards XP and reputation automatically for verified contributions: completing tasks, completing milestones, posting updates, releasing a project, and having a collaboration request accepted.",
     q4: "Can I use it without crypto?",
@@ -114,7 +114,8 @@ export const landing = {
   },
   footer: {
     tagline: "TEKA NEXUS — Imagine. Build. Connect.",
-    previewNote: "Preview environment: all content is clearly-labeled demo data.",
+    previewNote:
+      "Every project here is real, built by real members — join in and ship yours.",
     navAria: "Footer — {section}",
     colProduct: "Product",
     colCompany: "Company",

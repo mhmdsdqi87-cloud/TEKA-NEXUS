@@ -18,6 +18,7 @@ import { useT, useLabeled } from "@/lib/i18n";
 
 import { EmptyState } from "@/components/shared/atoms";
 import { ProjectCardView, ProjectCardSkeleton } from "@/components/shared/project-card";
+import { FadeIn, Reveal, SPRING, Stagger, StaggerItem } from "@/components/shared/motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -119,7 +120,7 @@ export function ExploreView() {
       transition={{ duration: 0.3, ease: "easeOut" }}
     >
       {/* Header */}
-      <div className="flex items-end justify-between gap-4 mb-5">
+      <FadeIn className="flex items-end justify-between gap-4 mb-5">
         <div className="min-w-0">
           <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight">{t("common.explore")}</h1>
           <p className="text-sm text-muted-foreground mt-1" aria-live="polite">
@@ -130,10 +131,10 @@ export function ExploreView() {
                 })}
           </p>
         </div>
-      </div>
+      </FadeIn>
 
       {/* Toolbar */}
-      <div className="glass-card rounded-xl p-3 sticky top-14 z-30 backdrop-blur-md mb-6">
+      <Reveal y={12} className="glass-card rounded-xl p-3 sticky top-14 z-30 backdrop-blur-md mb-6">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative flex-1 min-w-0">
             <Search
@@ -217,13 +218,25 @@ export function ExploreView() {
         >
           <TabsList className="bg-white/[0.04] h-9" aria-label={t("explore.sortAria")}>
             {SORT_TABS.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value} className="text-xs px-3.5">
-                {t(tab.labelKey)}
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="relative text-xs px-3.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+              >
+                {sort === tab.value && (
+                  <motion.span
+                    layoutId="explore-sort-pill"
+                    aria-hidden="true"
+                    className="absolute inset-0 rounded-md border border-cyan-400/30 bg-cyan-500/15"
+                    transition={SPRING}
+                  />
+                )}
+                <span className="relative">{t(tab.labelKey)}</span>
               </TabsTrigger>
             ))}
           </TabsList>
         </Tabs>
-      </div>
+      </Reveal>
 
       {/* Grid */}
       {loading ? (
@@ -237,34 +250,46 @@ export function ExploreView() {
           ))}
         </div>
       ) : error ? (
-        <EmptyState
-          icon={Telescope}
-          title={t("explore.errorTitle")}
-          description={error}
-          action={
-            <Button variant="outline" onClick={fetchData}>
-              {t("common.retry")}
-            </Button>
-          }
-        />
+        <FadeIn>
+          <EmptyState
+            icon={Telescope}
+            title={t("explore.errorTitle")}
+            description={error}
+            action={
+              <Button variant="outline" onClick={fetchData}>
+                {t("common.retry")}
+              </Button>
+            }
+          />
+        </FadeIn>
       ) : projects && projects.length === 0 ? (
-        <EmptyState
-          icon={Telescope}
-          title={t("explore.emptyTitle")}
-          description={t("explore.emptyDescription")}
-          action={
-            <Button variant="outline" onClick={clearFilters}>
-              <X className="h-4 w-4" /> {t("explore.clearFilters")}
-            </Button>
-          }
-        />
+        <FadeIn>
+          <EmptyState
+            icon={Telescope}
+            title={t("explore.emptyTitle")}
+            description={t("explore.emptyDescription")}
+            action={
+              <Button variant="outline" onClick={clearFilters}>
+                <X className="h-4 w-4" /> {t("explore.clearFilters")}
+              </Button>
+            }
+          />
+        </FadeIn>
       ) : projects ? (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {projects.map((p) => (
-              <ProjectCardView key={p.id} project={p} />
-            ))}
-          </div>
+          <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" gap={0.04}>
+            {projects.map((p, i) =>
+              i < 12 ? (
+                <StaggerItem key={p.id}>
+                  <ProjectCardView project={p} />
+                </StaggerItem>
+              ) : (
+                <FadeIn key={p.id} y={12} duration={0.35}>
+                  <ProjectCardView project={p} />
+                </FadeIn>
+              )
+            )}
+          </Stagger>
 
           {/* Pagination */}
           {data && data.pages > 1 && (

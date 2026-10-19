@@ -9,7 +9,7 @@ export const landing: LandingDict = {
     startBuilding: "Commencer à créer",
   },
   hero: {
-    badge: "TEKA NEXUS — aperçu bêta avec données de démonstration",
+    badge: "TEKA NEXUS — désormais en bêta ouverte",
     title1: "Là où les idées deviennent ",
     title2: "de la vraie technologie",
     title3: ".",
@@ -106,7 +106,7 @@ export const landing: LandingDict = {
     q1: "Qu’est-ce que TEKA NEXUS ?",
     a1: "Une plateforme pensée d’abord pour les développeurs, où les idées deviennent de la vraie technologie. Publiez un projet à n’importe quelle étape — d’une idée brute à une version publiée — et trouvez les personnes pour le construire avec vous. Découverte de projets, formation d’équipes et réputation vérifiée, au même endroit.",
     q2: "Est-ce gratuit ?",
-    a2: "Oui. TEKA NEXUS est gratuit pendant l’aperçu bêta. Les outils de monétisation sont prévus pour une phase ultérieure, et cet environnement d’aperçu fonctionne entièrement avec des données de démonstration clairement étiquetées.",
+    a2: "Oui. TEKA NEXUS est gratuit pendant la bêta ouverte. Les outils de monétisation arriveront dans une phase ultérieure — pour l’instant, la seule monnaie, c’est la réputation.",
     q3: "Comment la réputation est-elle gagnée ?",
     a3: "Elle n’est jamais auto-déclarée. Le serveur attribue XP et réputation automatiquement pour les contributions vérifiées : terminer des tâches, atteindre des jalons, publier des mises à jour, lancer un projet ou voir une demande de collaboration acceptée.",
     q4: "Puis-je l’utiliser sans crypto ?",
@@ -117,7 +117,7 @@ export const landing: LandingDict = {
   footer: {
     tagline: "TEKA NEXUS — Imaginez. Créez. Connectez.",
     previewNote:
-      "Environnement d’aperçu : tout le contenu est des données de démonstration clairement étiquetées.",
+      "Chaque projet ici est réel, créé par de vrais membres — rejoignez-nous et lancez le vôtre.",
     navAria: "Pied de page — {section}",
     colProduct: "Produit",
     colCompany: "Entreprise",

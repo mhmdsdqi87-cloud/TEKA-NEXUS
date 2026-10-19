@@ -2,10 +2,13 @@
 
 // TEKA NEXUS — ProjectCard + skeletons shared by feed / explore / profile / search.
 
+import { motion } from "framer-motion";
+
 import { cn } from "@/lib/utils";
 import { ProjectCard as ProjectCardDTO } from "@/lib/dto";
 import { PROJECT_CATEGORIES } from "@/lib/constants";
 import { StatusPill, ProjectCover, UserAvatar } from "@/components/shared/atoms";
+import { EASE, HoverLift } from "@/components/shared/motion";
 import { useApp } from "@/lib/store";
 import { useT, useRelativeTime, useLabeled } from "@/lib/i18n";
 import { Skeleton as ShadSkeleton } from "@/components/ui/skeleton";
@@ -25,66 +28,80 @@ export function ProjectCardView({
   const cat = PROJECT_CATEGORIES.find((c) => c.slug === project.category);
 
   return (
-    <button
-      onClick={() => navigate({ name: "project", slug: project.slug })}
-      className={cn(
-        "glass-card rounded-xl text-left group overflow-hidden focus-glow cursor-pointer w-full",
-        compact ? "p-3" : "p-0"
-      )}
-      aria-label={t("profile.shared.openProjectAria", { name: project.name })}
-    >
-      {!compact && (
-        <div className="h-32 overflow-hidden border-b border-white/[0.06]">
-          <div className="w-full h-full transition-transform duration-500 group-hover:scale-[1.04]">
-            <ProjectCover cover={project.coverImage} name={project.name} seed={project.slug.length} />
-          </div>
-        </div>
-      )}
-      <div className={cn("flex flex-col gap-2.5", compact ? "" : "p-4")}>
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-display font-semibold leading-tight group-hover:text-cyan-300 transition-colors line-clamp-1">
-            {project.name}
-          </h3>
-          <StatusPill status={project.status} className="shrink-0" />
-        </div>
-        <p className={cn("text-sm text-muted-foreground", compact ? "line-clamp-1" : "line-clamp-2")}>
-          {project.tagline}
-        </p>
-        {!compact && (project.tags?.length > 0 || project.requiredSkills?.length > 0) && (
-          <div className="flex flex-wrap gap-1.5">
-            {project.tags.slice(0, 3).map((t) => (
-              <span key={t} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.05] text-muted-foreground">
-                #{t}
-              </span>
-            ))}
-            {project.requiredSkills.slice(0, 2).map((s) => (
-              <span key={s} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-300">
-                {s}
-              </span>
-            ))}
+    <HoverLift className="h-full w-full">
+      <button
+        onClick={() => navigate({ name: "project", slug: project.slug })}
+        className={cn(
+          "glass-card rounded-xl text-left group overflow-hidden focus-glow cursor-pointer w-full h-full",
+          compact ? "p-3" : "p-0"
+        )}
+        aria-label={t("profile.shared.openProjectAria", { name: project.name })}
+      >
+        {!compact && (
+          <div className="h-32 overflow-hidden border-b border-white/[0.06]">
+            <div className="w-full h-full transition-transform duration-500 group-hover:scale-[1.05]">
+              <ProjectCover cover={project.coverImage} name={project.name} seed={project.slug.length} />
+            </div>
           </div>
         )}
-        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-white/[0.05] mt-1">
-          <span className="flex items-center gap-1.5 min-w-0">
-            <UserAvatar user={project.owner} size={20} />
-            <span className="truncate max-w-[110px]">{project.owner.displayName}</span>
-          </span>
-          <span className="flex items-center gap-3 shrink-0">
-            <span className="flex items-center gap-1" title={t("profile.shared.likes")}>
-              <Heart className="h-3 w-3" /> {project.likeCount}
-            </span>
-            <span className="flex items-center gap-1" title={t("profile.shared.teamSize")}>
-              <Users className="h-3 w-3" /> {project.memberCount}
-            </span>
-          </span>
+        <div className={cn("flex flex-col gap-2.5", compact ? "" : "p-4")}>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-display font-semibold leading-tight group-hover:text-cyan-300 transition-colors line-clamp-1">
+              {project.name}
+            </h3>
+            <StatusPill status={project.status} className="shrink-0" />
+          </div>
+          <p className={cn("text-sm text-muted-foreground", compact ? "line-clamp-1" : "line-clamp-2")}>
+            {project.tagline}
+          </p>
+          {!compact && (project.tags?.length > 0 || project.requiredSkills?.length > 0) && (
+            <motion.div
+              className="flex flex-wrap gap-1.5"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: EASE, delay: 0.04 }}
+            >
+              {project.tags.slice(0, 3).map((t) => (
+                <span key={t} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.05] text-muted-foreground">
+                  #{t}
+                </span>
+              ))}
+              {project.requiredSkills.slice(0, 2).map((s) => (
+                <span key={s} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-300">
+                  {s}
+                </span>
+              ))}
+            </motion.div>
+          )}
+          <motion.div
+            className="flex flex-col"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: EASE, delay: 0.08 }}
+          >
+            <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-white/[0.05] mt-1">
+              <span className="flex items-center gap-1.5 min-w-0">
+                <UserAvatar user={project.owner} size={20} />
+                <span className="truncate max-w-[110px]">{project.owner.displayName}</span>
+              </span>
+              <span className="flex items-center gap-3 shrink-0">
+                <span className="flex items-center gap-1" title={t("profile.shared.likes")}>
+                  <Heart className="h-3 w-3" /> {project.likeCount}
+                </span>
+                <span className="flex items-center gap-1" title={t("profile.shared.teamSize")}>
+                  <Users className="h-3 w-3" /> {project.memberCount}
+                </span>
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70 mt-2.5">
+              <Clock3 className="h-3 w-3" />
+              {t("profile.shared.updated", { time: rel(new Date(project.updatedAt)) })}
+              {cat && <span className="ml-auto font-mono uppercase tracking-wide opacity-70">{lbl("project.categories", cat.slug, cat.name)}</span>}
+            </div>
+          </motion.div>
         </div>
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-          <Clock3 className="h-3 w-3" />
-          {t("profile.shared.updated", { time: rel(new Date(project.updatedAt)) })}
-          {cat && <span className="ml-auto font-mono uppercase tracking-wide opacity-70">{lbl("project.categories", cat.slug, cat.name)}</span>}
-        </div>
-      </div>
-    </button>
+      </button>
+    </HoverLift>
   );
 }
 

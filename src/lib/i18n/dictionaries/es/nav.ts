@@ -37,6 +37,6 @@ export const nav: NavDict = {
   tipBefore: "Pulsa",
   tipAfter: "para buscar donde quieras.",
 
-  footerTagline: "TEKA NEXUS — vista previa de demostración",
+  footerTagline: "TEKA NEXUS — el punto de encuentro de quienes construyen",
   footerAria: "Pie de página",
 };

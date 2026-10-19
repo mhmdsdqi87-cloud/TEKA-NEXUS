@@ -9,7 +9,7 @@ export const landing: LandingDict = {
     startBuilding: "Empieza a construir",
   },
   hero: {
-    badge: "TEKA NEXUS — vista previa beta con datos de demostración",
+    badge: "TEKA NEXUS — ahora en beta abierta",
     title1: "Donde las ideas se convierten en ",
     title2: "tecnología real",
     title3: ".",
@@ -106,7 +106,7 @@ export const landing: LandingDict = {
     q1: "¿Qué es TEKA NEXUS?",
     a1: "Una plataforma pensada para desarrolladores donde las ideas se convierten en tecnología real. Publica un proyecto en cualquier etapa — de una idea rugosa a una versión lanzada — y encuentra a la gente para construirlo contigo. Descubrimiento de proyectos, formación de equipos y reputación verificada, todo en un solo lugar.",
     q2: "¿Es gratis?",
-    a2: "Sí. TEKA NEXUS es gratis durante la vista previa beta. Las herramientas de monetización están previstas para una fase posterior, y este entorno de vista previa funciona por completo con datos de demostración claramente etiquetados.",
+    a2: "Sí. TEKA NEXUS es gratis durante la beta abierta. Las herramientas de monetización llegarán en una fase posterior — por ahora, la única moneda es la reputación.",
     q3: "¿Cómo se gana reputación?",
     a3: "Nunca se autoreporta. El servidor otorga XP y reputación automáticamente por contribuciones verificadas: completar tareas, alcanzar hitos, publicar actualizaciones, lanzar un proyecto y que acepten una solicitud de colaboración.",
     q4: "¿Puedo usarlo sin cripto?",
@@ -117,7 +117,7 @@ export const landing: LandingDict = {
   footer: {
     tagline: "TEKA NEXUS — Imagina. Construye. Conecta.",
     previewNote:
-      "Entorno de vista previa: todo el contenido son datos de demostración claramente etiquetados.",
+      "Cada proyecto aquí es real, creado por miembros reales — únete y lanza el tuyo.",
     navAria: "Pie de página — {section}",
     colProduct: "Producto",
     colCompany: "Empresa",

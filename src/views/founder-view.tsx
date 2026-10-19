@@ -7,20 +7,26 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
+  CheckCircle2,
   Crown,
   Database,
+  ImageUp,
+  KeyRound,
   Search,
   ShieldCheck,
   Sparkles,
   UserPlus,
   Users,
+  XCircle,
   Zap,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2 } from "lucide-react";
 import { UserAvatar } from "@/components/shared/atoms";
 import { FadeIn, AnimatedNumber, HoverLift, Stagger, StaggerItem } from "@/components/shared/motion";
+import { cn } from "@/lib/utils";
 import { get } from "@/lib/api";
 import { useApp } from "@/lib/store";
 import { useT, useRelativeTime } from "@/lib/i18n";
@@ -50,6 +56,18 @@ type FounderStats = {
   totalSessions: number;
 };
 
+type SupabaseStatus = {
+  supabase: {
+    reachable: boolean;
+    authVersion: string | null;
+    dbPasswordProvided: boolean;
+    projectRef: string;
+  };
+  secretKey: { configured: boolean };
+  authMirror: { total: number | null };
+  prisma: { syncedToSupabase: boolean };
+};
+
 export function FounderView() {
   const t = useT();
   const rel = useRelativeTime();
@@ -58,6 +76,7 @@ export function FounderView() {
   const [users, setUsers] = useState<FounderUser[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [query, setQuery] = useState("");
+  const [supabaseStatus, setSupabaseStatus] = useState<SupabaseStatus | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -68,6 +87,9 @@ export function FounderView() {
         setUsers(res.users);
       })
       .catch(() => alive && setFailed(true));
+    get<SupabaseStatus>("/api/supabase/status")
+      .then((res) => alive && setSupabaseStatus(res))
+      .catch(() => alive && setSupabaseStatus(null));
     return () => {
       alive = false;
     };
@@ -139,6 +161,108 @@ export function FounderView() {
             ))
           : Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-[108px] rounded-xl" />)}
       </div>
+
+      {/* Supabase cloud status — live link to the founder's own project */}
+      <FadeIn delay={0.1} className="mt-4">
+        <div className="glass-card rounded-xl p-4 sm:p-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <span
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-xl ring-1",
+                supabaseStatus?.supabase.reachable
+                  ? "bg-emerald-500/10 ring-emerald-400/30"
+                  : "bg-white/5 ring-white/10"
+              )}
+            >
+              <Database
+                className={cn(
+                  "h-5 w-5",
+                  supabaseStatus?.supabase.reachable ? "text-emerald-300" : "text-muted-foreground"
+                )}
+              />
+            </span>
+            <div className="min-w-0">
+              <p className="font-display text-sm font-semibold">{t("founder.supabase.title")}</p>
+              <p className="truncate text-xs text-muted-foreground">{t("founder.supabase.subtitle")}</p>
+            </div>
+            {supabaseStatus ? (
+              <span
+                className={cn(
+                  "ms-auto inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-medium",
+                  supabaseStatus.supabase.reachable
+                    ? "border-emerald-400/25 bg-emerald-500/10 text-emerald-300"
+                    : "border-red-400/25 bg-red-500/10 text-red-300"
+                )}
+              >
+                {supabaseStatus.supabase.reachable ? (
+                  <>
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    {t("founder.supabase.connected")}
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-3.5 w-3.5" />
+                    {t("founder.supabase.offline")}
+                  </>
+                )}
+              </span>
+            ) : (
+              <span className="ms-auto inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {t("founder.supabase.checking")}
+              </span>
+            )}
+          </div>
+          {supabaseStatus?.supabase.reachable && (
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="flex items-center gap-2.5 rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2">
+                <KeyRound className="h-4 w-4 shrink-0 text-cyan-300/80" />
+                <p className="min-w-0 truncate text-xs text-muted-foreground">
+                  {t("founder.supabase.auth")}
+                  {supabaseStatus.supabase.authVersion && (
+                    <span className="ms-1 text-foreground/80">
+                      · {t("founder.supabase.version")} {supabaseStatus.supabase.authVersion}
+                    </span>
+                  )}
+                </p>
+              </div>
+              <div className="flex items-center gap-2.5 rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2">
+                <Users className="h-4 w-4 shrink-0 text-violet-300/80" />
+                <p className="min-w-0 truncate text-xs text-muted-foreground">
+                  {t("founder.supabase.mirrored")}
+                  <span className="ms-1 font-semibold tabular-nums text-foreground/90">
+                    · {supabaseStatus.authMirror.total ?? "—"}
+                  </span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2.5 rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2">
+                <ImageUp className="h-4 w-4 shrink-0 text-emerald-300/80" />
+                <p className="min-w-0 truncate text-xs text-muted-foreground">
+                  {t("founder.supabase.storage")}
+                  <span className="ms-1 text-foreground/80">· {t("founder.supabase.storageReady")}</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2.5 rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2">
+                <Database className="h-4 w-4 shrink-0 text-amber-300/80" />
+                <p className="min-w-0 truncate text-xs text-muted-foreground">
+                  {t("founder.supabase.dbSync")}
+                  <span
+                    className={cn(
+                      "ms-1",
+                      supabaseStatus.prisma.syncedToSupabase ? "text-emerald-300" : "text-amber-300"
+                    )}
+                  >
+                    ·
+                    {supabaseStatus.prisma.syncedToSupabase
+                      ? t("founder.supabase.dbSyncActive")
+                      : t("founder.supabase.dbSyncWaiting")}
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </FadeIn>
 
       {/* Directory */}
       <FadeIn delay={0.12} className="mt-8">

@@ -15,6 +15,21 @@ export const founder = {
     projects: "پروژه‌ها",
     sessions: "نشست‌های فعال",
   },
+  supabase: {
+      "title": "ابر Supabase",
+      "subtitle": "اتصال زنده به پروژه Supabase خودت",
+      "connected": "متصل",
+      "offline": "قطع",
+      "checking": "در حال بررسی…",
+      "auth": "سرویس احراز هویت",
+      "mirrored": "حساب‌های همگام‌شده",
+      "storage": "ذخیره آواتارها",
+      "storageReady": "باکت teka-avatars فعال",
+      "dbSync": "همگام‌سازی کامل دیتابیس",
+      "dbSyncWaiting": "در انتظار رمز دیتابیس",
+      "dbSyncActive": "فعال",
+      "version": "نسخه"
+  },
 };
 
 export type FounderDict = typeof founder;

@@ -9,6 +9,7 @@
     "start": "bun index.ts"
   },
   "dependencies": {
+    "postgres": "^3.4.9",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {

@@ -49,5 +49,8 @@ export const auth: AuthDict = {
     passwordShort: "رمز عبور باید حداقل ۸ کاراکتر باشه.",
     emailInvalid: "یه ایمیل معتبر وارد کن.",
     passwordRequired: "رمز عبور لازمه.",
+    emailTaken: "این ایمیل قبلاً ثبت شده. بهتره وارد شی.",
+    usernameTaken: "این نام کاربری قبلاً گرفته شده. یه اسم دیگه انتخاب کن.",
+    invalidCredentials: "ایمیل یا رمز عبور اشتباهه.",
   },
 };

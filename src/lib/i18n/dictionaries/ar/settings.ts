@@ -28,6 +28,17 @@ export const settings: SettingsDict = {
     skills: "المهارات",
     skillsHint: "اختر كل ما يمكنك الإسهام به — تستخدمه الفرق للعثور عليك.",
   },
+  avatar: {
+    title: "صورة الملف الشخصي",
+    upload: "رفع صورة",
+    remove: "إزالة الصورة",
+    hint: "JPG أو PNG أو WebP — تُقتطع تلقائيًا على شكل دائرة. حتى 400 كيلوبايت.",
+    tooBig: "هذه الصورة كبيرة جدًا — اختر صورة أصغر من 400 كيلوبايت.",
+    invalid: "تعذّر قراءة هذه الصورة — جرّب ملفًا آخر.",
+    toastSaved: "تم تحديث صورة الملف الشخصي",
+    toastRemoved: "تمت إزالة صورة الملف الشخصي",
+    fallback: "صورة الملف الشخصي",
+  },
   accountTab: {
     language: "اللغة",
     languageDescription: "اختر لغة الواجهة — English, Español, 中文, العربية, فارسی or Français.",

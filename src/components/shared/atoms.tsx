@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useT, useLabeled } from "@/lib/i18n";
 import { EASE, AnimatedNumber } from "@/components/shared/motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AVATAR_GRADIENTS, PROJECT_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { UserCard } from "@/lib/dto";
 import { Compass, Inbox } from "lucide-react";
@@ -23,19 +23,30 @@ export function UserAvatar({
   size?: number;
   className?: string;
 }) {
+  const t = useT();
   const initials = user?.displayName
     ? user.displayName.trim().slice(0, 2).toUpperCase()
     : user?.username?.slice(0, 2).toUpperCase() ?? "?";
   const gradient = AVATAR_GRADIENTS[user?.avatarColor ?? "cyan"] ?? AVATAR_GRADIENTS.cyan;
+  // A real uploaded photo (data URL) always wins over the gradient fallback.
+  const photo = user?.avatarUrl ? user.avatarUrl : null;
   return (
     <Avatar
       style={{ width: size, height: size }}
       className={cn("border border-white/10 shrink-0", className)}
     >
-      {user?.avatarUrl ? <AvatarImage src={user.avatarUrl} alt={user.displayName} /> : null}
-      <AvatarFallback className={cn("bg-gradient-to-br text-[#0a0a12] font-bold", gradient)} style={{ fontSize: size * 0.36 }}>
-        {initials}
-      </AvatarFallback>
+      {photo ? (
+        <img
+          src={photo}
+          alt={user?.displayName || user?.username || t("settings.avatar.fallback")}
+          className="h-full w-full rounded-full object-cover"
+          loading="lazy"
+        />
+      ) : (
+        <AvatarFallback className={cn("bg-gradient-to-br text-[#0a0a12] font-bold", gradient)} style={{ fontSize: size * 0.36 }}>
+          {initials}
+        </AvatarFallback>
+      )}
     </Avatar>
   );
 }

@@ -28,6 +28,17 @@ export const settings: SettingsDict = {
     skills: "技能",
     skillsHint: "勾选所有你能贡献的技能——团队会通过它们找到你。",
   },
+  avatar: {
+    title: "头像照片",
+    upload: "上传照片",
+    remove: "移除照片",
+    hint: "支持 JPG、PNG 或 WebP，会自动裁剪成圆形，最大 400 KB。",
+    tooBig: "这张图片太大了，请选择小于 400 KB 的图片。",
+    invalid: "无法读取这张图片，请换一个文件试试。",
+    toastSaved: "头像已更新",
+    toastRemoved: "头像已移除",
+    fallback: "头像",
+  },
   accountTab: {
     language: "语言",
     languageDescription: "选择界面语言 — English, Español, 中文, العربية, فارسی or Français.",

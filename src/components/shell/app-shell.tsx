@@ -11,6 +11,7 @@ import {
   Bookmark,
   CircleUserRound,
   Compass,
+  Crown,
   FileCode2,
   GraduationCap,
   FolderGit2,
@@ -31,7 +32,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { SPRING, TapScale } from "@/components/shared/motion";
 import { useApp, type View } from "@/lib/store";
-import { get, post, qs } from "@/lib/api";
+import { get, post, qs, setSessionToken } from "@/lib/api";
 import {
   type CollabRequestDTO,
   type ProjectCard,
@@ -186,6 +187,14 @@ function LeftNav() {
               badge={unreadCount}
             />
             <NavItem icon={Bookmark} label={t("common.saved")} active={view.name === "saved"} onClick={go({ name: "saved" })} />
+            {user.role === "FOUNDER" && (
+              <NavItem
+                icon={Crown}
+                label={t("nav.founder")}
+                active={view.name === "founder"}
+                onClick={go({ name: "founder" })}
+              />
+            )}
           </>
         )}
       </nav>
@@ -222,6 +231,7 @@ function TopBar() {
     setLoggingOut(true);
     try {
       await post("/api/auth/logout");
+      setSessionToken(null);
       setUnreadCount(0);
       setUser(null);
       navigate({ name: "landing" });
@@ -426,12 +436,21 @@ function MobileNav() {
           onClick={() => navigate({ name: "notifications" })}
           badge={unreadCount}
         />
-        <MobileTab
-          icon={CircleUserRound}
-          label={user ? t("common.profile") : t("common.signIn")}
-          active={view.name === "profile" || view.name === "settings"}
-          onClick={() => (user ? navigate({ name: "profile", username: user.username }) : navigate({ name: "login" }))}
-        />
+        {user?.role === "FOUNDER" ? (
+          <MobileTab
+            icon={Crown}
+            label={t("nav.founder")}
+            active={view.name === "founder"}
+            onClick={() => navigate({ name: "founder" })}
+          />
+        ) : (
+          <MobileTab
+            icon={CircleUserRound}
+            label={user ? t("common.profile") : t("common.signIn")}
+            active={view.name === "profile" || view.name === "settings"}
+            onClick={() => (user ? navigate({ name: "profile", username: user.username }) : navigate({ name: "login" }))}
+          />
+        )}
       </div>
     </nav>
   );

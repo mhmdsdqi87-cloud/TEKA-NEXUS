@@ -6,6 +6,7 @@ export const nav = {
   // Side navigation (LeftNav / MobileNav)
   newProject: "New project",
   academy: "Academy",
+  founder: "Founder Console",
   primaryNavAria: "Primary navigation",
   mainAria: "Main",
   mobileNavAria: "Mobile navigation",

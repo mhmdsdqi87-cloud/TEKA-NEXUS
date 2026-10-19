@@ -47,6 +47,9 @@ export const auth = {
     passwordShort: "Password must be at least 8 characters.",
     emailInvalid: "Enter a valid email address.",
     passwordRequired: "Password is required.",
+    emailTaken: "This email is already registered. Try signing in instead.",
+    usernameTaken: "That username is already taken. Pick another one.",
+    invalidCredentials: "Invalid email or password.",
   },
 };
 

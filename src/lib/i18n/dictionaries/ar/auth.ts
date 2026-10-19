@@ -50,5 +50,8 @@ export const auth: AuthDict = {
     passwordShort: "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
     emailInvalid: "أدخل بريدًا إلكترونيًا صالحًا.",
     passwordRequired: "كلمة المرور مطلوبة.",
+    emailTaken: "هذا البريد مسجّل بالفعل. جرّب تسجيل الدخول.",
+    usernameTaken: "اسم المستخدم محجوز. اختر اسمًا آخر.",
+    invalidCredentials: "البريد أو كلمة المرور غير صحيحة.",
   },
 };

@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Flag, HelpCircle, Sparkles } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { XP_RULES } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/store";
 import { EASE, Stagger, StaggerItem } from "@/components/shared/motion";
 import { Confetti } from "@/components/academy/confetti";
@@ -236,6 +237,23 @@ export function LessonPlayer({
   return (
     <div className="relative">
       {(justPassed) && <Confetti trigger={1} />}
+
+      {/* XP burst — floating chip on challenge pass (supercharge) */}
+      <AnimatePresence>
+        {justPassed && (
+          <motion.div
+            key="xp-burst"
+            initial={{ opacity: 0, y: 14, scale: 0.7 }}
+            animate={{ opacity: [0, 1, 1, 0], y: -44, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.7, ease: EASE, times: [0, 0.18, 0.72, 1] }}
+            className="pointer-events-none absolute -top-3 end-4 z-20 rounded-full bg-emerald-500/20 px-3 py-1.5 text-sm font-black tabular-nums text-emerald-300 shadow-lg shadow-emerald-500/20 ring-1 ring-inset ring-emerald-400/40"
+            aria-hidden="true"
+          >
+            +{XP_RULES.ACADEMY_LESSON.xp} XP ⚡
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* lesson header */}
       <div className="mb-5">

@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ir.teka.nexus",
+      "sha256_cert_fingerprints": [
+        "TODO:REPLACE_WITH_SHA256_FINGERPRINT_FROM_PWA_BUILDER_KEYSTORE"
+      ]
+    }
+  }
+]

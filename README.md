@@ -68,7 +68,7 @@ not a university degree.
 | ----------------------------- | ------------------------------------- |
 | `bun run dev`                 | dev server on :3000 (logs to dev.log) |
 | `bun run lint` / `tsc`        | eslint / typecheck                    |
-| `bun run build` + `start`     | standalone production build           |
+| `bun run build:standalone` + `start` | standalone production build (VPS)    |
 | `bun run db:push`             | sync Prisma schema to the DB          |
 | `bun run db:switch:postgres`  | flip Prisma to PostgreSQL (Supabase)  |
 | `bun run icons`               | re-render PWA icons from favicon.svg  |

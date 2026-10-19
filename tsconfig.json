@@ -30,6 +30,7 @@
     }
   },
   "include": [
+    "bun-env.d.ts",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
@@ -37,6 +38,7 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "mini-services"
   ]
 }

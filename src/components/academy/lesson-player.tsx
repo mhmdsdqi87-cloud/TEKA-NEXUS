@@ -6,7 +6,7 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Flag, HelpCircle, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Flag, GraduationCap, HelpCircle, Sparkles } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { XP_RULES } from "@/lib/constants";
@@ -16,6 +16,9 @@ import { Confetti } from "@/components/academy/confetti";
 import { PyInline, PyChallenge } from "@/components/academy/py-runner";
 import { HtmlInline, HtmlChallenge } from "@/components/academy/html-runner";
 import { pick, type Course, type Lesson, type QuizQuestion, type TheoryBlock, type Step } from "@/lib/academy/types";
+import { TUTOR_DICT } from "@/components/academy-portal/tutor/tutor-dict";
+import { TutorPanel } from "@/components/academy-portal/tutor/tutor-panel";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { TFunc } from "@/lib/i18n";
 
 // ─── Theory ──────────────────────────────────────────────────
@@ -206,6 +209,8 @@ export function LessonPlayer({
   t: TFunc;
 }) {
   const locale = useLocaleSafe();
+  const tutor = TUTOR_DICT[locale as keyof typeof TUTOR_DICT] ?? TUTOR_DICT.en;
+  const [tutorOpen, setTutorOpen] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const [justPassed, setJustPassed] = useState(false);
   const steps = lesson.steps;
@@ -423,6 +428,45 @@ export function LessonPlayer({
           </div>
         </div>
       </div>
+
+      {/* Ask tutor — floating entry to the AI tutor (spec §8) */}
+      <motion.button
+        type="button"
+        onClick={() => setTutorOpen(true)}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.4, ease: EASE }}
+        whileTap={{ scale: 0.97 }}
+        className="fixed bottom-24 end-4 z-30 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-cyan-400/25 bg-[#0b1220]/90 px-4 text-sm font-semibold text-cyan-100 shadow-lg shadow-cyan-500/10 backdrop-blur-xl transition hover:border-cyan-300/40 hover:text-white focus-glow md:bottom-8"
+        aria-label={tutor.title}
+      >
+        <GraduationCap className="h-5 w-5 text-cyan-300" aria-hidden="true" />
+        {tutor.title}
+      </motion.button>
+
+      <Sheet open={tutorOpen} onOpenChange={setTutorOpen}>
+        <SheetContent
+          side={locale === "fa" || locale === "ar" ? "left" : "right"}
+          className="w-full gap-0 border-white/10 bg-[#0b1120] p-0 sm:max-w-md"
+        >
+          <SheetHeader className="p-4 ltr:pe-14 rtl:ps-14">
+            <SheetTitle className="flex items-center gap-2 text-base text-white">
+              <GraduationCap className="h-4.5 w-4.5 text-cyan-300" aria-hidden="true" />
+              {tutor.title}
+            </SheetTitle>
+            <SheetDescription className="sr-only">{tutor.tagline}</SheetDescription>
+          </SheetHeader>
+          <div className="min-h-0 flex-1">
+            <TutorPanel
+              context={{
+                courseId: course.id,
+                lessonId: lesson.id,
+                lessonTitle: pick(lesson.title, locale),
+              }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

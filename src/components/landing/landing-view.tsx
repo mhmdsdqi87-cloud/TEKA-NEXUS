@@ -740,7 +740,7 @@ export function LandingView() {
             </div>
             <div className="mt-8 flex justify-center">
               <TapScale>
-                <Button className="btn-hero h-11 px-7" onClick={() => navigate({ name: "signup" })}>
+                <Button className="btn-hero h-11 px-7" onClick={() => navigate({ name: "academyPortal" })}>
                   <GraduationCap className="h-4 w-4" />
                   {t("landing.academy.cta")}
                   <ArrowRight className="h-4 w-4 rtl:rotate-180" />

@@ -163,8 +163,8 @@ function LeftNav() {
         <NavItem
           icon={GraduationCap}
           label={t("nav.academy")}
-          active={view.name === "academy"}
-          onClick={go({ name: "academy" })}
+          active={view.name === "academy" || view.name === "academyPortal"}
+          onClick={go({ name: "academyPortal" })}
         />
 
         <motion.button
@@ -414,8 +414,8 @@ function MobileNav() {
         <MobileTab
           icon={GraduationCap}
           label={t("nav.academy")}
-          active={view.name === "academy"}
-          onClick={() => navigate({ name: "academy" })}
+          active={view.name === "academy" || view.name === "academyPortal"}
+          onClick={() => navigate({ name: "academyPortal" })}
         />
         <div className="flex items-start justify-center">
           <motion.button

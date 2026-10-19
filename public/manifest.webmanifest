@@ -1,0 +1,35 @@
+{
+  "name": "TEKA NEXUS — Learn, Build, Connect",
+  "short_name": "TEKA",
+  "description": "Discover projects, find your people, and build what comes next. Free programming academy + real collaboration community.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#08080d",
+  "theme_color": "#08080d",
+  "lang": "en",
+  "dir": "auto",
+  "categories": ["education", "productivity", "social"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

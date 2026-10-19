@@ -82,6 +82,24 @@ export const landing = {
     taskCard: "Task card",
     assignee: "Assignee",
   },
+  academy: {
+    eyebrow: "TEKA Academy",
+    title: "Learn to code. 100% free. No catch.",
+    subtitle:
+      "Python and HTML courses for absolute beginners — write real code in your browser from lesson one, see instant results, and build things that actually work.",
+    pythonTitle: "Python: From Zero to Builder",
+    pythonBody:
+      "20 interactive lessons: print, variables, loops, functions — ending with a working program you write yourself.",
+    htmlTitle: "HTML & CSS: Zero to First Website",
+    htmlBody:
+      "20 interactive lessons: tags, structure, styling and layout — ending with a personal homepage you design and publish.",
+    freeBadge: "Free forever",
+    chip1: "In-browser editor",
+    chip2: "Instant output",
+    chip3: "XP & certificates",
+    chip4: "Zero setup",
+    cta: "Start learning free",
+  },
   how: {
     eyebrow: "How it works",
     title: "Start in three steps.",

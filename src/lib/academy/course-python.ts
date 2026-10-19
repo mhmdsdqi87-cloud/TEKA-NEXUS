@@ -113,8 +113,8 @@ print("I am learning Python ⚡")`,
               kind: "challenge",
               title: { en: "Build Your ID Card", fa: "کارت شناسایی خودت رو بساز" },
               brief: {
-                en: "Print your developer ID card: exactly three lines — the header, your name, and your mood. Feel free to change Sara to YOUR name before submitting.",
-                fa: "کارت شناسایی برنامه‌نویسیت رو چاپ کن: دقیقاً سه خط — سربرگ، اسم تو، و حالِ تو. قبل از ثبت، می‌تونی Sara رو به اسم خودت تغییر بدی.",
+                en: "Print your developer ID card: exactly three lines — the header, the name, and the mood. Copy the example text EXACTLY (Sara stays Sara for now — the checker compares your output word by word!).",
+                fa: "کارت شناسایی برنامه‌نویسیت رو چاپ کن: دقیقاً سه خط — سربرگ، اسم، و حالِ تو. متن نمونه رو دقیقاً کپی کن (فعلاً Sara می‌مونه — تصحیح‌کننده خروجی‌ات رو کلمه به کلمه مقایسه می‌کنه!)",
               },
               starter: `# Print the three lines of your ID card
 # Line 1: === TEKA ID ===
@@ -130,8 +130,8 @@ print("Mood: Curious ⚡")`,
                   fa: "هر خط یه دستور print(\"...\") جدا ــه — سه تا print، سه تا خط.",
                 },
                 {
-                  en: "Copy the text EXACTLY — the === signs and spacing count!",
-                  fa: "متن رو دقیقاً کپی کن — علامت‌های === و فاصله‌ها مهم‌ان!",
+                  en: "Copy the text EXACTLY — the === signs, Sara, and the spacing all count!",
+                  fa: "متن رو دقیقاً کپی کن — علامت‌های === و Sara و فاصله‌ها همه مهم‌ان!",
                 },
               ],
               check: {

@@ -45,6 +45,7 @@ export const academy = {
   running: "Running…",
   output: "Output",
   inputLabel: "Input (one line per input())",
+  sampleInput: "Insert sample input",
   inputHint: "Each input() call reads the next line from here.",
   checkSolution: "Check solution",
   checking: "Checking…",

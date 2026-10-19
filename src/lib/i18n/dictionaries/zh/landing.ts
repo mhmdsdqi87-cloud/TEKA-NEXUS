@@ -83,6 +83,22 @@ export const landing: LandingDict = {
     taskCard: "任务卡片",
     assignee: "负责人",
   },
+  academy: {
+    eyebrow: "TEKA 学院",
+    title: "学编程。100% 免费。无套路。",
+    subtitle:
+      "面向零基础初学者的 Python 与 HTML 课程——从第一课起就在浏览器里写真实代码，即时看到结果，做出真正能用的东西。",
+    pythonTitle: "Python：从零到创造者",
+    pythonBody: "20 节互动课：打印、变量、循环、函数——最终亲手写出一个能运行的程序。",
+    htmlTitle: "HTML 与 CSS：从零到第一个网站",
+    htmlBody: "20 节互动课：标签、结构、样式与布局——最终做出属于你自己的个人主页。",
+    freeBadge: "永久免费",
+    chip1: "浏览器内编辑器",
+    chip2: "即时输出",
+    chip3: "经验值与证书",
+    chip4: "零配置",
+    cta: "免费开始学习",
+  },
   how: {
     eyebrow: "使用方式",
     title: "三步即可开始。",

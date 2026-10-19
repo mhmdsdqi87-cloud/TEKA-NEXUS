@@ -10,14 +10,20 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
   ArrowRight,
+  Award,
   Compass,
   GitBranch,
+  GraduationCap,
+  Infinity as InfinityIcon,
   LayoutDashboard,
+  MonitorSmartphone,
   Rocket,
   Search,
   ShieldCheck,
+  Terminal,
   Trophy,
   Users,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 
@@ -382,6 +388,56 @@ function Footer() {
   );
 }
 
+// ─── Academy mini visuals ──────────────────────────────────
+
+function PythonMini() {
+  return (
+    <div aria-hidden className="mt-5 overflow-hidden rounded-lg border border-white/[0.07] bg-black/40">
+      <div className="border-b border-white/[0.06] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">
+        python
+      </div>
+      <div className="space-y-1 p-3 font-mono text-[11px] leading-relaxed">
+        <p>
+          <span className="text-violet-300">print</span>
+          <span className="text-muted-foreground">(</span>
+          <span className="text-cyan-300">"Salam, world!"</span>
+          <span className="text-muted-foreground">)</span>
+        </p>
+        <p>
+          <span className="text-violet-300">print</span>
+          <span className="text-muted-foreground">(</span>
+          <span className="text-cyan-300">"I am learning Python &lt;3"</span>
+          <span className="text-muted-foreground">)</span>
+        </p>
+        <div className="mt-2 rounded-md border border-white/[0.06] bg-white/[0.03] px-2.5 py-1.5 text-[10px] text-emerald-300/90">
+          Salam, world! · I am learning Python &lt;3
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HtmlMini() {
+  return (
+    <div aria-hidden className="mt-5 overflow-hidden rounded-lg border border-white/[0.07] bg-black/40">
+      <div className="flex items-center gap-1.5 border-b border-white/[0.06] px-3 py-1.5">
+        <span className="h-2 w-2 rounded-full bg-rose-400/70" />
+        <span className="h-2 w-2 rounded-full bg-amber-400/70" />
+        <span className="h-2 w-2 rounded-full bg-emerald-400/70" />
+        <span className="ml-2 font-mono text-[10px] text-muted-foreground/70">index.html</span>
+      </div>
+      <div className="p-3 font-mono text-[11px] leading-relaxed">
+        <p className="text-muted-foreground">&lt;h1&gt;</p>
+        <p className="pl-3 text-cyan-300">Hello, world! 🌍</p>
+        <p className="text-muted-foreground">&lt;/h1&gt;</p>
+        <div className="mt-2 rounded-md bg-white px-2.5 py-1.5 text-[10px] font-medium text-slate-800">
+          Hello, world! 🌍
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main view ───────────────────────────────────────────────
 
 export function LandingView() {
@@ -613,6 +669,84 @@ export function LandingView() {
           </Reveal>
           <Reveal delay={0.1} className="mt-10">
             <ProductPreview />
+          </Reveal>
+        </section>
+
+        {/* ── TEKA ACADEMY ── */}
+        <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
+          <Reveal>
+            <SectionHeading
+              eyebrow={t("landing.academy.eyebrow")}
+              title={t("landing.academy.title")}
+              subtitle={t("landing.academy.subtitle")}
+            />
+          </Reveal>
+          <div className="mt-10 grid gap-4 md:grid-cols-2 md:gap-6">
+            <Reveal delay={0.05} className="h-full">
+              <HoverLift className="h-full">
+                <article className="glass-card relative flex h-full flex-col overflow-hidden rounded-2xl p-6">
+                  <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-300">
+                      <Terminal className="h-6 w-6" />
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300">
+                      <InfinityIcon className="h-3 w-3" />
+                      {t("landing.academy.freeBadge")}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 font-display text-xl font-bold">{t("landing.academy.pythonTitle")}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("landing.academy.pythonBody")}</p>
+                  <PythonMini />
+                </article>
+              </HoverLift>
+            </Reveal>
+            <Reveal delay={0.12} className="h-full">
+              <HoverLift className="h-full">
+                <article className="glass-card relative flex h-full flex-col overflow-hidden rounded-2xl p-6">
+                  <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/60 to-transparent" />
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300">
+                      <GraduationCap className="h-6 w-6" />
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-300">
+                      <InfinityIcon className="h-3 w-3" />
+                      {t("landing.academy.freeBadge")}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 font-display text-xl font-bold">{t("landing.academy.htmlTitle")}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("landing.academy.htmlBody")}</p>
+                  <HtmlMini />
+                </article>
+              </HoverLift>
+            </Reveal>
+          </div>
+          <Reveal delay={0.15}>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+              {[
+                { icon: MonitorSmartphone, label: t("landing.academy.chip1") },
+                { icon: Zap, label: t("landing.academy.chip2") },
+                { icon: Award, label: t("landing.academy.chip3") },
+                { icon: GraduationCap, label: t("landing.academy.chip4") },
+              ].map((chip) => (
+                <span
+                  key={chip.label}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.07] bg-white/[0.02] px-3.5 py-1.5 text-xs text-muted-foreground"
+                >
+                  <chip.icon className="h-3.5 w-3.5 text-cyan-300/80" />
+                  {chip.label}
+                </span>
+              ))}
+            </div>
+            <div className="mt-8 flex justify-center">
+              <TapScale>
+                <Button className="btn-hero h-11 px-7" onClick={() => navigate({ name: "signup" })}>
+                  <GraduationCap className="h-4 w-4" />
+                  {t("landing.academy.cta")}
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                </Button>
+              </TapScale>
+            </div>
           </Reveal>
         </section>
 

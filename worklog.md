@@ -380,3 +380,21 @@ Work Log:
 
 Stage Summary:
 - Browser-verified end-to-end: landing (new badge, staggered hero, reveals, no demo anywhere), login (demo box gone), real login as maya.chen@gmail.com (home feed rich: Zoe/Lucas activities, trending NeuronForge/WebLoom/Quantum, 4 unread notifs), explore (17 projects, new covers), Nexus Core workspace (overview stats, tabs with counts, kanban backlog/todo/in-progress with priorities/due dates), notifications page (real texts, unread dots), Persian switch → document dir=rtl/lang=fa, mirrored shell + Persian kanban + fully translated tabs/filters, REAL SIGNUP flow: registered arashtest@gmail.com → 4-step Persian onboarding → home with welcome toast, XP 0/REP 0, full public feed — all RTL-correct; mobile 390px: bottom nav + gradient FAB + rich feed. Zero console/page/server errors. Site is now demo-free with a living community.
+
+---
+Task ID: academy-verify + landing-academy
+Agent: Z.ai (orchestrator)
+Task: Verify TEKA Academy end-to-end in browser; add Academy promotion section to landing page (6 locales).
+
+Work Log:
+- Browser-verified full academy flow as logged-in user: Academy view (2 course cards + certificates + top learners), Python course opens (5 modules / 20 lessons), lesson player steps work, Run button executes real code via pylite interpreter — output "Salam, world! / I am learning Python <3" rendered in OUTPUT panel.
+- HTML course: 20 lessons, step 2 "Preview" opens live iframe preview — code `<h1>Hello, world! 🌍</h1>` renders in white preview pane below the editor. Playground tab opens free editor with starter HTML/CSS template.
+- Persian RTL check: switched language to fa — document dir=rtl/lang=fa, academy fully translated ("آکادمی", "زمین بازی آزاد", course titles), mirrored layout correct, code editor stays LTR (correct).
+- Gap found: landing page never mentioned the Academy. Added `landing.academy.*` keys (eyebrow/title/subtitle/2 course cards/freeBadge/4 chips/cta) to ALL 6 dictionaries (en/fa/es/zh/ar/fr).
+- Added TEKA ACADEMY section to landing-view.tsx between Product Preview and How It Works: SectionHeading, two glass cards (Python w/ Terminal icon + PythonMini code visual showing print lines + output; HTML w/ GraduationCap + HtmlMini browser-window visual), emerald "Free forever" Infinity badges, 4 feature chips (MonitorSmartphone/Zap/Award/GraduationCap), btn-hero CTA → signup with rtl:rotate-180 arrow. All wrapped in Reveal/HoverLift/TapScale motion toolkit.
+- Gates: bunx tsc --noEmit → 0 src errors; eslint on touched files → clean; dev.log last 60 lines → zero 5xx.
+- Browser re-verified: landing academy section renders in fa-RTL (cards, mini visuals, chips, CTA); CTA click navigates to Persian signup page. Logged out via account menu during test.
+
+Stage Summary:
+- TEKA Academy is fully working and browser-verified: interactive Python (custom interpreter) + HTML/CSS (live preview) courses, free playground, Persian RTL correct.
+- Landing now sells the academy in all 6 languages with "100% free" messaging — ready for Myket launch storytelling.

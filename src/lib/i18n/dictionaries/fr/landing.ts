@@ -84,6 +84,24 @@ export const landing: LandingDict = {
     taskCard: "Carte de tâche",
     assignee: "Assigné",
   },
+  academy: {
+    eyebrow: "Académie TEKA",
+    title: "Apprends à coder. 100% gratuit. Sans piège.",
+    subtitle:
+      "Des cours de Python et HTML pour grands débutants — écris du vrai code dans ton navigateur dès la première leçon, vois le résultat instantanément et construis des choses qui fonctionnent vraiment.",
+    pythonTitle: "Python : de zéro à créateur",
+    pythonBody:
+      "20 leçons interactives : print, variables, boucles, fonctions — à la fin, tu écris toi-même une vraie application.",
+    htmlTitle: "HTML et CSS : de zéro à ton premier site",
+    htmlBody:
+      "20 leçons interactives : balises, structure, style et mise en page — à la fin, tu conçois et publies ta page personnelle.",
+    freeBadge: "Gratuit pour toujours",
+    chip1: "Éditeur dans le navigateur",
+    chip2: "Résultat instantané",
+    chip3: "XP et certificats",
+    chip4: "Zéro installation",
+    cta: "Commencer gratuitement",
+  },
   how: {
     eyebrow: "Fonctionnement",
     title: "Commencez en trois étapes.",

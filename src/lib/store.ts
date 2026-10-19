@@ -18,7 +18,8 @@ export type View =
   | { name: "notifications" }
   | { name: "profile"; username: string }
   | { name: "settings"; tab?: "profile" | "account" | "notifications" | "privacy" }
-  | { name: "saved" };
+  | { name: "saved" }
+  | { name: "academy"; course?: string; lesson?: string };
 
 export type SessionUser = {
   id: string;

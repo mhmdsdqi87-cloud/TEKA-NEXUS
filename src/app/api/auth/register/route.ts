@@ -13,6 +13,7 @@ import {
   AuthUser,
 } from "@/lib/auth";
 import { ensureFounderRole, isFounderEmail, FOUNDER_ROLE } from "@/lib/founder";
+import { mirrorUserToSupabaseAuth } from "@/lib/supabase/server";
 import { handle, HttpError, ok, parseBody } from "@/lib/server";
 
 const registerSchema = z.object({
@@ -110,9 +111,16 @@ export async function POST(req: NextRequest) {
 
     await setSessionCookie(token, expiresAt);
     await ensureFounderRole(created.id, created.email);
+    // Best-effort mirror into Supabase Auth (never blocks registration —
+    // the local account stays the source of truth).
+    const supabaseMirror = await mirrorUserToSupabaseAuth({
+      email,
+      password: body.password,
+      username,
+    });
     const finalUser = isFounderEmail(created.email)
       ? { ...created, role: FOUNDER_ROLE }
       : created;
-    return ok({ user: toSessionUser(finalUser), token });
+    return ok({ user: toSessionUser(finalUser), token, supabaseMirror });
   });
 }

@@ -28,6 +28,17 @@ export const settings: SettingsDict = {
     skills: "مهارت‌ها",
     skillsHint: "همه چیزهایی که می‌توانی در آن‌ها مشارکت کنی را انتخاب کن — تیم‌ها با این‌ها پیدایت می‌کنند.",
   },
+  avatar: {
+    title: "عکس پروفایل",
+    upload: "انتخاب عکس",
+    remove: "حذف عکس",
+    hint: "JPG، PNG یا WebP — خودکار به شکل دایره برش می‌خوره. حداکثر ۴۰۰ کیلوبایت.",
+    tooBig: "این عکس خیلی بزرگه — لطفاً یکی زیر ۴۰۰ کیلوبایت انتخاب کن.",
+    invalid: "این عکس خونده نشد — یه فایل دیگه امتحان کن.",
+    toastSaved: "عکس پروفایل به‌روزرسانی شد",
+    toastRemoved: "عکس پروفایل حذف شد",
+    fallback: "عکس پروفایل",
+  },
   accountTab: {
     language: "زبان",
     languageDescription: "زبان رابط کاربری را انتخاب کن — English, Español, 中文, العربية, فارسی or Français.",

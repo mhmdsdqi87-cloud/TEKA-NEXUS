@@ -25,6 +25,7 @@ import { NotificationsView } from "@/views/notifications-view";
 import { SettingsView } from "@/views/settings-view";
 import { SavedView } from "@/views/saved-view";
 import { AcademyView } from "@/views/academy-view";
+import { FounderView } from "@/views/founder-view";
 import { LogoMark } from "@/components/brand/logo";
 import { MotionRoot, PageTransition } from "@/components/shared/motion";
 
@@ -164,11 +165,14 @@ export default function Page() {
     case "academy":
       content = <AcademyView key={`${view.course ?? ""}:${view.lesson ?? ""}`} courseSlug={view.course} lessonId={view.lesson} />;
       break;
+    case "founder":
+      content = <FounderView />;
+      break;
     default:
       content = <LandingView />;
   }
 
-  const shellViews = new Set(["home", "explore", "projectNew", "project", "teams", "notifications", "profile", "settings", "saved", "academy"]);
+  const shellViews = new Set(["home", "explore", "projectNew", "project", "teams", "notifications", "profile", "settings", "saved", "academy", "founder"]);
   const inShell = shellViews.has(view.name);
 
   const viewKey =

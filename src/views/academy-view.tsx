@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Award, ChevronDown, GraduationCap, Lock, PlayCircle, Sparkles, Trophy } from "lucide-react";
+import { Award, ChevronDown, GraduationCap, Lock, PlayCircle, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
@@ -24,7 +24,12 @@ import { pick, type Course } from "@/lib/academy/types";
 import { LessonPlayer } from "@/components/academy/lesson-player";
 import { PyPlayground } from "@/components/academy/py-runner";
 import { HtmlPlayground } from "@/components/academy/html-runner";
+import { ExamRunner } from "@/components/academy/exam-runner";
 import { CertificateDialog, type CertInfo } from "@/components/academy/certificate";
+
+export type ExamSummary = { courseId: string; attemptsUsed: number; passed: boolean; bestScore: number };
+
+const EXAM_MAX_ATTEMPTS = 3;
 
 type ProgressMap = Record<string, { done: string[]; last?: string | null }>;
 type CertRow = { courseId: string; code: string; createdAt: string };
@@ -90,6 +95,7 @@ const HTML_PLAYGROUND_SAMPLE = `<!DOCTYPE html>
 function useAcademyData(user: SessionUser | null) {
   const [progress, setProgress] = useState<ProgressMap>({});
   const [certs, setCerts] = useState<CertRow[]>([]);
+  const [exams, setExams] = useState<ExamSummary[]>([]);
   const [leaders, setLeaders] = useState<LeaderRow[] | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -97,15 +103,17 @@ function useAcademyData(user: SessionUser | null) {
     if (!user) {
       setProgress({});
       setCerts([]);
+      setExams([]);
       setLoaded(true);
       return;
     }
     try {
-      const res = await get<{ progress: { courseId: string; completedLessons: string[]; lastLessonId: string | null }[]; certificates: CertRow[] }>("/api/academy");
+      const res = await get<{ progress: { courseId: string; completedLessons: string[]; lastLessonId: string | null }[]; certificates: CertRow[]; exams?: ExamSummary[] }>("/api/academy");
       const map: ProgressMap = {};
       for (const p of res.progress) map[p.courseId] = { done: p.completedLessons, last: p.lastLessonId };
       setProgress(map);
       setCerts(res.certificates);
+      setExams(res.exams ?? []);
     } catch {
       /* offline — keep defaults */
     } finally {
@@ -127,7 +135,7 @@ function useAcademyData(user: SessionUser | null) {
       .catch(() => setLeaders([]));
   }, [user]);
 
-  return { progress, certs, leaders, loaded, refresh, setProgress, setCerts };
+  return { progress, certs, exams, leaders, loaded, refresh, setProgress, setCerts };
 }
 
 // ─── Hub ─────────────────────────────────────────────────────
@@ -238,12 +246,13 @@ function CourseCard({ course, done, total, isDone, onStart, t, locale }: {
   );
 }
 
-function Hub({ onOpenCourse, progress, certs, leaders, onShowCert }: {
+function Hub({ onOpenCourse, progress, certs, exams, leaders, onShowCert }: {
   onOpenCourse: (courseId: string) => void;
   progress: ProgressMap;
   certs: CertRow[];
+  exams: ExamSummary[];
   leaders: LeaderRow[] | null;
-  onShowCert: (courseId: string, code: string, createdAt: string) => void;
+  onShowCert: (courseId: string, code: string, createdAt: string, license: boolean) => void;
 }) {
   const t = useT();
   const locale = useLocale();
@@ -355,25 +364,37 @@ function Hub({ onOpenCourse, progress, certs, leaders, onShowCert }: {
               <ul className="mt-4 space-y-2.5">
                 {certs.map((c) => {
                   const course = COURSES.find((x) => x.id === c.courseId);
+                  const licensed = exams.some((e) => e.courseId === c.courseId && e.passed);
                   return (
                     <motion.li
                       key={c.code}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-amber-400/20 bg-amber-500/[0.05] px-4 py-3"
+                      className={cn(
+                        "flex items-center justify-between gap-3 rounded-xl border px-4 py-3",
+                        licensed ? "border-emerald-400/25 bg-emerald-500/[0.06]" : "border-amber-400/20 bg-amber-500/[0.05]",
+                      )}
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-amber-100">
+                        <p className={cn("truncate text-sm font-semibold", licensed ? "text-emerald-100" : "text-amber-100")}>
                           {course?.emoji} {course ? pick(course.title, locale) : c.courseId}
                         </p>
-                        <p className="font-mono text-[11px] text-amber-200/50">{c.code}</p>
+                        <p className="font-mono text-[11px] text-white/40">{c.code}</p>
                       </div>
-                      <button
-                        onClick={() => onShowCert(c.courseId, c.code, c.createdAt)}
-                        className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-xs font-semibold text-amber-200 transition hover:bg-amber-500/15 focus-glow"
-                      >
-                        {t("academy.viewCertificate")}
-                      </button>
+                      <div className="flex shrink-0 items-center gap-2">
+                        {licensed && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-emerald-300 ring-1 ring-inset ring-emerald-400/30">
+                            <ShieldCheck className="h-3 w-3" aria-hidden="true" />
+                            {t("academy.exam.licenseBadge")}
+                          </span>
+                        )}
+                        <button
+                          onClick={() => onShowCert(c.courseId, c.code, c.createdAt, licensed)}
+                          className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-xs font-semibold text-amber-200 transition hover:bg-amber-500/15 focus-glow"
+                        >
+                          {t("academy.viewCertificate")}
+                        </button>
+                      </div>
                     </motion.li>
                   );
                 })}
@@ -441,13 +462,111 @@ function Hub({ onOpenCourse, progress, certs, leaders, onShowCert }: {
 
 // ─── Course view ─────────────────────────────────────────────
 
-function CourseView({ course, initialLessonId, progress, onBack, onNavigateLesson, onChallengePassed, t }: {
+/** Course-level Skill Meter: animated 0-100% fill (render-only). */
+function SkillMeter({ value, accent, label }: { value: number; accent: "cyan" | "ember"; label: string }) {
+  return (
+    <div
+      className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]"
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(value * 100)}
+      aria-label={label}
+    >
+      <motion.div
+        className={cn(
+          "h-full w-full origin-left rounded-full rtl:origin-right",
+          accent === "cyan" ? "bg-gradient-to-r from-cyan-400 via-violet-400 to-emerald-400" : "bg-gradient-to-r from-amber-400 via-rose-400 to-violet-400",
+        )}
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: value }}
+        transition={{ duration: 1.1, ease: EASE }}
+      />
+    </div>
+  );
+}
+
+/** Prominent animated CTA for the secure final exam (all lessons done, not licensed yet). */
+function ExamCtaCard({ course, exam, onStart, t }: {
+  course: Course;
+  exam?: ExamSummary;
+  onStart: () => void;
+  t: ReturnType<typeof useT>;
+}) {
+  const attemptsLeft = Math.max(0, EXAM_MAX_ATTEMPTS - (exam?.attemptsUsed ?? 0));
+  const blocked = attemptsLeft <= 0;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, ease: EASE }}
+      className="relative"
+    >
+      {/* animated glow */}
+      <motion.div
+        aria-hidden="true"
+        className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-emerald-400/40 via-cyan-400/40 to-violet-400/40 blur-lg"
+        animate={{ opacity: [0.3, 0.65, 0.3] }}
+        transition={{ repeat: Infinity, duration: 3.4, ease: "easeInOut" }}
+      />
+      <div className="relative overflow-hidden rounded-2xl border border-emerald-400/30 bg-[#0d1526] p-5 sm:p-6">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -end-12 -top-12 h-40 w-40 rounded-full bg-emerald-500/15 blur-3xl"
+        />
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex min-w-0 items-start gap-3.5">
+            <motion.span
+              animate={{ scale: [1, 1.06, 1] }}
+              transition={{ repeat: Infinity, duration: 2.6, ease: "easeInOut" }}
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-500/15 ring-1 ring-inset ring-emerald-400/30"
+              aria-hidden="true"
+            >
+              <ShieldCheck className="h-6 w-6 text-emerald-300" />
+            </motion.span>
+            <div className="min-w-0">
+              <h2 className="text-base font-bold text-white sm:text-lg">{t("academy.exam.ctaTitle")}</h2>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">{t("academy.exam.ctaBody")}</p>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground/75">{t("academy.exam.rules")}</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold tabular-nums text-emerald-300 ring-1 ring-inset ring-emerald-400/25">
+              {t("academy.exam.attemptsLeft", { n: attemptsLeft })}
+            </span>
+            {exam && exam.bestScore > 0 && (
+              <span className="inline-flex items-center rounded-full bg-white/[0.05] px-2.5 py-1 text-[11px] font-semibold tabular-nums text-muted-foreground ring-1 ring-inset ring-white/10">
+                {t("academy.exam.lastScore", { n: exam.bestScore })}
+              </span>
+            )}
+            {blocked ? (
+              <p className="max-w-[240px] text-xs leading-5 text-rose-300">{t("academy.exam.blocked")}</p>
+            ) : (
+              <button
+                onClick={onStart}
+                className="btn-hero inline-flex min-h-[44px] items-center gap-2 rounded-xl px-5 text-sm font-semibold focus-glow"
+              >
+                <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                {t("academy.exam.start")}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function CourseView({ course, initialLessonId, progress, exam, onBack, onNavigateLesson, onChallengePassed, onStartExam, t }: {
   course: Course;
   initialLessonId?: string;
   progress: ProgressMap;
+  exam?: ExamSummary;
   onBack: () => void;
   onNavigateLesson: (courseId: string, lessonId: string) => void;
   onChallengePassed: (courseId: string, lessonId: string) => void;
+  onStartExam: () => void;
   t: ReturnType<typeof useT>;
 }) {
   const locale = useLocale();
@@ -472,6 +591,9 @@ function CourseView({ course, initialLessonId, progress, onBack, onNavigateLesso
   })();
 
   const accent = course.accent === "cyan" ? "text-cyan-300" : "text-amber-300";
+  const coursePct = flat.length ? done.length / flat.length : 0;
+  const courseComplete = flat.length > 0 && done.length >= flat.length;
+  const examUnlocked = courseComplete && !exam?.passed;
 
   return (
     <div className="space-y-5">
@@ -483,7 +605,15 @@ function CourseView({ course, initialLessonId, progress, onBack, onNavigateLesso
               {course.emoji}
             </span>
             <div>
-              <h1 className="text-xl font-bold text-white sm:text-2xl">{pick(course.title, locale)}</h1>
+              <h1 className="flex flex-wrap items-center gap-2 text-xl font-bold text-white sm:text-2xl">
+                {pick(course.title, locale)}
+                {exam?.passed && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-emerald-300 ring-1 ring-inset ring-emerald-400/30">
+                    <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                    {t("academy.exam.licenseBadge")}
+                  </span>
+                )}
+              </h1>
               <p className="text-xs text-muted-foreground">
                 {t("academy.lessonsDone", { done: done.length, total: flat.length })}
               </p>
@@ -514,6 +644,17 @@ function CourseView({ course, initialLessonId, progress, onBack, onNavigateLesso
               </button>
             ))}
           </div>
+        </div>
+        {/* Skill Meter — course-level progress 0-100% */}
+        <div className="mt-4 flex items-center gap-3">
+          <SkillMeter
+            value={coursePct}
+            accent={course.accent}
+            label={t("academy.lessonsDone", { done: done.length, total: flat.length })}
+          />
+          <span className="shrink-0 text-xs font-bold tabular-nums text-white">
+            <AnimatedNumber value={Math.round(coursePct * 100)} />%
+          </span>
         </div>
       </FadeIn>
 
@@ -548,47 +689,54 @@ function CourseView({ course, initialLessonId, progress, onBack, onNavigateLesso
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8, transition: { duration: 0.14 } }}
             transition={{ duration: 0.3, ease: EASE }}
-            className="grid gap-5 lg:grid-cols-[290px_minmax(0,1fr)]"
+            className="space-y-5"
           >
-            {/* sidebar (desktop) */}
-            <aside className="hidden lg:block">
-              <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-white/10 bg-white/[0.02] p-3 academy-scroll">
-                <ModuleList course={course} doneSet={doneSet} currentId={current?.lesson.id} onNavigateLesson={onNavigateLesson} t={t} />
-              </div>
-            </aside>
+            {/* Final exam CTA — between course header and modules */}
+            {examUnlocked && (
+              <ExamCtaCard course={course} exam={exam} onStart={onStartExam} t={t} />
+            )}
 
-            {/* mobile lesson picker */}
-            <details className="lg:hidden rounded-2xl border border-white/10 bg-white/[0.02] p-3">
-              <summary className="flex min-h-[44px] cursor-pointer items-center justify-between rounded-xl px-3 text-sm font-semibold text-white focus-glow">
-                <span>{current ? pick(current.lesson.title, locale) : "Lessons"}</span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              </summary>
-              <div className="mt-2 max-h-80 overflow-y-auto academy-scroll">
-                <ModuleList course={course} doneSet={doneSet} currentId={current?.lesson.id} onNavigateLesson={(cid, lid) => { onNavigateLesson(cid, lid); }} t={t} />
-              </div>
-            </details>
-
-            {/* player */}
-            <div className="min-w-0">
-              {current ? (
-                <LessonPlayer
-                  key={current.lesson.id}
-                  course={course}
-                  lesson={current.lesson}
-                  moduleIndex={current.mi}
-                  lessonIndex={current.li}
-                  completed={doneSet.has(current.lesson.id)}
-                  onChallengePassed={() => onChallengePassed(course.id, current.lesson.id)}
-                  onNavigateLesson={onNavigateLesson}
-                  onBack={onBack}
-                  t={t}
-                />
-              ) : (
-                <div className="grid place-items-center rounded-2xl border border-dashed border-white/10 p-10 text-center">
-                  <p className="text-4xl" aria-hidden="true">🎓</p>
-                  <p className="mt-3 text-sm text-muted-foreground">{t("academy.hubSubtitle")}</p>
+            <div className="grid gap-5 lg:grid-cols-[290px_minmax(0,1fr)]">
+              {/* sidebar (desktop) */}
+              <aside className="hidden lg:block">
+                <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-white/10 bg-white/[0.02] p-3 academy-scroll">
+                  <ModuleList course={course} doneSet={doneSet} currentId={current?.lesson.id} onNavigateLesson={onNavigateLesson} t={t} />
                 </div>
-              )}
+              </aside>
+
+              {/* mobile lesson picker */}
+              <details className="lg:hidden rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+                <summary className="flex min-h-[44px] cursor-pointer items-center justify-between rounded-xl px-3 text-sm font-semibold text-white focus-glow">
+                  <span>{current ? pick(current.lesson.title, locale) : "Lessons"}</span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                </summary>
+                <div className="mt-2 max-h-80 overflow-y-auto academy-scroll">
+                  <ModuleList course={course} doneSet={doneSet} currentId={current?.lesson.id} onNavigateLesson={(cid, lid) => { onNavigateLesson(cid, lid); }} t={t} />
+                </div>
+              </details>
+
+              {/* player */}
+              <div className="min-w-0">
+                {current ? (
+                  <LessonPlayer
+                    key={current.lesson.id}
+                    course={course}
+                    lesson={current.lesson}
+                    moduleIndex={current.mi}
+                    lessonIndex={current.li}
+                    completed={doneSet.has(current.lesson.id)}
+                    onChallengePassed={() => onChallengePassed(course.id, current.lesson.id)}
+                    onNavigateLesson={onNavigateLesson}
+                    onBack={onBack}
+                    t={t}
+                  />
+                ) : (
+                  <div className="grid place-items-center rounded-2xl border border-dashed border-white/10 p-10 text-center">
+                    <p className="text-4xl" aria-hidden="true">🎓</p>
+                    <p className="mt-3 text-sm text-muted-foreground">{t("academy.hubSubtitle")}</p>
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
@@ -686,9 +834,11 @@ export function AcademyView({ courseSlug, lessonId }: { courseSlug?: string; les
   const user = useApp((s) => s.user);
   const navigate = useApp((s) => s.navigate);
   const setUser = useApp((s) => s.setUser);
-  const { progress, certs, leaders, setProgress, refresh } = useAcademyData(user);
+  const { progress, certs, exams, leaders, setProgress, refresh } = useAcademyData(user);
   const [certDialog, setCertDialog] = useState<CertInfo | null>(null);
+  const [examCourse, setExamCourse] = useState<Course | null>(null);
   const course = useMemo(() => COURSES.find((c) => c.id === courseSlug), [courseSlug]);
+  const examOf = useCallback((courseId: string) => exams.find((e) => e.courseId === courseId), [exams]);
 
   const handleChallengePassed = useCallback(
     async (courseId: string, lessonId: string) => {
@@ -735,7 +885,7 @@ export function AcademyView({ courseSlug, lessonId }: { courseSlug?: string; les
   );
 
   const showCert = useCallback(
-    (courseId: string, code: string, createdAt: string) => {
+    (courseId: string, code: string, createdAt: string, license: boolean) => {
       const c = COURSES.find((x) => x.id === courseId);
       setCertDialog({
         courseTitle: c ? pick(c.title, "en") : courseId,
@@ -743,6 +893,7 @@ export function AcademyView({ courseSlug, lessonId }: { courseSlug?: string; les
         code,
         issuedAt: new Date(createdAt).toLocaleDateString(),
         emoji: c?.emoji ?? "🏆",
+        variant: license ? "license" : "completion",
       });
     },
     [user],
@@ -755,9 +906,11 @@ export function AcademyView({ courseSlug, lessonId }: { courseSlug?: string; les
           course={course}
           initialLessonId={lessonId}
           progress={progress}
+          exam={examOf(course.id)}
           onBack={() => navigate({ name: "academy" })}
           onNavigateLesson={(cid, lid) => navigate({ name: "academy", course: cid, lesson: lid })}
           onChallengePassed={handleChallengePassed}
+          onStartExam={() => setExamCourse(course)}
           t={t}
         />
       ) : (
@@ -765,8 +918,20 @@ export function AcademyView({ courseSlug, lessonId }: { courseSlug?: string; les
           onOpenCourse={(cid) => navigate({ name: "academy", course: cid })}
           progress={progress}
           certs={certs}
+          exams={exams}
           leaders={leaders}
           onShowCert={showCert}
+        />
+      )}
+
+      {/* secure final exam overlay */}
+      {examCourse && (
+        <ExamRunner
+          course={examCourse}
+          userName={user?.displayName ?? "TEKA Learner"}
+          onClose={() => setExamCourse(null)}
+          onFinished={() => void refresh()}
+          t={t}
         />
       )}
 

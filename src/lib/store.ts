@@ -19,7 +19,8 @@ export type View =
   | { name: "profile"; username: string }
   | { name: "settings"; tab?: "profile" | "account" | "notifications" | "privacy" }
   | { name: "saved" }
-  | { name: "academy"; course?: string; lesson?: string };
+  | { name: "academy"; course?: string; lesson?: string }
+  | { name: "founder" };
 
 export type SessionUser = {
   id: string;

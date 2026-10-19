@@ -11,11 +11,34 @@ export class ApiError extends Error {
   }
 }
 
+// Session token mirror for contexts where cookies are dropped (e.g. the
+// cross-origin preview iframe). Middleware re-attaches this as a cookie.
+const TOKEN_KEY = "teka_session_token";
+
+export function getSessionToken(): string | null {
+  try {
+    return window.localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setSessionToken(token: string | null): void {
+  try {
+    if (token) window.localStorage.setItem(TOKEN_KEY, token);
+    else window.localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getSessionToken();
   const res = await fetch(path, {
     ...init,
     headers: {
       ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { "x-teka-session": token } : {}),
       ...init?.headers,
     },
     credentials: "same-origin",

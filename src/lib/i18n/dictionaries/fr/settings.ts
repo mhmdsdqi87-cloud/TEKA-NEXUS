@@ -28,6 +28,17 @@ export const settings: SettingsDict = {
     skills: "Compétences",
     skillsHint: "Sélectionnez tout ce en quoi vous pouvez contribuer — les équipes s'en servent pour vous trouver.",
   },
+  avatar: {
+    title: "Photo de profil",
+    upload: "Importer une photo",
+    remove: "Retirer la photo",
+    hint: "JPG, PNG ou WebP — recadrée automatiquement en cercle. 400 Ko max.",
+    tooBig: "Cette image est trop lourde — choisissez-en une de moins de 400 Ko.",
+    invalid: "Impossible de lire cette image — essayez un autre fichier.",
+    toastSaved: "Photo de profil mise à jour",
+    toastRemoved: "Photo de profil retirée",
+    fallback: "Photo de profil",
+  },
   accountTab: {
     language: "Langue",
     languageDescription:

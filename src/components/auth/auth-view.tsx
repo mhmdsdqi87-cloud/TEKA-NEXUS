@@ -24,7 +24,7 @@ import {
   staggerParent,
 } from "@/components/shared/motion";
 import { useApp, type SessionUser } from "@/lib/store";
-import { post } from "@/lib/api";
+import { post, setSessionToken } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -99,23 +99,29 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
     setLoading(true);
     try {
       if (isSignup) {
-        const res = await post<{ user: SessionUser }>("/api/auth/register", {
+        const res = await post<{ user: SessionUser; token: string }>("/api/auth/register", {
           email: email.trim(),
           password,
           username,
         });
+        setSessionToken(res.token);
         setUser(res.user);
         navigate({ name: "onboarding" });
       } else {
-        const res = await post<{ user: SessionUser }>("/api/auth/login", {
+        const res = await post<{ user: SessionUser; token: string }>("/api/auth/login", {
           email: email.trim(),
           password,
         });
+        setSessionToken(res.token);
         setUser(res.user);
         navigate(res.user.onboardingCompleted ? { name: "home" } : { name: "onboarding" });
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("common.error"));
+      const msg = err instanceof Error ? err.message : "";
+      if (msg.includes("Email already registered")) toast.error(t("auth.err.emailTaken"));
+      else if (msg.includes("Username already taken")) toast.error(t("auth.err.usernameTaken"));
+      else if (msg.includes("Invalid email or password")) toast.error(t("auth.err.invalidCredentials"));
+      else toast.error(msg || t("common.error"));
     } finally {
       setLoading(false);
     }

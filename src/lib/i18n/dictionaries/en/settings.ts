@@ -27,6 +27,17 @@ export const settings = {
     skills: "Skills",
     skillsHint: "Pick everything you can contribute with — teams use these to find you.",
   },
+  avatar: {
+    title: "Profile photo",
+    upload: "Upload photo",
+    remove: "Remove photo",
+    hint: "JPG, PNG or WebP — auto-cropped to a circle. Up to 400 KB.",
+    tooBig: "That image is too large — please choose one under 400 KB.",
+    invalid: "Couldn't read that image — try a different file.",
+    toastSaved: "Profile photo updated",
+    toastRemoved: "Profile photo removed",
+    fallback: "Profile photo",
+  },
   accountTab: {
     language: "Language",
     languageDescription:

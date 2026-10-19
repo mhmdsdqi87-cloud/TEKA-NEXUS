@@ -5,8 +5,14 @@
 import { Database } from "bun:sqlite";
 import { PrismaClient } from "@prisma/client";
 
-const PG = "postgresql://postgres.ljevcviygnknjmhzvtjk:alfairan123%40@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres";
-const sqlite = new Database("/home/z/my-project/db/custom.db", { readonly: true });
+// Destination Postgres URL comes from the environment (never hardcode it):
+//   DATABASE_URL=postgresql://…pooler.supabase.com…/postgres bun scripts/migrate-sqlite-to-supabase.ts
+const PG = process.env.DATABASE_URL ?? "";
+if (!PG.startsWith("postgres")) {
+  console.error("Refusing to run: DATABASE_URL must point at the Supabase Postgres instance (postgresql://…).");
+  process.exit(1);
+}
+const sqlite = new Database(new URL("../db/custom.db", import.meta.url).pathname, { readonly: true });
 const dst = new PrismaClient({ datasourceUrl: PG });
 
 const DATE_FIELDS = new Set([

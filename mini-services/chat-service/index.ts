@@ -41,11 +41,34 @@ const REACTIONS = ["👍", "❤️", "🔥", "😂", "🎉", "🤔"];
 // ─── Read-only DB access (Supabase Postgres — same DB as the main app) ──────
 
 // Prisma creates quoted camelCase identifiers, hence the explicit quoting.
-const sql = postgres(
-  process.env.DATABASE_URL ??
-    "postgresql://postgres.ljevcviygnknjmhzvtjk:alfairan123%40@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres",
-  { max: 5, idle_timeout: 30, prepare: false } // transaction-pooler-safe
-);
+// The Postgres URL is injected via the environment (mini-services/chat-service/.env
+// or the parent shell) — it is NEVER hardcoded here, this repo is public.
+function resolveDatabaseUrl(): string {
+  const fromEnv = process.env.DATABASE_URL ?? "";
+  if (fromEnv.startsWith("postgres")) return fromEnv;
+  // Sandboxes often export a stale DATABASE_URL (e.g. file:… SQLite) that would
+  // shadow the local .env (env vars beat .env files). Parse the local .env directly.
+  try {
+    const raw = readFileSync(new URL("./.env", import.meta.url), "utf8");
+    const m = raw.match(/^DATABASE_URL=(.+)\s*$/m);
+    const local = m?.[1]?.trim() ?? "";
+    if (local.startsWith("postgres")) return local;
+  } catch {
+    /* no local .env */
+  }
+  return "";
+}
+const DATABASE_URL = resolveDatabaseUrl();
+if (!DATABASE_URL) {
+  console.error(
+    "[chat-service] DATABASE_URL must point at Supabase Postgres (postgresql://…). " +
+      "Put it in mini-services/chat-service/.env and restart."
+  );
+  process.exit(1);
+}
+const sql = postgres(DATABASE_URL, {
+  max: 5, idle_timeout: 30, prepare: false, // transaction-pooler-safe
+});
 
 /** Prisma stores timestamps as timestamps; normalize anything to epoch ms. */
 function toMs(value: unknown): number {

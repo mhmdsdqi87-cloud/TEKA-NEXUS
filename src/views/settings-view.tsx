@@ -4,7 +4,7 @@
 // Runs inside AppShell — no nav of its own.
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, MotionConfig } from "framer-motion";
+import { motion, MotionConfig } from "framer-motion";
 import { toast } from "sonner";
 import {
   Ban,
@@ -129,48 +129,44 @@ function SettingsContent({ user, initialTab }: { user: SessionUser; initialTab?:
             </TabsList>
 
             <div className="min-w-0">
-              <AnimatePresence mode="wait" initial={false}>
-                <TabsContent key="profile" value="profile" className="mt-0">
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2, ease: EASE }}
-                  >
-                    <ProfileTab user={user} />
-                  </motion.div>
-                </TabsContent>
-                <TabsContent key="account" value="account" className="mt-0">
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2, ease: EASE }}
-                  >
-                    <AccountTab user={user} />
-                  </motion.div>
-                </TabsContent>
-                <TabsContent key="notifications" value="notifications" className="mt-0">
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2, ease: EASE }}
-                  >
-                    <NotificationsTab />
-                  </motion.div>
-                </TabsContent>
-                <TabsContent key="privacy" value="privacy" className="mt-0">
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2, ease: EASE }}
-                  >
-                    <PrivacyTab />
-                  </motion.div>
-                </TabsContent>
-              </AnimatePresence>
+              {/* no AnimatePresence here: Radix swaps TabsContent instantly and mode="wait"
+                  would briefly hold two children (the framer "multiple children" warning) */}
+              <TabsContent key="profile" value="profile" className="mt-0">
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, ease: EASE }}
+                >
+                  <ProfileTab user={user} />
+                </motion.div>
+              </TabsContent>
+              <TabsContent key="account" value="account" className="mt-0">
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, ease: EASE }}
+                >
+                  <AccountTab user={user} />
+                </motion.div>
+              </TabsContent>
+              <TabsContent key="notifications" value="notifications" className="mt-0">
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, ease: EASE }}
+                >
+                  <NotificationsTab />
+                </motion.div>
+              </TabsContent>
+              <TabsContent key="privacy" value="privacy" className="mt-0">
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, ease: EASE }}
+                >
+                  <PrivacyTab />
+                </motion.div>
+              </TabsContent>
             </div>
           </div>
         </Tabs>

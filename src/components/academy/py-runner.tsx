@@ -171,7 +171,8 @@ export function PyPlayground({
   return (
     <div className="space-y-3">
       <CodeEditor value={code} onChange={persist} lang="python" ariaLabel={t("academy.playgroundTitle")} minRows={10} />
-      <div className="grid gap-3 sm:grid-cols-2">
+      {/* stacked: the lesson column is narrow even on wide screens — two columns squeeze the controls */}
+      <div className="grid gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground" htmlFor="py-stdin">
             {t("academy.inputLabel")}
@@ -276,7 +277,8 @@ export function PyChallenge({
     <div className="space-y-3">
       <CodeEditor value={code} onChange={setCode} lang="python" ariaLabel={t("academy.challengeLabel")} minRows={9} />
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      {/* stacked: the lesson column is narrow even on wide screens — two columns squeeze the controls */}
+      <div className="grid gap-3">
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-muted-foreground" htmlFor="py-ch-stdin">
             {t("academy.inputLabel")}
@@ -290,7 +292,7 @@ export function PyChallenge({
             className="w-full resize-y rounded-xl border border-white/10 bg-[#0b1220] px-3 py-2.5 font-mono text-[13px] text-slate-200 outline-none placeholder:text-slate-600 focus:ring-2 focus:ring-cyan-400/40"
           />
         </div>
-        <div className="flex flex-wrap content-start gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <motion.button whileTap={{ scale: 0.96 }} onClick={run} className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-medium text-foreground transition hover:bg-white/[0.08] focus-glow">
             <Play className="h-4 w-4 text-emerald-300" />
             {t("academy.run")}
@@ -305,7 +307,7 @@ export function PyChallenge({
               className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl px-3 text-xs text-muted-foreground transition hover:text-foreground focus-glow"
             >
               <ChevronDown className="h-3.5 w-3.5" />
-              {t("academy.inputLabel")}
+              {t("academy.sampleInput")}
             </button>
           )}
         </div>

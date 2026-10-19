@@ -49,6 +49,8 @@ type SubmitResult = {
 type Phase = "loading" | "active" | "grading" | "result" | "voided" | "expired";
 
 const MAX_STRIKES = 3;
+const STRIKE_DEBOUNCE_MS = 3000;
+const STRIKE_GRACE_MS = 2500; // ignore technicalities right after the exam mounts (fullscreen focus juggling, webview quirks)
 
 function fmtTime(ms: number): string {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -89,6 +91,8 @@ export function ExamRunner({
   const lastStrikeRef = useRef(0);
   const submittingRef = useRef(false);
   const voidingRef = useRef(false);
+  const wasFullscreenRef = useRef(false); // only strike on fullscreen EXIT if we actually were fullscreen
+  const activeSinceRef = useRef(0);
 
   examRef.current = exam;
   answersRef.current = answers;
@@ -127,7 +131,8 @@ export function ExamRunner({
   const addStrike = useCallback(() => {
     if (phaseRef.current !== "active") return;
     const now = Date.now();
-    if (now - lastStrikeRef.current < 1200) return; // debounce double-fire (blur + visibilitychange)
+    if (now - activeSinceRef.current < STRIKE_GRACE_MS) return; // grace period right after mount
+    if (now - lastStrikeRef.current < STRIKE_DEBOUNCE_MS) return; // debounce double-fire (blur + visibilitychange)
     lastStrikeRef.current = now;
     strikesRef.current += 1;
     setStrikes(strikesRef.current);
@@ -192,7 +197,11 @@ export function ExamRunner({
         if ("examId" in res) {
           setExam({ examId: res.examId, attemptNo: res.attemptNo, expiresAt: res.expiresAt, questions: res.questions });
           setPhaseSafe("active");
-          // enter secure fullscreen (needs user gesture — we're right after the CTA click)
+          activeSinceRef.current = Date.now();
+          wasFullscreenRef.current = false;
+          // enter secure fullscreen (needs user gesture — we're right after the CTA click).
+          // If the environment refuses fullscreen (WebView, PWA, denied prompt) that must
+          // NOT count against the learner — wasFullscreenRef guards the exit strike.
           document.documentElement.requestFullscreen?.().catch(() => {});
           return;
         }
@@ -234,7 +243,17 @@ export function ExamRunner({
     };
     const onContextMenu = (e: MouseEvent) => e.preventDefault();
     const onFullscreenChange = () => {
-      if (!document.fullscreenElement) addStrike();
+      if (document.fullscreenElement) {
+        wasFullscreenRef.current = true;
+        return;
+      }
+      // Strike only when the learner LEAVES a fullscreen we actually entered.
+      // Environments that never grant fullscreen (TWA WebView, iOS PWA,
+      // denied permission) must not be punished for it.
+      if (wasFullscreenRef.current) {
+        wasFullscreenRef.current = false;
+        addStrike();
+      }
     };
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("blur", onBlur);
@@ -392,7 +411,7 @@ export function ExamRunner({
               <h2 dir="auto" className="mt-3 whitespace-pre-line text-lg font-semibold leading-7 text-white sm:text-xl">
                 {question.q}
               </h2>
-              <div className="mt-5 grid gap-2.5">
+              <div className="mt-5 grid gap-2.5 pb-2">
                 {question.options.map((opt, oi) => {
                   const chosen = answers[question.id] === oi;
                   return (
@@ -423,7 +442,7 @@ export function ExamRunner({
               </div>
             </motion.div>
 
-            {/* footer nav */}
+            {/* footer nav — content above scrolls under it, so keep clear space (pb) below the card */}
             <div className="sticky bottom-0 mt-5 bg-gradient-to-t from-[#070b14] via-[#070b14]/95 to-transparent pb-4 pt-3">
               <div className="flex items-center justify-between gap-3">
                 <p className="hidden items-center gap-1.5 text-[11px] text-muted-foreground sm:flex">
@@ -458,6 +477,8 @@ export function ExamRunner({
                 </div>
               </div>
             </div>
+            {/* clearance so the last option never sits under the sticky footer */}
+            <div className="h-16 shrink-0" aria-hidden="true" />
           </motion.div>
         )}
 

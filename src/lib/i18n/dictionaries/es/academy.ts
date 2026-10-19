@@ -42,6 +42,7 @@ export const academy: AcademyDict = {
   running: "Ejecutando…",
   output: "Salida",
   inputLabel: "Entrada (una línea por input())",
+  sampleInput: "Insertar entrada de ejemplo",
   inputHint: "Cada llamada a input() lee la siguiente línea de aquí.",
   checkSolution: "Comprobar solución",
   checking: "Comprobando…",

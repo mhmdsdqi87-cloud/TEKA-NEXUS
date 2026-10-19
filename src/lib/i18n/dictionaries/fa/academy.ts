@@ -42,6 +42,7 @@ export const academy: AcademyDict = {
   running: "در حال اجرا…",
   output: "خروجی",
   inputLabel: "ورودی (برای هر input() یه خط)",
+  sampleInput: "درج ورودی نمونه",
   inputHint: "هر بار input() خط بعدی رو از این‌جا می‌خونه.",
   checkSolution: "بررسی راه‌حل",
   checking: "در حال بررسی…",

@@ -84,6 +84,50 @@ export async function probeSupabase(): Promise<SupabaseProbe> {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// JWKS (JSON Web Key Set) — the public signing keys Supabase Auth
+// publishes for verifying its JWTs. The endpoint is well-known/public.
+// ─────────────────────────────────────────────────────────────
+
+const SUPABASE_JWKS_URL = process.env.SUPABASE_JWKS_URL ?? "";
+
+export function supabaseJwksUrl(): string {
+  return SUPABASE_JWKS_URL || (SUPABASE_URL ? `${SUPABASE_URL}/auth/v1/.well-known/jwks.json` : "");
+}
+
+export type JwksProbe = {
+  configured: boolean;
+  reachable: boolean;
+  keyCount: number | null;
+  algorithms: string[];
+  error?: string;
+};
+
+export async function probeJwks(): Promise<JwksProbe> {
+  const url = supabaseJwksUrl();
+  const base: JwksProbe = {
+    configured: Boolean(url),
+    reachable: false,
+    keyCount: null,
+    algorithms: [],
+  };
+  if (!url) return { ...base, error: "not-configured" };
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    if (!res.ok) return { ...base, error: `jwks-${res.status}` };
+    const body = (await res.json()) as { keys?: Array<{ alg?: string; kty?: string }> };
+    const keys = Array.isArray(body.keys) ? body.keys : [];
+    return {
+      ...base,
+      reachable: true,
+      keyCount: keys.length,
+      algorithms: [...new Set(keys.map((k) => k.alg ?? k.kty ?? "unknown"))],
+    };
+  } catch (err) {
+    return { ...base, error: err instanceof Error ? err.message : "jwks-probe-failed" };
+  }
+}
+
 // Best-effort mirror: create the same account inside Supabase Auth so the
 // founder can see every TEKA registration in the Supabase dashboard too.
 // Never throws — the local account is the source of truth.

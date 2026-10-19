@@ -42,6 +42,7 @@ export const academy: AcademyDict = {
   running: "قيد التشغيل…",
   output: "المخرجات",
   inputLabel: "المدخلات (سطر لكل input())",
+  sampleInput: "إدراج المدخلات النموذجية",
   inputHint: "كل استدعاء input() يقرأ السطر التالي من هنا.",
   checkSolution: "فحص الحل",
   checking: "جارٍ الفحص…",

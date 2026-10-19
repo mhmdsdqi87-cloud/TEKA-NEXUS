@@ -42,6 +42,7 @@ export const academy: AcademyDict = {
   running: "运行中…",
   output: "输出",
   inputLabel: "输入（每次 input() 读一行）",
+  sampleInput: "插入示例输入",
   inputHint: "每次调用 input() 都会从这里读取下一行。",
   checkSolution: "检查解答",
   checking: "检查中…",

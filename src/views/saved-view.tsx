@@ -9,8 +9,11 @@ import { ProjectCard } from "@/lib/dto";
 import { useT } from "@/lib/i18n";
 import { ProjectCardView, ProjectCardSkeleton } from "@/components/shared/project-card";
 import { EmptyState } from "@/components/shared/atoms";
+import { FadeIn, Stagger, StaggerItem } from "@/components/shared/motion";
 import { Button } from "@/components/ui/button";
 import { Bookmark, Compass, AlertTriangle } from "lucide-react";
+
+const STAGGER_CAP = 12;
 
 export function SavedView() {
   const navigate = useApp((s) => s.navigate);
@@ -56,33 +59,39 @@ export function SavedView() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold">{t("saved.title")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t("saved.subtitle")}</p>
-      </div>
+      <FadeIn>
+        <div>
+          <h1 className="font-display text-2xl font-bold">{t("saved.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("saved.subtitle")}</p>
+        </div>
+      </FadeIn>
 
       {!user ? (
-        <EmptyState
-          icon={Bookmark}
-          title={t("saved.signInTitle")}
-          description={t("saved.signInDescription")}
-          action={
-            <Button className="btn-hero" onClick={() => navigate({ name: "login" })}>
-              {t("common.signIn")}
-            </Button>
-          }
-        />
+        <FadeIn>
+          <EmptyState
+            icon={Bookmark}
+            title={t("saved.signInTitle")}
+            description={t("saved.signInDescription")}
+            action={
+              <Button className="btn-hero" onClick={() => navigate({ name: "login" })}>
+                {t("common.signIn")}
+              </Button>
+            }
+          />
+        </FadeIn>
       ) : error ? (
-        <EmptyState
-          icon={AlertTriangle}
-          title={t("saved.errorTitle")}
-          description={error}
-          action={
-            <Button variant="outline" onClick={load}>
-              {t("common.retry")}
-            </Button>
-          }
-        />
+        <FadeIn>
+          <EmptyState
+            icon={AlertTriangle}
+            title={t("saved.errorTitle")}
+            description={error}
+            action={
+              <Button variant="outline" onClick={load}>
+                {t("common.retry")}
+              </Button>
+            }
+          />
+        </FadeIn>
       ) : list === null ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -90,23 +99,33 @@ export function SavedView() {
           ))}
         </div>
       ) : list.length === 0 ? (
-        <EmptyState
-          icon={Bookmark}
-          title={t("saved.emptyTitle")}
-          description={t("saved.emptyDescription")}
-          action={
-            <Button className="btn-hero" onClick={() => navigate({ name: "explore" })}>
-              <Compass className="h-4 w-4 mr-2" />
-              {t("saved.exploreCta")}
-            </Button>
-          }
-        />
+        <FadeIn>
+          <EmptyState
+            icon={Bookmark}
+            title={t("saved.emptyTitle")}
+            description={t("saved.emptyDescription")}
+            action={
+              <Button className="btn-hero" onClick={() => navigate({ name: "explore" })}>
+                <Compass className="h-4 w-4 mr-2" />
+                {t("saved.exploreCta")}
+              </Button>
+            }
+          />
+        </FadeIn>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {list.map((p) => (
-            <ProjectCardView key={p.id} project={p} />
-          ))}
-        </div>
+        <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" gap={0.04}>
+          {list.map((p, i) =>
+            i < STAGGER_CAP ? (
+              <StaggerItem key={p.id}>
+                <ProjectCardView project={p} />
+              </StaggerItem>
+            ) : (
+              <FadeIn key={p.id} y={12} duration={0.35}>
+                <ProjectCardView project={p} />
+              </FadeIn>
+            )
+          )}
+        </Stagger>
       )}
     </div>
   );

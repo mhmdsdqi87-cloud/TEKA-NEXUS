@@ -25,10 +25,13 @@ import { MEMBER_ROLES } from "@/lib/constants";
 import type { CollabRequestDTO, ProjectCard } from "@/lib/dto";
 import { EmptyState, UserAvatar } from "@/components/shared/atoms";
 import { ProjectCardView } from "@/components/shared/project-card";
+import { FadeIn, Stagger, StaggerItem, TapScale } from "@/components/shared/motion";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
+
+const STAGGER_CAP = 12;
 
 const errText = (e: unknown, fallback: string) => (e instanceof Error ? e.message : fallback);
 
@@ -213,9 +216,9 @@ function MyCrews() {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {crews.map((m) => (
-        <div key={m.project.id} className="relative">
+    <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" gap={0.05}>
+      {crews.map((m, i) => (
+        <StaggerItem key={m.project.id} className="relative">
           <span className="absolute -top-2 left-3 z-10">
             <RoleChip role={m.role} />
           </span>
@@ -239,9 +242,9 @@ function MyCrews() {
             </Button>
           </div>
           <span className="sr-only">{t("teams.a11y.yourRole", { role: lbl("project.roles", m.role, "") })}</span>
-        </div>
+        </StaggerItem>
       ))}
-    </div>
+    </Stagger>
   );
 }
 
@@ -286,11 +289,13 @@ function RequestsHub() {
             {t("teams.requests.sentEmpty")}
           </div>
         ) : (
-          <div className="space-y-3">
+          <Stagger className="space-y-3" gap={0.05}>
             {sent.map((r) => (
-              <SentRequestCard key={r.id} request={r} onChanged={load} />
+              <StaggerItem key={r.id}>
+                <SentRequestCard request={r} onChanged={load} />
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         )}
       </section>
 
@@ -311,11 +316,13 @@ function RequestsHub() {
             {t("teams.requests.receivedEmpty")}
           </div>
         ) : (
-          <div className="space-y-3">
+          <Stagger className="space-y-3" gap={0.05}>
             {received.map((r) => (
-              <ReceivedRequestCard key={r.id} request={r} onChanged={load} />
+              <StaggerItem key={r.id}>
+                <ReceivedRequestCard request={r} onChanged={load} />
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         )}
       </section>
     </div>
@@ -374,20 +381,22 @@ function SentRequestCard({
       </p>
       {pending && (
         <div className="mt-3 flex justify-end">
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8"
-            onClick={withdraw}
-            disabled={withdrawing}
-          >
-            {withdrawing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <LogOut className="h-3.5 w-3.5" />
-            )}
-            {t("teams.requests.withdraw")}
-          </Button>
+          <TapScale>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8"
+              onClick={withdraw}
+              disabled={withdrawing}
+            >
+              {withdrawing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <LogOut className="h-3.5 w-3.5" />
+              )}
+              {t("teams.requests.withdraw")}
+            </Button>
+          </TapScale>
         </div>
       )}
     </div>
@@ -466,33 +475,37 @@ function ReceivedRequestCard({
       <div className="mt-3 flex flex-wrap gap-2">
         {pending ? (
           <>
-            <Button
-              size="sm"
-              className="btn-hero h-8 flex-1"
-              onClick={() => review("accept")}
-              disabled={acting !== null}
-            >
-              {acting === "accept" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <CheckCircle2 className="h-4 w-4" />
-              )}
-              {t("teams.accept")}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 flex-1"
-              onClick={() => review("reject")}
-              disabled={acting !== null}
-            >
-              {acting === "reject" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <XCircle className="h-4 w-4" />
-              )}
-              {t("teams.reject")}
-            </Button>
+            <TapScale className="flex-1">
+              <Button
+                size="sm"
+                className="btn-hero h-8 w-full"
+                onClick={() => review("accept")}
+                disabled={acting !== null}
+              >
+                {acting === "accept" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4" />
+                )}
+                {t("teams.accept")}
+              </Button>
+            </TapScale>
+            <TapScale className="flex-1">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 w-full"
+                onClick={() => review("reject")}
+                disabled={acting !== null}
+              >
+                {acting === "reject" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <XCircle className="h-4 w-4" />
+                )}
+                {t("teams.reject")}
+              </Button>
+            </TapScale>
           </>
         ) : null}
         {request.project && (
@@ -550,37 +563,65 @@ function DiscoverCrews() {
 
       {recruiting.length === 0 ? (
         <>
-          <EmptyState
-            icon={Compass}
-            title={t("teams.discover.emptyTitle")}
-            description={t("teams.discover.emptyDesc")}
-          />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((p) => (
-              <ProjectCardView key={p.id} project={p} />
-            ))}
-          </div>
+          <FadeIn>
+            <EmptyState
+              icon={Compass}
+              title={t("teams.discover.emptyTitle")}
+              description={t("teams.discover.emptyDesc")}
+            />
+          </FadeIn>
+          <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" gap={0.04}>
+            {projects.map((p, i) =>
+              i < STAGGER_CAP ? (
+                <StaggerItem key={p.id}>
+                  <ProjectCardView project={p} />
+                </StaggerItem>
+              ) : (
+                <FadeIn key={p.id} y={12} duration={0.35}>
+                  <ProjectCardView project={p} />
+                </FadeIn>
+              )
+            )}
+          </Stagger>
         </>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {recruiting.map((p) => (
-            <div key={p.id} className="space-y-1.5">
-              <ProjectCardView project={p} />
-              {p.requiredSkills.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 px-0.5">
-                  {p.requiredSkills.slice(0, 5).map((s) => (
-                    <span
-                      key={s}
-                      className="rounded-md border border-violet-500/30 bg-violet-500/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-violet-300"
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" gap={0.04}>
+          {recruiting.map((p, i) =>
+            i < STAGGER_CAP ? (
+              <StaggerItem key={p.id} className="space-y-1.5">
+                <ProjectCardView project={p} />
+                {p.requiredSkills.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 px-0.5">
+                    {p.requiredSkills.slice(0, 5).map((s) => (
+                      <span
+                        key={s}
+                        className="rounded-md border border-violet-500/30 bg-violet-500/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-violet-300"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </StaggerItem>
+            ) : (
+              <FadeIn key={p.id} y={12} duration={0.35} className="space-y-1.5">
+                <ProjectCardView project={p} />
+                {p.requiredSkills.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 px-0.5">
+                    {p.requiredSkills.slice(0, 5).map((s) => (
+                      <span
+                        key={s}
+                        className="rounded-md border border-violet-500/30 bg-violet-500/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-violet-300"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </FadeIn>
+            )
+          )}
+        </Stagger>
       )}
     </div>
   );

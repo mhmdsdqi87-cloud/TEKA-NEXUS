@@ -35,6 +35,7 @@ import { GOALS, PROJECT_CATEGORIES, SKILLS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { EmptyState, ReputationChip, UserAvatar } from "@/components/shared/atoms";
 import { ProjectCardView } from "@/components/shared/project-card";
+import { AnimatedNumber, SPRING, Stagger, StaggerItem, staggerChild, staggerParent } from "@/components/shared/motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -87,6 +88,8 @@ const REPORT_REASONS = [
   { value: "OTHER", labelKey: "other" },
 ] as const;
 
+const STAGGER_CAP = 12;
+
 function ChipRow({
   label,
   items,
@@ -104,23 +107,34 @@ function ChipRow({
         ? "border-cyan-500/20 bg-cyan-500/10 text-cyan-200"
         : "border-white/10 bg-white/[0.04] text-foreground/80";
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <motion.div
+      className="flex flex-wrap items-center gap-2"
+      variants={staggerParent}
+      initial="hidden"
+      animate="show"
+    >
       <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/80">
         {label}
       </span>
       {items.map((item) => (
-        <span key={item} className={cn("rounded-full border px-2.5 py-0.5 text-xs", toneClass)}>
+        <motion.span
+          key={item}
+          variants={staggerChild}
+          className={cn("rounded-full border px-2.5 py-0.5 text-xs", toneClass)}
+        >
           {item}
-        </span>
+        </motion.span>
       ))}
-    </div>
+    </motion.div>
   );
 }
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="glass-card rounded-xl p-4">
-      <p className="font-display text-2xl font-bold tabular-nums">{value.toLocaleString()}</p>
+      <p className="font-display text-2xl font-bold">
+        <AnimatedNumber value={value} format={(n) => n.toLocaleString()} />
+      </p>
       <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
     </div>
   );
@@ -148,6 +162,7 @@ export function ProfileView({ username }: { username: string }) {
   const [reportReason, setReportReason] = useState<string>("SPAM");
   const [reportDetails, setReportDetails] = useState("");
   const [reportPending, setReportPending] = useState(false);
+  const [profileTab, setProfileTab] = useState("projects");
 
   const load = useCallback(
     async (silent = false) => {
@@ -329,47 +344,67 @@ export function ProfileView({ username }: { username: string }) {
         >
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="flex min-w-0 flex-1 flex-col gap-5 sm:flex-row sm:items-start">
-              <UserAvatar user={profile} size={72} />
-              <div className="min-w-0 flex-1 space-y-3">
-                <div>
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ ...SPRING, delay: 0.08 }}
+                className="shrink-0"
+              >
+                <UserAvatar user={profile} size={72} />
+              </motion.div>
+              <motion.div
+                className="min-w-0 flex-1 space-y-3"
+                variants={staggerParent}
+                initial="hidden"
+                animate="show"
+              >
+                <motion.div variants={staggerChild}>
                   <h1 className="font-display text-2xl font-bold leading-tight md:text-3xl">
                     {profile.displayName}
                   </h1>
                   <p className="font-mono text-sm text-muted-foreground">@{profile.username}</p>
-                </div>
+                </motion.div>
 
                 {profile.bio && (
-                  <p className="max-w-xl whitespace-pre-line text-sm leading-relaxed text-foreground/85">
+                  <motion.p
+                    variants={staggerChild}
+                    className="max-w-xl whitespace-pre-line text-sm leading-relaxed text-foreground/85"
+                  >
                     {profile.bio}
-                  </p>
+                  </motion.p>
                 )}
 
                 {websiteHost && (
-                  <a
-                    href={profile.websiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded text-sm text-cyan-300 transition-colors hover:text-cyan-200 hover:underline focus-glow"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    <span className="max-w-[240px] truncate">{websiteHost}</span>
-                  </a>
+                  <motion.div variants={staggerChild}>
+                    <a
+                      href={profile.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded text-sm text-cyan-300 transition-colors hover:text-cyan-200 hover:underline focus-glow"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      <span className="max-w-[240px] truncate">{websiteHost}</span>
+                    </a>
+                  </motion.div>
                 )}
 
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                <motion.div
+                  variants={staggerChild}
+                  className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground"
+                >
                   <ReputationChip xp={profile.xp} reputation={profile.reputation} />
                   <span className="inline-flex items-center gap-1.5">
                     <CalendarDays className="h-3.5 w-3.5" />
                     {t("profile.header.memberSince", { date: fd(new Date(profile.createdAt), "MMM yyyy") })}
                   </span>
-                </div>
+                </motion.div>
 
                 <div className="space-y-2 pt-1">
                   <ChipRow label={t("profile.sections.goals")} items={goalNames} tone="default" />
                   <ChipRow label={t("profile.sections.interests")} items={interestNames} tone="cyan" />
                   <ChipRow label={t("profile.sections.skills")} items={skillNames} tone="violet" />
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
@@ -443,21 +478,47 @@ export function ProfileView({ username }: { username: string }) {
         </div>
 
         {/* ── Tabs ───────────────────────────────────────────── */}
-        <Tabs defaultValue="projects">
+        <Tabs value={profileTab} onValueChange={setProfileTab}>
           <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
-            <TabsTrigger value="projects">{t("common.projects")}</TabsTrigger>
-            <TabsTrigger value="contributions">{t("profile.tabs.contributions")}</TabsTrigger>
-            <TabsTrigger value="about">{t("profile.tabs.about")}</TabsTrigger>
+            {([
+              { value: "projects", label: t("common.projects") },
+              { value: "contributions", label: t("profile.tabs.contributions") },
+              { value: "about", label: t("profile.tabs.about") },
+            ] as const).map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="relative data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+              >
+                {profileTab === tab.value && (
+                  <motion.span
+                    layoutId="profile-tab-pill"
+                    aria-hidden="true"
+                    className="absolute inset-0 rounded-md border border-cyan-400/30 bg-cyan-500/15"
+                    transition={SPRING}
+                  />
+                )}
+                <span className="relative">{tab.label}</span>
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           {/* Projects */}
           <TabsContent value="projects" className="mt-5">
             {data && data.projects.length > 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {data.projects.map((p) => (
-                  <ProjectCardView key={p.id} project={p} />
-                ))}
-              </div>
+              <Stagger className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" gap={0.04}>
+                {data.projects.map((p, i) =>
+                  i < STAGGER_CAP ? (
+                    <StaggerItem key={p.id}>
+                      <ProjectCardView project={p} />
+                    </StaggerItem>
+                  ) : (
+                    <motion.div key={p.id}>
+                      <ProjectCardView project={p} />
+                    </motion.div>
+                  )
+                )}
+              </Stagger>
             ) : (
               <EmptyState
                 icon={Globe}
@@ -477,15 +538,20 @@ export function ProfileView({ username }: { username: string }) {
             </div>
 
             {data && data.contributions.length > 0 ? (
-              <ol className="relative ml-3 space-y-6 border-l border-white/[0.08] pl-7">
-                {data.contributions.map((c) => {
+              <motion.ol
+                className="relative ml-3 space-y-6 border-l border-white/[0.08] pl-7"
+                variants={staggerParent}
+                initial="hidden"
+                animate="show"
+              >
+                {data.contributions.map((c, i) => {
                   const meta = CONTRIBUTION_META[c.eventType] ?? {
                     icon: Sparkles,
                     labelKey: "other",
                   };
                   const Icon = meta.icon;
-                  return (
-                    <li key={c.id} className="relative">
+                  const content = (
+                    <>
                       <span className="absolute -left-10 top-0 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-[#0e0e16]">
                         <Icon className="h-3 w-3 text-cyan-300" />
                       </span>
@@ -518,10 +584,19 @@ export function ProfileView({ username }: { username: string }) {
                           {rel(new Date(c.createdAt))}
                         </span>
                       </div>
+                    </>
+                  );
+                  return i < STAGGER_CAP ? (
+                    <motion.li key={c.id} className="relative" variants={staggerChild}>
+                      {content}
+                    </motion.li>
+                  ) : (
+                    <li key={c.id} className="relative">
+                      {content}
                     </li>
                   );
                 })}
-              </ol>
+              </motion.ol>
             ) : (
               <EmptyState
                 icon={Flag}
@@ -540,17 +615,22 @@ export function ProfileView({ username }: { username: string }) {
                 description={t("profile.empty.about.description")}
               />
             ) : (
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="glass-card rounded-xl p-5 md:col-span-2">
+              <motion.div
+                className="grid gap-4 md:grid-cols-2"
+                variants={staggerParent}
+                initial="hidden"
+                animate="show"
+              >
+                <motion.div variants={staggerChild} className="glass-card rounded-xl p-5 md:col-span-2">
                   <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                     {t("profile.about.bio")}
                   </h3>
                   <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-foreground/85">
                     {profile.bio || t("profile.about.noBio")}
                   </p>
-                </div>
+                </motion.div>
 
-                <div className="glass-card rounded-xl p-5">
+                <motion.div variants={staggerChild} className="glass-card rounded-xl p-5">
                   <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                     {t("profile.sections.skills")}
                   </h3>
@@ -568,9 +648,9 @@ export function ProfileView({ username }: { username: string }) {
                   ) : (
                     <p className="mt-2 text-sm text-muted-foreground">{t("profile.about.noneListed")}</p>
                   )}
-                </div>
+                </motion.div>
 
-                <div className="glass-card rounded-xl p-5">
+                <motion.div variants={staggerChild} className="glass-card rounded-xl p-5">
                   <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                     {t("profile.sections.goals")}
                   </h3>
@@ -588,9 +668,9 @@ export function ProfileView({ username }: { username: string }) {
                   ) : (
                     <p className="mt-2 text-sm text-muted-foreground">{t("profile.about.noneListed")}</p>
                   )}
-                </div>
+                </motion.div>
 
-                <div className="glass-card rounded-xl p-5">
+                <motion.div variants={staggerChild} className="glass-card rounded-xl p-5">
                   <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                     {t("profile.sections.interests")}
                   </h3>
@@ -608,9 +688,9 @@ export function ProfileView({ username }: { username: string }) {
                   ) : (
                     <p className="mt-2 text-sm text-muted-foreground">{t("profile.about.noneListed")}</p>
                   )}
-                </div>
+                </motion.div>
 
-                <div className="glass-card rounded-xl p-5">
+                <motion.div variants={staggerChild} className="glass-card rounded-xl p-5">
                   <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                     {t("profile.about.details")}
                   </h3>
@@ -637,8 +717,8 @@ export function ProfileView({ username }: { username: string }) {
                       </li>
                     )}
                   </ul>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             )}
           </TabsContent>
         </Tabs>

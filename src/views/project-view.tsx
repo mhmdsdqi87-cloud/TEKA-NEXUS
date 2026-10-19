@@ -7,7 +7,7 @@
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { format, isBefore, parseISO } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -104,12 +104,21 @@ import {
   StatusPill,
   UserAvatar,
 } from "@/components/shared/atoms";
+import {
+  AnimatedNumber,
+  EASE,
+  FadeIn,
+  HoverLift,
+  PulsingDot,
+  SPRING,
+  Stagger,
+  StaggerItem,
+} from "@/components/shared/motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -146,7 +155,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // ─── Local helpers ────────────────────────────────────────────────────────────
 
@@ -208,7 +217,10 @@ function RoleChip({ role, className }: { role: string; className?: string }) {
   const t = useT();
   const name = roleLabel(t, role);
   return (
-    <span
+    <motion.span
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.25, ease: EASE }}
       className={cn(
         "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
         ROLE_STYLE[role] ?? ROLE_STYLE.VIEWER,
@@ -216,7 +228,7 @@ function RoleChip({ role, className }: { role: string; className?: string }) {
       )}
     >
       {name}
-    </span>
+    </motion.span>
   );
 }
 
@@ -315,6 +327,51 @@ function ReqRoleChip({ role }: { role: string }) {
   );
 }
 
+// ─── Animation-only helpers (wave C) ─────────────
+
+/**
+ * Progress bar with an animated fill (scaleX spring on mount / value change).
+ * Render-only variant of <Progress> that keeps the progressbar a11y contract.
+ */
+function MotionProgress({
+  value,
+  label,
+  className,
+}: {
+  value: number;
+  label: string;
+  className?: string;
+}) {
+  const pct = Math.max(0, Math.min(100, value || 0));
+  return (
+    <div
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={pct}
+      aria-label={label}
+      className={cn("relative h-2 w-full overflow-hidden rounded-full bg-primary/20", className)}
+    >
+      <motion.div
+        className="h-full w-full origin-left rounded-full bg-primary rtl:origin-right"
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: pct / 100 }}
+        transition={{ type: "spring", stiffness: 90, damping: 20, delay: 0.2 }}
+      />
+    </div>
+  );
+}
+
+/** Decorative heart-burst offsets — precomputed, horizontally symmetric (RTL-safe). */
+const LIKE_BURST: ReadonlyArray<{ x: number; y: number }> = [
+  { x: -18, y: -2 },
+  { x: -11, y: -10 },
+  { x: -4, y: -16 },
+  { x: 4, y: -16 },
+  { x: 11, y: -10 },
+  { x: 18, y: -2 },
+];
+
 // ─── Main view ────────────────────────────────────────────────────────────────
 
 const TAB_ITEMS = [
@@ -353,6 +410,8 @@ export function ProjectView({ slug }: { slug: string }) {
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [likePending, setLikePending] = useState(false);
   const [savePending, setSavePending] = useState(false);
+  // Animation-only: bump to trigger the heart burst (incremented on a fresh like).
+  const [likeBurst, setLikeBurst] = useState(0);
 
   const myRole = detail?.myRole ?? null;
   const canManage = myRole === "OWNER" || myRole === "ADMIN";
@@ -455,6 +514,7 @@ export function ProjectView({ slug }: { slug: string }) {
     try {
       const r = await post<{ liked: boolean; likeCount: number }>(`${base}/like`);
       setDetail((d) => (d ? { ...d, liked: r.liked, likeCount: r.likeCount } : d));
+      if (r.liked) setLikeBurst((b) => b + 1);
     } catch (e) {
       toast.error(err(e));
     } finally {
@@ -547,13 +607,21 @@ export function ProjectView({ slug }: { slug: string }) {
       </button>
 
       {/* Cover banner */}
-      <div className="relative h-40 overflow-hidden rounded-2xl border border-white/[0.07] md:h-56">
-        <ProjectCover cover={project.coverImage} name={project.name} seed={project.slug.length} />
+      <FadeIn y={10} className="relative h-40 overflow-hidden rounded-2xl border border-white/[0.07] md:h-56">
+        <motion.div
+          className="h-full w-full"
+          initial={{ scale: 1.04 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.4, ease: EASE }}
+        >
+          <ProjectCover cover={project.coverImage} name={project.name} seed={project.slug.length} />
+        </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-[#08080d] via-[#08080d]/20 to-transparent" />
-      </div>
+      </FadeIn>
 
       {/* Overlapping header card */}
-      <div className="glass-card relative z-10 mx-1 rounded-2xl p-5 md:-mt-14 md:mx-6 md:p-6">
+      <FadeIn delay={0.08} y={16} className="relative z-10 md:-mt-14">
+        <div className="glass-card mx-1 rounded-2xl p-5 md:mx-6 md:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -607,10 +675,33 @@ export function ProjectView({ slug }: { slug: string }) {
               onClick={toggleLike}
               disabled={likePending}
               aria-pressed={detail.liked}
-              className={cn("h-9 gap-1.5", detail.liked && "border-rose-500/40 text-rose-300")}
+              className={cn("relative h-9 gap-1.5", detail.liked && "border-rose-500/40 text-rose-300")}
             >
-              <Heart className={cn("h-4 w-4", detail.liked && "fill-current")} />
-              {detail.likeCount}
+              <span className="relative inline-flex">
+                <motion.span
+                  key={likeBurst}
+                  className="inline-flex"
+                  initial={false}
+                  animate={likeBurst > 0 ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+                  transition={{ duration: 0.38, ease: EASE }}
+                >
+                  <Heart className={cn("h-4 w-4", detail.liked && "fill-current")} />
+                </motion.span>
+                {likeBurst > 0 && (
+                  <span key={`burst-${likeBurst}`} aria-hidden="true" className="pointer-events-none absolute inset-0">
+                    {LIKE_BURST.map((p, i) => (
+                      <motion.span
+                        key={i}
+                        className="absolute left-1/2 top-1/2 h-1 w-1 rounded-full bg-rose-400"
+                        initial={{ opacity: 0.9, x: 0, y: 0, scale: 1 }}
+                        animate={{ opacity: 0, x: p.x, y: p.y, scale: 0.3 }}
+                        transition={{ duration: 0.55, ease: "easeOut", delay: i * 0.025 }}
+                      />
+                    ))}
+                  </span>
+                )}
+              </span>
+              <AnimatedNumber value={detail.likeCount} />
             </Button>
             <Button
               variant="outline"
@@ -620,7 +711,15 @@ export function ProjectView({ slug }: { slug: string }) {
               aria-pressed={detail.saved}
               className={cn("h-9", detail.saved && "border-cyan-500/40 text-cyan-300")}
             >
-              <Bookmark className={cn("h-4 w-4", detail.saved && "fill-current")} />
+              <motion.span
+                key={detail.saved ? "saved" : "unsaved"}
+                className="inline-flex"
+                initial={{ scale: 0.4, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={SPRING}
+              >
+                <Bookmark className={cn("h-4 w-4", detail.saved && "fill-current")} />
+              </motion.span>
               <span className="hidden sm:inline">{detail.saved ? t("common.saved") : t("common.save")}</span>
             </Button>
             <Button variant="outline" size="sm" onClick={share} className="h-9">
@@ -683,7 +782,8 @@ export function ProjectView({ slug }: { slug: string }) {
               ))}
           </div>
         </div>
-      </div>
+        </div>
+      </FadeIn>
 
       {/* Tabs */}
       <Tabs value={tab} onValueChange={setTab} className="mt-8">
@@ -693,84 +793,102 @@ export function ProjectView({ slug }: { slug: string }) {
               <TabsTrigger
                 key={item.value}
                 value={item.value}
-                className="relative gap-1.5 rounded-lg px-3 text-xs data-[state=active]:bg-white/[0.06] data-[state=active]:text-foreground md:px-4 md:text-sm"
+                className="relative gap-1.5 rounded-lg px-3 text-xs data-[state=active]:text-foreground md:px-4 md:text-sm"
               >
-                <item.icon className="h-4 w-4" />
-                <span>{t(`project.tabs.${item.value}`)}</span>
-                {typeof tabCounts[item.value] === "number" && (
-                  <span className="rounded-full bg-white/[0.07] px-1.5 text-[10px] text-muted-foreground">
-                    {tabCounts[item.value]}
-                  </span>
-                )}
                 {tab === item.value && (
                   <motion.span
-                    layoutId="project-tab-underline"
-                    className="absolute inset-x-3 bottom-0.5 h-[2px] rounded-full bg-gradient-to-r from-cyan-400 to-violet-400"
-                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                    layoutId="projectTabPill"
+                    aria-hidden="true"
+                    className="absolute inset-0 rounded-lg bg-gradient-to-r from-cyan-500/[0.13] to-violet-500/[0.13] ring-1 ring-cyan-400/20"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
                   />
+                )}
+                <item.icon className="relative z-10 h-4 w-4" />
+                <span className="relative z-10">{t(`project.tabs.${item.value}`)}</span>
+                {typeof tabCounts[item.value] === "number" && (
+                  <motion.span
+                    key={tabCounts[item.value]}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={SPRING}
+                    className="relative z-10 rounded-full bg-white/[0.07] px-1.5 text-[10px] text-muted-foreground"
+                  >
+                    {tabCounts[item.value]}
+                  </motion.span>
                 )}
               </TabsTrigger>
             ))}
           </TabsList>
         </div>
 
-        <TabsContent value="overview" className="mt-6">
-          <OverviewTab
-            project={project}
-            tasks={tasks}
-            milestones={milestones}
-            comments={comments}
-            user={user}
-            myRole={myRole}
-            canManage={canManage}
-            setComments={setComments}
-            refetchComments={refetchComments}
-          />
-        </TabsContent>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={tab}
+            role="tabpanel"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0, transition: { duration: 0.28, ease: EASE } }}
+            exit={{ opacity: 0, y: -6, transition: { duration: 0.14, ease: "easeIn" } }}
+            className="mt-6"
+          >
+            {tab === "overview" && (
+              <OverviewTab
+                project={project}
+                tasks={tasks}
+                milestones={milestones}
+                comments={comments}
+                user={user}
+                myRole={myRole}
+                canManage={canManage}
+                setComments={setComments}
+                refetchComments={refetchComments}
+              />
+            )}
 
-        <TabsContent value="updates" className="mt-6">
-          <UpdatesTab
-            base={base}
-            updates={updates}
-            canContribute={canContribute}
-            onCreated={(u) => setUpdates((prev) => [u, ...(prev ?? [])])}
-          />
-        </TabsContent>
+            {tab === "updates" && (
+              <UpdatesTab
+                base={base}
+                updates={updates}
+                canContribute={canContribute}
+                onCreated={(u) => setUpdates((prev) => [u, ...(prev ?? [])])}
+              />
+            )}
 
-        <TabsContent value="tasks" className="mt-6">
-          <TasksTab
-            base={base}
-            tasks={tasks}
-            members={membersResp?.members ?? []}
-            canContribute={canContribute}
-            setTasks={setTasks}
-          />
-        </TabsContent>
+            {tab === "tasks" && (
+              <TasksTab
+                base={base}
+                tasks={tasks}
+                members={membersResp?.members ?? []}
+                canContribute={canContribute}
+                setTasks={setTasks}
+              />
+            )}
 
-        <TabsContent value="milestones" className="mt-6">
-          <MilestonesTab
-            base={base}
-            milestones={milestones}
-            canContribute={canContribute}
-            setMilestones={setMilestones}
-          />
-        </TabsContent>
+            {tab === "milestones" && (
+              <MilestonesTab
+                base={base}
+                milestones={milestones}
+                canContribute={canContribute}
+                setMilestones={setMilestones}
+              />
+            )}
 
-        <TabsContent value="team" className="mt-6">
-          <TeamTab
-            project={project}
-            user={user}
-            myRole={myRole}
-            canManage={canManage}
-            membersResp={membersResp}
-            requests={requests}
-            refetchAll={refetchAll}
-          />
-        </TabsContent>
+            {tab === "team" && (
+              <TeamTab
+                project={project}
+                user={user}
+                myRole={myRole}
+                canManage={canManage}
+                membersResp={membersResp}
+                requests={requests}
+                refetchAll={refetchAll}
+              />
+            )}
 
-        <TabsContent value="activity" className="mt-6">
-          <ActivityTab updates={updates} tasks={tasks} milestones={milestones} />
-        </TabsContent>
+            {tab === "activity" && (
+              <ActivityTab updates={updates} tasks={tasks} milestones={milestones} />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </Tabs>
 
       {/* Dialogs */}
@@ -883,14 +1001,16 @@ function OverviewTab({
     <div className="grid gap-6 lg:grid-cols-3">
       {/* Left column */}
       <div className="space-y-6 lg:col-span-2">
-        <section className="glass-card rounded-2xl p-5 md:p-6" aria-label={t("project.a11y.projectDescription")}>
-          <h2 className="font-display mb-3 text-lg font-semibold">{t("project.overview.about")}</h2>
-          {project.description?.trim() ? (
-            <Markdown>{project.description}</Markdown>
-          ) : (
-            <p className="text-sm italic text-muted-foreground">{t("project.overview.noDescription")}</p>
-          )}
-        </section>
+        <FadeIn>
+          <section className="glass-card rounded-2xl p-5 md:p-6" aria-label={t("project.a11y.projectDescription")}>
+            <h2 className="font-display mb-3 text-lg font-semibold">{t("project.overview.about")}</h2>
+            {project.description?.trim() ? (
+              <Markdown>{project.description}</Markdown>
+            ) : (
+              <p className="text-sm italic text-muted-foreground">{t("project.overview.noDescription")}</p>
+            )}
+          </section>
+        </FadeIn>
 
         <CommentsSection
           projectSlug={project.slug}
@@ -904,7 +1024,8 @@ function OverviewTab({
 
       {/* Right column */}
       <div className="space-y-6">
-        <section className="glass-card rounded-2xl p-5" aria-label={t("project.a11y.projectFacts")}>
+        <FadeIn delay={0.06}>
+          <section className="glass-card rounded-2xl p-5" aria-label={t("project.a11y.projectFacts")}>
           <h3 className="font-display mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             {t("project.overview.facts")}
           </h3>
@@ -1002,47 +1123,60 @@ function OverviewTab({
               </div>
             </div>
           )}
-        </section>
+          </section>
+        </FadeIn>
 
-        <section className="glass-card rounded-2xl p-5" aria-label={t("project.a11y.projectHealth")}>
+        <FadeIn delay={0.12}>
+          <HoverLift>
+            <section className="glass-card rounded-2xl p-5" aria-label={t("project.a11y.projectHealth")}>
           <h3 className="font-display mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             {t("project.overview.health")}
           </h3>
-          <div className="space-y-4">
-            <div>
-              <div className="mb-1.5 flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">{t("project.overview.milestonesCompleted")}</span>
-                <span className="font-mono font-semibold">
-                  {completed}/{totalMilestones}
+          <Stagger className="space-y-4">
+            <StaggerItem>
+              <div>
+                <div className="mb-1.5 flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">{t("project.overview.milestonesCompleted")}</span>
+                  <span className="font-mono font-semibold">
+                    <AnimatedNumber value={completed} />/{totalMilestones}
+                  </span>
+                </div>
+                <MotionProgress value={healthValue} label={t("project.a11y.milestoneProgress")} />
+              </div>
+            </StaggerItem>
+            <StaggerItem>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t("project.overview.teamSize")}</span>
+                <span className="inline-flex items-center gap-1.5 font-medium">
+                  <Users className="h-4 w-4 text-violet-300" /> <AnimatedNumber value={project.memberCount} />
                 </span>
               </div>
-              <Progress value={healthValue} className="h-2" aria-label={t("project.a11y.milestoneProgress")} />
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">{t("project.overview.teamSize")}</span>
-              <span className="inline-flex items-center gap-1.5 font-medium">
-                <Users className="h-4 w-4 text-violet-300" /> {project.memberCount}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">{t("project.overview.openTasks")}</span>
-              <span className="font-mono font-medium">
-                {(tasks ?? []).filter((task) => task.status !== "DONE").length}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">{t("project.overview.lastActivity")}</span>
-              <span className="inline-flex items-center gap-1.5 text-xs">
-                <Clock3 className="h-3.5 w-3.5" /> {rel(project.updatedAt)}
-              </span>
-            </div>
-          </div>
+            </StaggerItem>
+            <StaggerItem>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t("project.overview.openTasks")}</span>
+                <span className="font-mono font-medium">
+                  <AnimatedNumber value={(tasks ?? []).filter((task) => task.status !== "DONE").length} />
+                </span>
+              </div>
+            </StaggerItem>
+            <StaggerItem>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t("project.overview.lastActivity")}</span>
+                <span className="inline-flex items-center gap-1.5 text-xs">
+                  <Clock3 className="h-3.5 w-3.5" /> {rel(project.updatedAt)}
+                </span>
+              </div>
+            </StaggerItem>
+          </Stagger>
           {myRole && (
             <p className="mt-4 border-t border-white/[0.06] pt-3 text-[11px] text-muted-foreground">
               {t("project.overview.yourRole", { role: roleLabel(t, myRole).toLowerCase() })}
             </p>
           )}
-        </section>
+            </section>
+          </HoverLift>
+        </FadeIn>
       </div>
     </div>
   );
@@ -1170,10 +1304,11 @@ function CommentsSection({
         </p>
       ) : (
         <ul className="space-y-4">
-          {comments.map((c) => (
+          {comments.map((c, i) => (
             <li key={c.id}>
               <CommentItem
                 comment={c}
+                entranceDelay={Math.min(i * 0.05, 0.3)}
                 user={user}
                 canManage={canManage}
                 onReply={() => {
@@ -1189,6 +1324,7 @@ function CommentsSection({
                     <li key={r.id}>
                       <CommentItem
                         comment={r}
+                        entranceDelay={0.12}
                         user={user}
                         canManage={canManage}
                         isReply
@@ -1198,41 +1334,52 @@ function CommentsSection({
                   ))}
                 </ul>
               )}
-              {replyTo === c.id && (
-                <div className="ml-8 mt-3 rounded-xl border border-cyan-500/20 bg-white/[0.02] p-3">
-                  <Textarea
-                    value={replyBody}
-                    onChange={(e) => setReplyBody(e.target.value)}
-                    rows={2}
-                    maxLength={LIMITS.comment}
-                    placeholder={t("project.comments.replyTo", {
-                      name: c.author?.displayName ?? t("project.comments.thisComment"),
-                    })}
-                    className="focus-glow resize-none bg-white/[0.03]"
-                    autoFocus
-                  />
-                  <div className="mt-2 flex justify-end gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setReplyTo(null);
-                        setReplyBody("");
-                      }}
-                    >
-                      {t("common.cancel")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="btn-hero"
-                      onClick={submitReply}
-                      disabled={sending || !replyBody.trim()}
-                    >
-                      {t("project.comments.reply")}
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <AnimatePresence initial={false}>
+                {replyTo === c.id && (
+                  <motion.div
+                    key="reply-composer"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: EASE }}
+                    className="ml-8 overflow-hidden"
+                  >
+                    <div className="mt-3 rounded-xl border border-cyan-500/20 bg-white/[0.02] p-3">
+                      <Textarea
+                        value={replyBody}
+                        onChange={(e) => setReplyBody(e.target.value)}
+                        rows={2}
+                        maxLength={LIMITS.comment}
+                        placeholder={t("project.comments.replyTo", {
+                          name: c.author?.displayName ?? t("project.comments.thisComment"),
+                        })}
+                        className="focus-glow resize-none bg-white/[0.03]"
+                        autoFocus
+                      />
+                      <div className="mt-2 flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setReplyTo(null);
+                            setReplyBody("");
+                          }}
+                        >
+                          {t("common.cancel")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="btn-hero"
+                          onClick={submitReply}
+                          disabled={sending || !replyBody.trim()}
+                        >
+                          {t("project.comments.reply")}
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </li>
           ))}
         </ul>
@@ -1266,6 +1413,7 @@ function CommentItem({
   user,
   canManage,
   isReply = false,
+  entranceDelay = 0,
   onReply,
   onDelete,
 }: {
@@ -1273,6 +1421,7 @@ function CommentItem({
   user: ReturnType<typeof useApp.getState>["user"];
   canManage: boolean;
   isReply?: boolean;
+  entranceDelay?: number;
   onReply?: () => void;
   onDelete: () => void;
 }) {
@@ -1283,7 +1432,12 @@ function CommentItem({
   const rel = useRelativeTime();
 
   return (
-    <div className="flex gap-3">
+    <motion.div
+      initial={{ opacity: 0, y: 8, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.32, ease: EASE, delay: entranceDelay }}
+      className="flex gap-3"
+    >
       {comment.author ? (
         <UserAvatar user={comment.author} size={isReply ? 26 : 32} />
       ) : (
@@ -1326,7 +1480,7 @@ function CommentItem({
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -1431,21 +1585,23 @@ function UpdatesTab({
           }
         />
       ) : (
-        <div className="space-y-4">
+        <Stagger className="space-y-4">
           {updates.map((u) => (
-            <article key={u.id} className="glass-card rounded-2xl p-5">
-              <header className="flex items-center gap-3">
-                <UserAvatar user={u.author} size={34} />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{u.author.displayName}</p>
-                  <p className="text-[11px] text-muted-foreground">{rel(u.createdAt)}</p>
-                </div>
-              </header>
-              <h3 className="font-display mt-3 text-lg font-semibold">{u.title}</h3>
-              <Markdown className="mt-1">{u.body}</Markdown>
-            </article>
+            <StaggerItem key={u.id}>
+              <article className="glass-card rounded-2xl p-5">
+                <header className="flex items-center gap-3">
+                  <UserAvatar user={u.author} size={34} />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{u.author.displayName}</p>
+                    <p className="text-[11px] text-muted-foreground">{rel(u.createdAt)}</p>
+                  </div>
+                </header>
+                <h3 className="font-display mt-3 text-lg font-semibold">{u.title}</h3>
+                <Markdown className="mt-1">{u.body}</Markdown>
+              </article>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       )}
     </div>
   );
@@ -1651,82 +1807,84 @@ function TasksTab({
             }, 120);
           }}
         >
-          <div className="kanban-scroll grid auto-cols-[85%] grid-flow-col gap-3 overflow-x-auto pb-2 sm:auto-cols-[272px]">
+          <Stagger className="kanban-scroll grid auto-cols-[85%] grid-flow-col gap-3 overflow-x-auto pb-2 sm:auto-cols-[272px]">
             {TASK_STATUSES.map((s) => (
-              <KanbanColumn
-                key={s.slug}
-                status={s.slug}
-                name={t(`project.kanban.${s.slug}`)}
-                tasks={byStatus[s.slug] ?? []}
-                canContribute={canContribute}
-                onOpen={(task) => {
-                  if (!dragMovedRef.current) setTaskId(task.id);
-                }}
-                onStatusChange={moveTask}
-              />
+              <StaggerItem key={s.slug} className="h-full">
+                <KanbanColumn
+                  status={s.slug}
+                  name={t(`project.kanban.${s.slug}`)}
+                  tasks={byStatus[s.slug] ?? []}
+                  canContribute={canContribute}
+                  onOpen={(task) => {
+                    if (!dragMovedRef.current) setTaskId(task.id);
+                  }}
+                  onStatusChange={moveTask}
+                />
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
           <DragOverlay dropAnimation={{ duration: 180, easing: "cubic-bezier(0.2, 0, 0, 1)" }}>
             {activeTask ? <TaskCardVisual task={activeTask} overlay /> : null}
           </DragOverlay>
         </DndContext>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-white/[0.07]">
+        <Stagger className="overflow-hidden rounded-xl border border-white/[0.07]">
           {filtered.map((task, i) => (
-            <div
-              key={task.id}
-              className={cn(
-                "flex flex-wrap items-center gap-2 bg-white/[0.02] px-3 py-2.5 transition-colors hover:bg-white/[0.04] sm:gap-3 sm:px-4",
-                i > 0 && "border-t border-white/[0.06]"
-              )}
-            >
-              <PriorityPill priority={task.priority} />
-              <button
-                onClick={() => setTaskId(task.id)}
-                className="focus-glow min-w-0 flex-1 truncate rounded text-left text-sm font-medium transition-colors hover:text-cyan-300"
+            <StaggerItem key={task.id}>
+              <div
+                className={cn(
+                  "flex flex-wrap items-center gap-2 bg-white/[0.02] px-3 py-2.5 transition-colors hover:bg-white/[0.04] sm:gap-3 sm:px-4",
+                  i > 0 && "border-t border-white/[0.06]"
+                )}
               >
-                {task.title}
-              </button>
-              {canContribute ? (
-                <div onPointerDown={(e) => e.stopPropagation()}>
-                  <Select value={task.status} onValueChange={(v) => moveTask(task, v)}>
-                    <SelectTrigger
-                      size="sm"
-                      className="h-7 w-[118px] text-[11px]"
-                      aria-label={t("project.a11y.taskStatusOf", { title: task.title })}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TASK_STATUSES.map((s) => (
-                        <SelectItem key={s.slug} value={s.slug}>
-                          {t(`project.kanban.${s.slug}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : (
-                <span className="rounded bg-white/[0.05] px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                  {STATUS_KEYS.has(task.status) ? t(`project.kanban.${task.status}`) : task.status}
-                </span>
-              )}
-              {task.assignee ? (
-                <span className="inline-flex items-center gap-1.5" title={task.assignee.displayName}>
-                  <UserAvatar user={task.assignee} size={22} />
-                  <span className="hidden max-w-[100px] truncate text-xs text-muted-foreground md:inline">
-                    {task.assignee.displayName}
+                <PriorityPill priority={task.priority} />
+                <button
+                  onClick={() => setTaskId(task.id)}
+                  className="focus-glow min-w-0 flex-1 truncate rounded text-left text-sm font-medium transition-colors hover:text-cyan-300"
+                >
+                  {task.title}
+                </button>
+                {canContribute ? (
+                  <div onPointerDown={(e) => e.stopPropagation()}>
+                    <Select value={task.status} onValueChange={(v) => moveTask(task, v)}>
+                      <SelectTrigger
+                        size="sm"
+                        className="h-7 w-[118px] text-[11px]"
+                        aria-label={t("project.a11y.taskStatusOf", { title: task.title })}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TASK_STATUSES.map((s) => (
+                          <SelectItem key={s.slug} value={s.slug}>
+                            {t(`project.kanban.${s.slug}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <span className="rounded bg-white/[0.05] px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                    {STATUS_KEYS.has(task.status) ? t(`project.kanban.${task.status}`) : task.status}
                   </span>
-                </span>
-              ) : (
-                <span className="hidden text-xs text-muted-foreground sm:inline">
-                  {t("project.tasks.unassigned")}
-                </span>
-              )}
-              <DueChip dueAt={task.dueAt} done={task.status === "DONE"} />
-            </div>
+                )}
+                {task.assignee ? (
+                  <span className="inline-flex items-center gap-1.5" title={task.assignee.displayName}>
+                    <UserAvatar user={task.assignee} size={22} />
+                    <span className="hidden max-w-[100px] truncate text-xs text-muted-foreground md:inline">
+                      {task.assignee.displayName}
+                    </span>
+                  </span>
+                ) : (
+                  <span className="hidden text-xs text-muted-foreground sm:inline">
+                    {t("project.tasks.unassigned")}
+                  </span>
+                )}
+                <DueChip dueAt={task.dueAt} done={task.status === "DONE"} />
+              </div>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       )}
 
       <CreateTaskDialog
@@ -1779,7 +1937,7 @@ function KanbanColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex min-h-[300px] flex-col rounded-xl border bg-white/[0.02] p-2 transition-colors",
+        "flex h-full min-h-[300px] flex-col rounded-xl border bg-white/[0.02] p-2 transition-colors",
         isOver ? "border-cyan-500/40 bg-cyan-500/[0.04]" : "border-white/[0.06]"
       )}
     >
@@ -1787,9 +1945,15 @@ function KanbanColumn({
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {name}
         </span>
-        <span className="rounded-full bg-white/[0.06] px-1.5 text-[10px] font-mono text-muted-foreground">
+        <motion.span
+          key={tasks.length}
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={SPRING}
+          className="rounded-full bg-white/[0.06] px-1.5 text-[10px] font-mono text-muted-foreground"
+        >
           {tasks.length}
-        </span>
+        </motion.span>
       </div>
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto">
         {tasks.length === 0 ? (
@@ -1877,7 +2041,8 @@ function TaskCardVisual({ task, overlay = false }: { task: TaskDTO; overlay?: bo
   return (
     <div
       className={cn(
-        overlay && "w-[272px] rotate-2 rounded-lg border border-cyan-500/30 bg-[#12121c] p-3 shadow-2xl"
+        overlay &&
+          "w-[272px] scale-[1.02] rotate-2 rounded-lg border border-cyan-500/30 bg-[#12121c] p-3 shadow-[0_28px_60px_-15px_rgba(0,0,0,0.75)] ring-2 ring-cyan-400/30"
       )
       }>
       <div className="flex items-start justify-between gap-2">
@@ -2018,7 +2183,9 @@ function TaskDetailDialog({
           </DialogDescription>
         </DialogHeader>
 
+        <Stagger className="space-y-4">
         {/* Title */}
+        <StaggerItem>
         <div className="space-y-2">
           {canContribute ? (
             <div className="flex items-center gap-2">
@@ -2043,7 +2210,10 @@ function TaskDetailDialog({
           )}
         </div>
 
+        </StaggerItem>
+
         {/* Properties grid */}
+        <StaggerItem>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("project.form.status")}</Label>
@@ -2140,7 +2310,10 @@ function TaskDetailDialog({
           </div>
         </div>
 
+        </StaggerItem>
+
         {/* Description */}
+        <StaggerItem>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -2188,7 +2361,10 @@ function TaskDetailDialog({
           )}
         </div>
 
+        </StaggerItem>
+
         {/* Comments */}
+        <StaggerItem>
         <div className="space-y-3 border-t border-white/[0.07] pt-4">
           <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {t("project.taskDetail.comments")}
@@ -2200,7 +2376,13 @@ function TaskDetailDialog({
           ) : (
             <ul className="max-h-56 space-y-3 overflow-y-auto pr-1">
               {comments.map((c) => (
-                <li key={c.id} className="flex gap-2.5">
+                <motion.li
+                  key={c.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, ease: EASE }}
+                  className="flex gap-2.5"
+                >
                   <UserAvatar user={c.author} size={26} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -2209,7 +2391,7 @@ function TaskDetailDialog({
                     </div>
                     <p className="whitespace-pre-wrap break-words text-xs text-zinc-300">{c.body}</p>
                   </div>
-                </li>
+                </motion.li>
               ))}
             </ul>
           )}
@@ -2238,6 +2420,9 @@ function TaskDetailDialog({
             </div>
           )}
         </div>
+
+        </StaggerItem>
+        </Stagger>
 
         {/* Footer actions */}
         {canContribute && (
@@ -2341,8 +2526,8 @@ function CreateTaskDialog({
           <DialogTitle className="font-display">{t("project.tasks.newTask")}</DialogTitle>
           <DialogDescription>{t("project.tasks.newTaskDesc")}</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1.5">
+        <Stagger className="space-y-3">
+          <StaggerItem className="space-y-1.5">
             <Label htmlFor="task-title">{t("project.form.title")}</Label>
             <Input
               id="task-title"
@@ -2353,8 +2538,8 @@ function CreateTaskDialog({
               className="focus-glow bg-white/[0.03]"
               autoFocus
             />
-          </div>
-          <div className="space-y-1.5">
+          </StaggerItem>
+          <StaggerItem className="space-y-1.5">
             <Label htmlFor="task-desc">{t("project.form.description")}</Label>
             <Textarea
               id="task-desc"
@@ -2365,7 +2550,8 @@ function CreateTaskDialog({
               placeholder={t("project.tasks.descPlaceholder")}
               className="focus-glow resize-y bg-white/[0.03]"
             />
-          </div>
+          </StaggerItem>
+          <StaggerItem>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1.5">
               <Label>{t("project.form.priority")}</Label>
@@ -2409,7 +2595,8 @@ function CreateTaskDialog({
               />
             </div>
           </div>
-        </div>
+          </StaggerItem>
+        </Stagger>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("common.cancel")}
@@ -2500,10 +2687,10 @@ function MilestonesTab({
         <div className="mb-2 flex items-center justify-between">
           <h2 className="font-display text-base font-semibold">{t("project.milestones.progress")}</h2>
           <span className="font-mono text-sm font-semibold">
-            {completed}/{list.length}
+            <AnimatedNumber value={completed} />/{list.length}
           </span>
         </div>
-        <Progress value={pct} aria-label={t("project.a11y.milestoneCompletion")} />
+        <MotionProgress value={pct} label={t("project.a11y.milestoneCompletion")} />
         {canContribute && (
           <div className="mt-4 flex justify-end">
             <Button size="sm" className="btn-hero" onClick={() => setCreateOpen(true)}>
@@ -2533,21 +2720,23 @@ function MilestonesTab({
           }
         />
       ) : (
-        <ol className="relative space-y-3 border-l border-white/[0.08] pl-5">
-          {list.map((m) => {
-            const done = !!m.completedAt;
-            const overdue = isOverdue(m.dueAt, done);
-            return (
-              <li key={m.id} className="relative">
-                <span
-                  className={cn(
-                    "absolute -left-[27px] top-4 flex h-4 w-4 items-center justify-center rounded-full border",
-                    done ? "border-emerald-400/50 bg-emerald-400/20" : "border-white/15 bg-[#101019]"
-                  )}
-                >
-                  <Flag className={cn("h-2.5 w-2.5", done && "fill-emerald-400 text-emerald-400")} />
-                </span>
-                <div className="glass-card rounded-xl p-4">
+        <Stagger>
+          <ol className="relative space-y-3 border-l border-white/[0.08] pl-5">
+            {list.map((m) => {
+              const done = !!m.completedAt;
+              const overdue = isOverdue(m.dueAt, done);
+              return (
+                <li key={m.id} className="relative">
+                  <StaggerItem>
+                    <span
+                      className={cn(
+                        "absolute -left-[27px] top-4 flex h-4 w-4 items-center justify-center rounded-full border",
+                        done ? "border-emerald-400/50 bg-emerald-400/20" : "border-white/15 bg-[#101019]"
+                      )}
+                    >
+                      <Flag className={cn("h-2.5 w-2.5", done && "fill-emerald-400 text-emerald-400")} />
+                    </span>
+                    <div className={cn("glass-card rounded-xl p-4", done && "ring-1 ring-emerald-500/20")}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -2561,7 +2750,15 @@ function MilestonesTab({
                         </h3>
                         {done && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
-                            <CheckCircle2 className="h-3 w-3" /> {t("project.milestones.completed")}
+                            <motion.span
+                              className="inline-flex"
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: "spring", stiffness: 500, damping: 16, delay: 0.12 }}
+                            >
+                              <CheckCircle2 className="h-3 w-3" />
+                            </motion.span>{" "}
+                            {t("project.milestones.completed")}
                           </span>
                         )}
                         {overdue && (
@@ -2578,10 +2775,22 @@ function MilestonesTab({
                           <span
                             className={cn(
                               "inline-flex items-center gap-1",
-                              overdue && !done && "text-rose-300"
+                              overdue && !done && "text-rose-300",
+                              !overdue && !done && "rounded-md bg-amber-500/10 px-1.5 py-0.5 text-amber-300"
                             )}
                           >
-                            <CalendarDays className="h-3 w-3" />
+                            {!done ? (
+                              <motion.span
+                                className="inline-flex"
+                                initial={{ scale: 0.6, opacity: 0 }}
+                                animate={{ scale: [0.6, 1.25, 1], opacity: 1 }}
+                                transition={{ duration: 0.9, ease: "easeInOut", delay: 0.35 }}
+                              >
+                                <CalendarDays className="h-3 w-3" />
+                              </motion.span>
+                            ) : (
+                              <CalendarDays className="h-3 w-3" />
+                            )}
                             {t("project.milestones.due", { date: fd(m.dueAt, "MMM d, yyyy") })}
                           </span>
                         )}
@@ -2632,11 +2841,13 @@ function MilestonesTab({
                       </div>
                     )}
                   </div>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+                    </div>
+                  </StaggerItem>
+                </li>
+              );
+            })}
+          </ol>
+        </Stagger>
       )}
 
       <CreateMilestoneDialog
@@ -2713,8 +2924,8 @@ function CreateMilestoneDialog({
           <DialogTitle className="font-display">{t("project.milestones.new")}</DialogTitle>
           <DialogDescription>{t("project.milestones.newDesc")}</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1.5">
+        <Stagger className="space-y-3">
+          <StaggerItem className="space-y-1.5">
             <Label htmlFor="ms-title">{t("project.form.title")}</Label>
             <Input
               id="ms-title"
@@ -2725,8 +2936,8 @@ function CreateMilestoneDialog({
               className="focus-glow bg-white/[0.03]"
               autoFocus
             />
-          </div>
-          <div className="space-y-1.5">
+          </StaggerItem>
+          <StaggerItem className="space-y-1.5">
             <Label htmlFor="ms-desc">{t("project.form.description")}</Label>
             <Textarea
               id="ms-desc"
@@ -2736,8 +2947,8 @@ function CreateMilestoneDialog({
               placeholder={t("project.milestones.descPlaceholder")}
               className="focus-glow resize-y bg-white/[0.03]"
             />
-          </div>
-          <div className="space-y-1.5">
+          </StaggerItem>
+          <StaggerItem className="space-y-1.5">
             <Label htmlFor="ms-due">{t("project.milestones.targetDate")}</Label>
             <Input
               id="ms-due"
@@ -2746,8 +2957,8 @@ function CreateMilestoneDialog({
               onChange={(e) => setDue(e.target.value)}
               className="focus-glow w-full bg-white/[0.03]"
             />
-          </div>
-        </div>
+          </StaggerItem>
+        </Stagger>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("common.cancel")}
@@ -2906,16 +3117,23 @@ function TeamTab({
             ))}
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {members.map((m) => (
-              <div key={m.id} className="glass-card rounded-xl p-4">
+              <StaggerItem key={m.id} className="h-full">
+              <div className="glass-card h-full rounded-xl p-4">
                 <div className="flex items-start justify-between gap-2">
                   <button
                     onClick={() => navigate({ name: "profile", username: m.user.username })}
                     className="focus-glow flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left"
                     aria-label={t("project.a11y.viewProfileOf", { name: m.user.displayName })}
                   >
-                    <UserAvatar user={m.user} size={44} />
+                    <motion.span
+                      className="inline-flex shrink-0"
+                      whileHover={{ scale: 1.06 }}
+                      transition={SPRING}
+                    >
+                      <UserAvatar user={m.user} size={44} />
+                    </motion.span>
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-semibold">
                         {m.user.displayName}
@@ -2976,8 +3194,9 @@ function TeamTab({
                   </span>
                 </div>
               </div>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         )}
       </section>
 
@@ -2997,9 +3216,10 @@ function TeamTab({
               {t("project.team.noRequests")}
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2">
+            <Stagger className="grid gap-4 md:grid-cols-2">
               {pendingRequests.map((r) => (
-                <div key={r.id} className="glass-card rounded-xl p-4">
+                <StaggerItem key={r.id}>
+                <div className="glass-card rounded-xl p-4">
                   <div className="flex items-start justify-between gap-2">
                     <button
                       onClick={() => navigate({ name: "profile", username: r.applicant.username })}
@@ -3061,8 +3281,9 @@ function TeamTab({
                     </Button>
                   </div>
                 </div>
+                </StaggerItem>
               ))}
-            </div>
+            </Stagger>
           )}
         </section>
       )}
@@ -3224,28 +3445,39 @@ function ActivityTab({
           description={t("project.activity.emptyDesc")}
         />
       ) : (
-        <ol className="space-y-4">
-          {events.map((e) => (
-            <li key={e.id} className="flex items-start gap-3">
-              <span
-                className={cn(
-                  "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                  e.color
-                )}
-              >
-                <e.icon className="h-4 w-4" />
-              </span>
-              <div className="min-w-0 flex-1 border-b border-white/[0.05] pb-4 last:border-0">
-                <p className="text-sm">
-                  <span className="font-medium">{e.by}</span>{" "}
-                  <span className="text-muted-foreground">{t(`project.activity.${e.labelKey}`)}</span>{" "}
-                  <span className="font-medium text-foreground">&ldquo;{e.title}&rdquo;</span>
-                </p>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">{rel(e.at)}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
+        <Stagger>
+          <ol className="space-y-4">
+            {events.map((e, i) => (
+              <li key={e.id}>
+                <StaggerItem className="flex items-start gap-3">
+                  <span
+                    className={cn(
+                      "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                      e.color
+                    )}
+                  >
+                    <e.icon className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1 border-b border-white/[0.05] pb-4 last:border-0">
+                    <p className="text-sm">
+                      <span className="font-medium">{e.by}</span>{" "}
+                      <span className="text-muted-foreground">{t(`project.activity.${e.labelKey}`)}</span>{" "}
+                      <span className="font-medium text-foreground">&ldquo;{e.title}&rdquo;</span>
+                    </p>
+                    <p className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                      {i === 0 && (
+                        <span aria-hidden="true">
+                          <PulsingDot dotClassName="bg-cyan-400" />
+                        </span>
+                      )}
+                      {rel(e.at)}
+                    </p>
+                  </div>
+                </StaggerItem>
+              </li>
+            ))}
+          </ol>
+        </Stagger>
       )}
     </section>
   );
@@ -3354,7 +3586,8 @@ function EditProjectDialog({
           <DialogDescription>{t("project.edit.desc")}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <Stagger className="space-y-4">
+          <StaggerItem>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="ep-name">{t("project.form.name")}</Label>
@@ -3377,7 +3610,9 @@ function EditProjectDialog({
               />
             </div>
           </div>
+          </StaggerItem>
 
+          <StaggerItem>
           <div className="space-y-1.5">
             <Label htmlFor="ep-desc">{t("project.form.description")}</Label>
             <Textarea
@@ -3390,7 +3625,9 @@ function EditProjectDialog({
               className="focus-glow resize-y bg-white/[0.03]"
             />
           </div>
+          </StaggerItem>
 
+          <StaggerItem>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>{t("project.form.status")}</Label>
@@ -3431,7 +3668,9 @@ function EditProjectDialog({
               </RadioGroup>
             </div>
           </div>
+          </StaggerItem>
 
+          <StaggerItem>
           <div className="space-y-1.5">
             <Label htmlFor="ep-tag">{t("project.edit.tags")}</Label>
             <div className="flex flex-wrap gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] p-2">
@@ -3467,7 +3706,9 @@ function EditProjectDialog({
               />
             </div>
           </div>
+          </StaggerItem>
 
+          <StaggerItem>
           <div className="space-y-1.5">
             <Label>{t("project.form.requiredSkills")}</Label>
             <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] p-2">
@@ -3511,7 +3752,9 @@ function EditProjectDialog({
               </Select>
             </div>
           </div>
+          </StaggerItem>
 
+          <StaggerItem>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1.5">
               <Label htmlFor="ep-repo">{t("project.form.repositoryUrl")}</Label>
@@ -3544,7 +3787,8 @@ function EditProjectDialog({
               />
             </div>
           </div>
-        </div>
+          </StaggerItem>
+        </Stagger>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -3620,8 +3864,8 @@ function JoinRequestDialog({
             {t("project.join.desc")}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1.5">
+        <Stagger className="space-y-3">
+          <StaggerItem className="space-y-1.5">
             <Label>{t("project.join.requestedRole")}</Label>
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger className="w-full bg-white/[0.03]">
@@ -3632,8 +3876,8 @@ function JoinRequestDialog({
                 <SelectItem value="VIEWER">{t("project.join.viewerOption")}</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-1.5">
+          </StaggerItem>
+          <StaggerItem className="space-y-1.5">
             <Label htmlFor="jr-intro">
               {t("project.join.introduction")} <span className="text-rose-300">*</span>
             </Label>
@@ -3656,8 +3900,8 @@ function JoinRequestDialog({
             >
               {t("project.join.minHint", { n: intro.trim().length, limit: LIMITS.introduction })}
             </p>
-          </div>
-          <div className="space-y-1.5">
+          </StaggerItem>
+          <StaggerItem className="space-y-1.5">
             <Label htmlFor="jr-portfolio">{t("project.join.portfolioLabel")}</Label>
             <Input
               id="jr-portfolio"
@@ -3666,8 +3910,8 @@ function JoinRequestDialog({
               placeholder="https://your-portfolio.dev"
               className="focus-glow bg-white/[0.03]"
             />
-          </div>
-        </div>
+          </StaggerItem>
+        </Stagger>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("common.cancel")}
@@ -3742,8 +3986,8 @@ function ReportProjectDialog({
             {t("project.report.desc", { name: projectName })}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1.5">
+        <Stagger className="space-y-3">
+          <StaggerItem className="space-y-1.5">
             <Label>{t("project.report.reasonLabel")}</Label>
             <Select value={reason} onValueChange={setReason}>
               <SelectTrigger className="w-full bg-white/[0.03]">
@@ -3757,8 +4001,8 @@ function ReportProjectDialog({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-1.5">
+          </StaggerItem>
+          <StaggerItem className="space-y-1.5">
             <Label htmlFor="rp-details">{t("project.report.detailsLabel")}</Label>
             <Textarea
               id="rp-details"
@@ -3768,8 +4012,8 @@ function ReportProjectDialog({
               maxLength={2000}
               className="focus-glow resize-y bg-white/[0.03]"
             />
-          </div>
-        </div>
+          </StaggerItem>
+        </Stagger>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("common.cancel")}

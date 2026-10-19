@@ -36,30 +36,18 @@ import { get } from "@/lib/api";
 import type { FeedEvent } from "@/lib/dto";
 import { useT, useRelativeTime } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-
-// ─── Motion helper: subtle fade-up on first view ─────────────
-
-function FadeUp({
-  children,
-  className,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  delay?: number;
-}) {
-  return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.45, ease: "easeOut", delay }}
-    >
-      {children}
-    </motion.div>
-  );
-}
+import {
+  AnimatedNumber,
+  EASE,
+  FadeIn,
+  HoverLift,
+  PulsingDot,
+  Reveal,
+  Stagger,
+  StaggerItem,
+  TapScale,
+  staggerParent,
+} from "@/components/shared/motion";
 
 // ─── Hero orbital visual ─────────────────────────────────────
 
@@ -173,7 +161,7 @@ function LivePulse() {
     <section aria-label={t("landing.live.aria")} className="mt-14 border-y border-white/[0.06] bg-white/[0.015] sm:mt-20">
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6">
         <span className="hidden shrink-0 items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground sm:flex">
-          <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          <PulsingDot className="shrink-0" dotClassName="bg-emerald-400" />
           {t("landing.live.label")}
         </span>
 
@@ -185,9 +173,12 @@ function LivePulse() {
           </div>
         ) : events && !failed && events.length > 0 ? (
           <div className="kanban-scroll flex items-center gap-2.5 overflow-x-auto pb-0.5">
-            {events.slice(0, 3).map((e) => (
-              <span
+            {events.slice(0, 3).map((e, i) => (
+              <motion.span
                 key={e.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.08 * i, ease: EASE }}
                 className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-2 text-xs"
               >
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />
@@ -199,7 +190,7 @@ function LivePulse() {
                 <span className="font-mono text-[10px] text-muted-foreground/70">
                   {rel(new Date(e.createdAt))}
                 </span>
-              </span>
+              </motion.span>
             ))}
           </div>
         ) : (
@@ -271,22 +262,35 @@ function ProductPreview() {
         </div>
         {/* mini kanban */}
         <div className="bg-white/[0.015] p-4 sm:p-6">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <motion.div
+            className="grid grid-cols-1 gap-3 sm:grid-cols-3"
+            variants={staggerParent}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-40px" }}
+          >
             {BOARD_COLUMNS.map((col) => (
-              <div key={col.name} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+              <StaggerItem
+                key={col.name}
+                className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3"
+              >
                 <div className="mb-3 flex items-center gap-2">
                   <span className={cn("h-1.5 w-1.5 rounded-full", col.dot)} />
                   <span className="text-xs font-medium text-foreground/90">{col.name}</span>
-                  <span className="ml-auto font-mono text-[10px] text-muted-foreground">{col.cards}</span>
+                  <AnimatedNumber
+                    value={col.cards}
+                    duration={0.9}
+                    className="ml-auto font-mono text-[10px] text-muted-foreground"
+                  />
                 </div>
                 <div className="space-y-2">
                   {Array.from({ length: col.cards }).map((_, i) => (
                     <BoardCardStub key={i} />
                   ))}
                 </div>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
       <p className="mt-3 text-center font-mono text-[11px] text-muted-foreground/70">
@@ -353,18 +357,20 @@ function Footer() {
   return (
     <footer className="mt-auto border-t border-white/[0.06] bg-white/[0.015]">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          {columns.map((col) => (
-            <nav key={col.title} aria-label={t("landing.footer.navAria", { section: col.title })} className="flex flex-col gap-1">
-              <h3 className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-foreground/80">
-                {col.title}
-              </h3>
-              {col.links.map((l) => (
-                <FooterLink key={`${col.title}-${l.label}`} label={l.label} onClick={l.action} />
-              ))}
-            </nav>
-          ))}
-        </div>
+        <Reveal y={12}>
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            {columns.map((col) => (
+              <nav key={col.title} aria-label={t("landing.footer.navAria", { section: col.title })} className="flex flex-col gap-1">
+                <h3 className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-foreground/80">
+                  {col.title}
+                </h3>
+                {col.links.map((l) => (
+                  <FooterLink key={`${col.title}-${l.label}`} label={l.label} onClick={l.action} />
+                ))}
+              </nav>
+            ))}
+          </div>
+        </Reveal>
 
         <div className="mt-10 flex flex-col gap-3 border-t border-white/[0.06] pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span className="font-medium text-foreground/80">{t("landing.footer.tagline")}</span>
@@ -437,6 +443,7 @@ export function LandingView() {
     <div className="flex min-h-screen flex-col">
       {/* ── Sticky glass top bar ── */}
       <header className="glass sticky top-0 z-40">
+        <FadeIn y={-8} duration={0.5}>
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Logo size={28} onClick={scrollTop} />
           <nav aria-label={t("landing.topbar.navAria")} className="flex items-center gap-2">
@@ -448,54 +455,74 @@ export function LandingView() {
             >
               {t("common.signIn")}
             </Button>
-            <Button className="btn-hero h-10 px-3 sm:px-5" onClick={() => navigate({ name: "signup" })}>
-              {t("landing.topbar.startBuilding")}
-            </Button>
+            <TapScale>
+              <Button className="btn-hero h-10 px-3 sm:px-5" onClick={() => navigate({ name: "signup" })}>
+                {t("landing.topbar.startBuilding")}
+              </Button>
+            </TapScale>
           </nav>
         </div>
+      </FadeIn>
       </header>
 
       <main className="flex-1">
         {/* ── HERO ── */}
         <section className="mx-auto max-w-6xl px-4 pb-4 pt-14 sm:px-6 sm:pt-20">
           <div className="grid items-center gap-12 lg:grid-cols-2">
-            <FadeUp>
-              <div>
+            {/* Choreographed hero entrance: badge → headline → subcopy → CTAs */}
+            <Stagger gap={0.12} delayChildren={0.05}>
+              <StaggerItem>
                 <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3.5 py-1.5 text-xs font-medium text-cyan-300">
                   <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-cyan-400" />
                   {t("landing.hero.badge")}
                 </span>
+              </StaggerItem>
+              <StaggerItem>
                 <h1 className="mt-6 font-display text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
                   {t("landing.hero.title1")}
                   <span className="text-gradient">{t("landing.hero.title2")}</span>
                   {t("landing.hero.title3")}
                 </h1>
+              </StaggerItem>
+              <StaggerItem>
                 <p className="mt-5 max-w-lg text-base text-muted-foreground sm:text-lg">
                   {t("landing.hero.subtitle")}
                 </p>
+              </StaggerItem>
+              <StaggerItem>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <Button
-                    className="btn-hero h-11 px-6"
-                    onClick={() => navigate({ name: "explore" })}
-                  >
-                    <Compass className="h-4 w-4" />
-                    {t("landing.hero.exploreProjects")}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-11 px-6"
-                    onClick={() => navigate({ name: "signup" })}
-                  >
-                    {t("landing.topbar.startBuilding")}
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  <TapScale>
+                    <Button
+                      className="btn-hero h-11 px-6"
+                      onClick={() => navigate({ name: "explore" })}
+                    >
+                      <Compass className="h-4 w-4" />
+                      {t("landing.hero.exploreProjects")}
+                    </Button>
+                  </TapScale>
+                  <TapScale>
+                    <Button
+                      variant="outline"
+                      className="h-11 px-6"
+                      onClick={() => navigate({ name: "signup" })}
+                    >
+                      {t("landing.topbar.startBuilding")}
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </TapScale>
                 </div>
-              </div>
-            </FadeUp>
+              </StaggerItem>
+            </Stagger>
 
-            <FadeUp delay={0.15} className="mx-auto w-full max-w-md lg:max-w-none">
+            {/* Orbit visual settles in last, with a gentle scale-down */}
+            <motion.div
+              className="mx-auto w-full max-w-md lg:max-w-none"
+              initial={{ opacity: 0, y: 24, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.65, delay: 0.45, ease: EASE }}
+            >
               <HeroOrbit />
-            </FadeUp>
+            </motion.div>
           </div>
         </section>
 
@@ -504,109 +531,123 @@ export function LandingView() {
 
         {/* ── WORKFLOW ── */}
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
-          <FadeUp>
+          <Reveal>
             <SectionHeading
               eyebrow={t("landing.workflow.eyebrow")}
               title={t("landing.workflow.title")}
               subtitle={t("landing.workflow.subtitle")}
             />
-          </FadeUp>
-          <FadeUp delay={0.1}>
-            <div className="mt-8 flex flex-wrap items-center gap-y-3">
-              {WORKFLOW_WORDS.map((word, i) => (
-                <div key={word} className="flex items-center">
-                  <span className="flex items-baseline gap-2 rounded-lg border border-white/[0.07] bg-white/[0.02] px-3 py-2">
-                    <span className="font-mono text-[10px] text-cyan-300/80">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span className="whitespace-nowrap font-display text-xs font-semibold tracking-wide sm:text-sm">
-                      {word}
-                    </span>
+          </Reveal>
+          <motion.div
+            className="mt-8 flex flex-wrap items-center gap-y-3"
+            variants={staggerParent}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-48px" }}
+          >
+            {WORKFLOW_WORDS.map((word, i) => (
+              <StaggerItem key={word} className="flex items-center">
+                <span className="flex items-baseline gap-2 rounded-lg border border-white/[0.07] bg-white/[0.02] px-3 py-2">
+                  <span className="font-mono text-[10px] text-cyan-300/80">
+                    {String(i + 1).padStart(2, "0")}
                   </span>
-                  {i < WORKFLOW_WORDS.length - 1 && (
-                    <span
-                      aria-hidden
-                      className="mx-1 h-px w-4 shrink-0 bg-gradient-to-r from-cyan-400/40 to-violet-400/40 sm:mx-1.5 sm:w-6"
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          </FadeUp>
+                  <span className="whitespace-nowrap font-display text-xs font-semibold tracking-wide sm:text-sm">
+                    {word}
+                  </span>
+                </span>
+                {i < WORKFLOW_WORDS.length - 1 && (
+                  <span
+                    aria-hidden
+                    className="mx-1 h-px w-4 shrink-0 bg-gradient-to-r from-cyan-400/40 to-violet-400/40 sm:mx-1.5 sm:w-6"
+                  />
+                )}
+              </StaggerItem>
+            ))}
+          </motion.div>
         </section>
 
         {/* ── FEATURE TRIO ── */}
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
-          <FadeUp>
+          <Reveal>
             <SectionHeading
               eyebrow={t("landing.features.eyebrow")}
               title={t("landing.features.title")}
             />
-          </FadeUp>
+          </Reveal>
           <div className="mt-10 grid gap-4 md:grid-cols-3 md:gap-6">
             {FEATURES.map((f, i) => (
-              <FadeUp key={f.title} delay={0.08 * i}>
-                <article className="glass-card flex h-full flex-col rounded-xl p-6">
-                  <div
-                    className={cn(
-                      "flex h-11 w-11 items-center justify-center rounded-xl",
-                      f.tone === "cyan" ? "bg-cyan-500/10 text-cyan-300" : "bg-violet-500/10 text-violet-300"
-                    )}
-                  >
-                    <f.icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="mt-4 font-display text-lg font-semibold">{f.title}</h3>
-                  <p className="mb-5 mt-2 text-sm leading-relaxed text-muted-foreground">{f.body}</p>
-                  <div className="mt-auto border-t border-white/[0.06] pt-4 text-xs text-muted-foreground/80">
-                    <span className="font-mono uppercase tracking-[0.18em] text-foreground/70">
-                      {t("landing.features.howLabel")}
-                    </span>
-                    <p className="mt-1.5">{f.how}</p>
-                  </div>
-                </article>
-              </FadeUp>
+              <Reveal key={f.title} delay={0.08 * i} className="h-full">
+                <HoverLift className="h-full">
+                  <article className="glass-card flex h-full flex-col rounded-xl p-6">
+                    <div
+                      className={cn(
+                        "flex h-11 w-11 items-center justify-center rounded-xl",
+                        f.tone === "cyan" ? "bg-cyan-500/10 text-cyan-300" : "bg-violet-500/10 text-violet-300"
+                      )}
+                    >
+                      <f.icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="mt-4 font-display text-lg font-semibold">{f.title}</h3>
+                    <p className="mb-5 mt-2 text-sm leading-relaxed text-muted-foreground">{f.body}</p>
+                    <div className="mt-auto border-t border-white/[0.06] pt-4 text-xs text-muted-foreground/80">
+                      <span className="font-mono uppercase tracking-[0.18em] text-foreground/70">
+                        {t("landing.features.howLabel")}
+                      </span>
+                      <p className="mt-1.5">{f.how}</p>
+                    </div>
+                  </article>
+                </HoverLift>
+              </Reveal>
             ))}
           </div>
         </section>
 
         {/* ── PRODUCT PREVIEW ── */}
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
-          <FadeUp>
+          <Reveal>
             <SectionHeading
               eyebrow={t("landing.preview.eyebrow")}
               title={t("landing.preview.title")}
               subtitle={t("landing.preview.subtitle")}
             />
-          </FadeUp>
-          <FadeUp delay={0.1} className="mt-10">
+          </Reveal>
+          <Reveal delay={0.1} className="mt-10">
             <ProductPreview />
-          </FadeUp>
+          </Reveal>
         </section>
 
         {/* ── HOW IT WORKS ── */}
         <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
-          <FadeUp>
+          <Reveal>
             <SectionHeading eyebrow={t("landing.how.eyebrow")} title={t("landing.how.title")} />
-          </FadeUp>
+          </Reveal>
           <div className="mt-10 grid gap-4 md:grid-cols-3 md:gap-6">
             {HOW_STEPS.map((s, i) => (
-              <FadeUp key={s.title} delay={0.08 * i}>
-                <article className="glass-card flex h-full flex-col rounded-xl p-6">
-                  <span className="font-mono text-2xl font-medium text-gradient">{String(i + 1).padStart(2, "0")}</span>
-                  <h3 className="mt-3 font-display text-lg font-semibold">{s.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
-                </article>
-              </FadeUp>
+              <Reveal key={s.title} delay={0.08 * i} className="h-full">
+                <HoverLift className="h-full">
+                  <article className="glass-card flex h-full flex-col rounded-xl p-6">
+                    <AnimatedNumber
+                      value={i + 1}
+                      duration={0.9}
+                      delay={0.2 + 0.08 * i}
+                      format={(n) => String(Math.round(n)).padStart(2, "0")}
+                      className="font-mono text-2xl font-medium text-gradient"
+                    />
+                    <h3 className="mt-3 font-display text-lg font-semibold">{s.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+                  </article>
+                </HoverLift>
+              </Reveal>
             ))}
           </div>
         </section>
 
         {/* ── FAQ ── */}
         <section id="faq" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-20 sm:px-6 sm:pb-28">
-          <FadeUp>
+          <Reveal>
             <SectionHeading eyebrow={t("landing.faq.eyebrow")} title={t("landing.faq.title")} />
-          </FadeUp>
-          <FadeUp delay={0.1}>
+          </Reveal>
+          <Reveal delay={0.1}>
             <Accordion type="single" collapsible className="glass-card mt-8 rounded-xl px-5">
               {FAQ_ITEMS.map((item, i) => (
                 <AccordionItem key={item.q} value={`faq-${i}`}>
@@ -617,7 +658,7 @@ export function LandingView() {
                 </AccordionItem>
               ))}
             </Accordion>
-          </FadeUp>
+          </Reveal>
         </section>
       </main>
 

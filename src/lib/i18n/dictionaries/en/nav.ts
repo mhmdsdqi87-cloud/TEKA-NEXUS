@@ -42,7 +42,7 @@ export const nav = {
   tipAfter: "to search anywhere.",
 
   // Footer
-  footerTagline: "TEKA NEXUS — demo preview",
+  footerTagline: "TEKA NEXUS — where builders meet",
   footerAria: "Footer",
 };
 

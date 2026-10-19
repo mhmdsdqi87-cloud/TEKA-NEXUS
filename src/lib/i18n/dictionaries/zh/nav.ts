@@ -37,6 +37,6 @@ export const nav: NavDict = {
   tipBefore: "按",
   tipAfter: "即可在任意位置搜索。",
 
-  footerTagline: "TEKA NEXUS — 演示预览",
+  footerTagline: "TEKA NEXUS — 开发者的聚集地",
   footerAria: "页脚",
 };

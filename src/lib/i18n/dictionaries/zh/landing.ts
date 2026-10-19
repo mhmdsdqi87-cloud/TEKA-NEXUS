@@ -9,7 +9,7 @@ export const landing: LandingDict = {
     startBuilding: "开始构建",
   },
   hero: {
-    badge: "TEKA NEXUS — 含演示数据的 Beta 预览",
+    badge: "TEKA NEXUS — 现已开启公开 Beta",
     title1: "让想法成为",
     title2: "真正的科技",
     title3: "",
@@ -105,7 +105,7 @@ export const landing: LandingDict = {
     q1: "TEKA NEXUS 是什么？",
     a1: "一个以开发者为先的平台，让想法变成真正的科技。项目在任何阶段都能发布 —— 从粗略的想法到已发布的作品 —— 并找到一起构建的伙伴。项目发现、组队与经验证的声誉，尽在一处。",
     q2: "免费吗？",
-    a2: "免费。Beta 预览期间 TEKA NEXUS 可免费使用。变现工具计划在后续阶段推出，且此预览环境完全基于明确标注的演示数据运行。",
+    a2: "免费。公开 Beta 期间 TEKA NEXUS 完全免费。变现工具将在后续阶段推出——目前唯一的货币就是声誉。",
     q3: "声誉如何获得？",
     a3: "绝不自报。服务器会为经验证的贡献自动发放 XP 和声誉：完成任务、达成里程碑、发布动态、发布项目，以及协作申请被接受。",
     q4: "不用加密货币也能用吗？",
@@ -115,7 +115,8 @@ export const landing: LandingDict = {
   },
   footer: {
     tagline: "TEKA NEXUS — 想象。构建。连接。",
-    previewNote: "预览环境：所有内容均为明确标注的演示数据。",
+    previewNote:
+      "这里的每个项目都是真实成员构建的——快来加入，发布你自己的项目。",
     navAria: "页脚 — {section}",
     colProduct: "产品",
     colCompany: "公司",

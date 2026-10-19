@@ -4,6 +4,7 @@ import type { NavDict } from "../en/nav";
 
 export const nav: NavDict = {
   newProject: "Nuevo proyecto",
+  academy: "Academia",
   primaryNavAria: "Navegación principal",
   mainAria: "Principal",
   mobileNavAria: "Navegación móvil",

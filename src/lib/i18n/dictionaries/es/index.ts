@@ -14,9 +14,11 @@ import { teams } from "./teams";
 import { notifications } from "./notifications";
 import { profile } from "./profile";
 import { settings } from "./settings";
+import { academy } from "./academy";
 
 export const es = {
   common,
+  academy,
   landing,
   auth,
   onboarding,

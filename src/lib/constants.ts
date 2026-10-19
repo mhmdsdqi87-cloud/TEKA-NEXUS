@@ -93,6 +93,9 @@ export const XP_RULES = {
   MILESTONE_COMPLETED: { xp: 20, reputation: 10 },
   RELEASE_PUBLISHED: { xp: 30, reputation: 15 },
   COLLABORATION_ACCEPTED: { xp: 25, reputation: 10 },
+  // TEKA Academy (free Python & HTML courses)
+  ACADEMY_LESSON: { xp: 15, reputation: 2 },
+  ACADEMY_COURSE: { xp: 100, reputation: 25 },
 } as const;
 
 export const AVATAR_GRADIENTS: Record<string, string> = {

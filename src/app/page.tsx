@@ -24,6 +24,7 @@ import { ProfileView } from "@/views/profile-view";
 import { NotificationsView } from "@/views/notifications-view";
 import { SettingsView } from "@/views/settings-view";
 import { SavedView } from "@/views/saved-view";
+import { AcademyView } from "@/views/academy-view";
 import { LogoMark } from "@/components/brand/logo";
 import { MotionRoot, PageTransition } from "@/components/shared/motion";
 
@@ -74,19 +75,22 @@ export default function Page() {
   const setUser = useApp((s) => s.setUser);
   const setAuthChecked = useApp((s) => s.setAuthChecked);
 
-  // Restore session on boot.
+  // Restore session on boot (retries — a cold-compiled API route can 500 once).
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      try {
-        const res = await get<{ user: SessionUser | null }>("/api/auth/me");
-        if (cancelled) return;
-        setUser(res.user);
-      } catch {
-        /* offline or API hiccup — continue as guest */
-      } finally {
-        if (!cancelled) setAuthChecked(true);
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const res = await get<{ user: SessionUser | null }>("/api/auth/me");
+          if (cancelled) return;
+          setUser(res.user);
+          break;
+        } catch {
+          if (cancelled) return;
+          if (attempt < 2) await new Promise((r) => setTimeout(r, 600));
+        }
       }
+      if (!cancelled) setAuthChecked(true);
     })();
     return () => {
       cancelled = true;
@@ -94,11 +98,16 @@ export default function Page() {
   }, [setUser, setAuthChecked]);
 
   // Routing rules after auth state resolves:
+  // - logged-in users don't see the marketing landing — they go home
   // - authed + onboarding incomplete → force onboarding (except during auth screens)
   // - auth-required views as guest → landing
   useEffect(() => {
     if (!authChecked) return;
     const name = view.name;
+    if (user && name === "landing") {
+      navigate({ name: "home" });
+      return;
+    }
     if (user && !user.onboardingCompleted && !AUTHOptional_VIEWS.has(name)) {
       navigate({ name: "onboarding" });
       return;
@@ -152,18 +161,22 @@ export default function Page() {
     case "saved":
       content = <SavedView />;
       break;
+    case "academy":
+      content = <AcademyView key={`${view.course ?? ""}:${view.lesson ?? ""}`} courseSlug={view.course} lessonId={view.lesson} />;
+      break;
     default:
       content = <LandingView />;
   }
 
-  const shellViews = new Set(["home", "explore", "projectNew", "project", "teams", "notifications", "profile", "settings", "saved"]);
+  const shellViews = new Set(["home", "explore", "projectNew", "project", "teams", "notifications", "profile", "settings", "saved", "academy"]);
   const inShell = shellViews.has(view.name);
 
   const viewKey =
     view.name +
     (view.name === "project" ? `:${view.slug}:${view.tab ?? ""}` : "") +
     (view.name === "profile" ? `:${view.username}` : "") +
-    (view.name === "settings" ? `:${view.tab ?? ""}` : "");
+    (view.name === "settings" ? `:${view.tab ?? ""}` : "") +
+    (view.name === "academy" ? `:${view.course ?? ""}:${view.lesson ?? ""}` : "");
 
   return (
     <MotionRoot>

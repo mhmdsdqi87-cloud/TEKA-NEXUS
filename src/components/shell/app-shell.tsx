@@ -12,6 +12,7 @@ import {
   CircleUserRound,
   Compass,
   FileCode2,
+  GraduationCap,
   FolderGit2,
   Hash,
   House,
@@ -157,6 +158,12 @@ function LeftNav() {
           label={t("common.projects")}
           active={view.name === "project"}
           onClick={go({ name: "explore" })}
+        />
+        <NavItem
+          icon={GraduationCap}
+          label={t("nav.academy")}
+          active={view.name === "academy"}
+          onClick={go({ name: "academy" })}
         />
 
         <motion.button
@@ -391,9 +398,15 @@ function MobileNav() {
       className="md:hidden fixed bottom-0 inset-x-0 z-40 glass pb-safe"
       aria-label={t("nav.mobileNavAria")}
     >
-      <div className="grid grid-cols-5 items-stretch h-16">
+      <div className="grid grid-cols-6 items-stretch h-16">
         <MobileTab icon={House} label={t("common.home")} active={view.name === "home"} onClick={() => navigate({ name: "home" })} />
         <MobileTab icon={Compass} label={t("common.explore")} active={view.name === "explore"} onClick={() => navigate({ name: "explore" })} />
+        <MobileTab
+          icon={GraduationCap}
+          label={t("nav.academy")}
+          active={view.name === "academy"}
+          onClick={() => navigate({ name: "academy" })}
+        />
         <div className="flex items-start justify-center">
           <motion.button
             onClick={() => navigate({ name: "projectNew" })}

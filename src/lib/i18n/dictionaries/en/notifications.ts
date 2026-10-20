@@ -8,6 +8,7 @@ export const notifications = {
   fallback: "You have a new notification",
   types: {
     newFollower: "{name} started following you",
+    newDm: "New message from {name}",
     commentOn: "{name} commented on {project}",
     commentOnYours: "{name} commented on your project",
     joinRequest: "{name} requested to join {project}",

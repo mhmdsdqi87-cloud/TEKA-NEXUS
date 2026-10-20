@@ -9,6 +9,7 @@ export const notifications: NotificationsDict = {
   fallback: "你有一条新通知",
   types: {
     newFollower: "{name} 关注了你",
+    newDm: "来自 {name} 的新消息",
     commentOn: "{name} 评论了 {project}",
     commentOnYours: "{name} 评论了你的项目",
     joinRequest: "{name} 申请加入 {project}",

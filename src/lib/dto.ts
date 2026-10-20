@@ -159,6 +159,32 @@ export type SearchResults = {
   tags: { tag: string; count: number }[];
 };
 
+// ─── Direct messages (Task dm-1) ─────────────────────────────
+
+export type DmPartner = {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarColor: string;
+  avatarUrl: string | null;
+};
+
+export type DmMessageDTO = {
+  id: string;
+  senderId: string;
+  body: string;
+  readAt: string | null;
+  createdAt: string;
+};
+
+export type DmConversationDTO = {
+  id: string;
+  other: DmPartner;
+  lastMessage: { body: string; senderId: string; createdAt: string } | null;
+  unreadCount: number;
+  lastMessageAt: string;
+};
+
 export type Paginated<T> = {
   items: T[];
   page: number;

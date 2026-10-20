@@ -69,6 +69,9 @@ model User {
   academyProgress      AcademyProgress[]
   academyCertificates  AcademyCertificate[]
   academyExams         AcademyExam[]
+  dmConversationsA     DmConversation[]    @relation("DmUserA")
+  dmConversationsB     DmConversation[]    @relation("DmUserB")
+  dmMessages           DmMessage[]
 }
 
 model Session {
@@ -454,4 +457,41 @@ model AcademyExam {
 
   @@index([userId])
   @@index([userId, courseId, status])
+}
+
+// ─────────────────────────────────────────────────────────────
+// DIRECT MESSAGES (private 1:1 chats) — added in Task dm-1
+// ─────────────────────────────────────────────────────────────
+
+model DmConversation {
+  id            String   @id @default(cuid())
+  // Ordered participant pair (lexicographically sorted user ids) so the
+  // @@unique constraint guarantees at most one conversation per user pair.
+  userAId       String
+  userA         User     @relation("DmUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId       String
+  userB         User     @relation("DmUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  messages DmMessage[]
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
+  @@index([lastMessageAt])
+}
+
+model DmMessage {
+  id            String    @id @default(cuid())
+  conversationId String
+  conversation  DmConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId      String
+  sender        User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body          String    @db.Text // validated ≤ 2000 chars in the API layer
+  readAt        DateTime? // set when the recipient fetches the conversation
+  createdAt     DateTime  @default(now())
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
 }

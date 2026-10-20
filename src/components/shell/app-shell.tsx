@@ -20,6 +20,7 @@ import {
   Lightbulb,
   Loader2,
   LogOut,
+  MessagesSquare,
   Plus,
   Search,
   Settings,
@@ -137,6 +138,7 @@ function LeftNav() {
   const user = useApp((s) => s.user);
   const view = useApp((s) => s.view);
   const unreadCount = useApp((s) => s.unreadCount);
+  const dmUnreadCount = useApp((s) => s.dmUnreadCount);
   const navigate = useApp((s) => s.navigate);
   const t = useT();
 
@@ -186,6 +188,13 @@ function LeftNav() {
               onClick={go({ name: "notifications" })}
               badge={unreadCount}
             />
+            <NavItem
+              icon={MessagesSquare}
+              label={t("dm.title")}
+              active={view.name === "dm"}
+              onClick={go({ name: "dm" })}
+              badge={dmUnreadCount}
+            />
             <NavItem icon={Bookmark} label={t("common.saved")} active={view.name === "saved"} onClick={go({ name: "saved" })} />
             {user.role === "FOUNDER" && (
               <NavItem
@@ -222,6 +231,7 @@ function TopBar() {
   const setSearchOpen = useApp((s) => s.setSearchOpen);
   const setUser = useApp((s) => s.setUser);
   const setUnreadCount = useApp((s) => s.setUnreadCount);
+  const setDmUnreadCount = useApp((s) => s.setDmUnreadCount);
   const t = useT();
 
   const [loggingOut, setLoggingOut] = useState(false);
@@ -233,6 +243,7 @@ function TopBar() {
       await post("/api/auth/logout");
       setSessionToken(null);
       setUnreadCount(0);
+      setDmUnreadCount(0);
       setUser(null);
       navigate({ name: "landing" });
       toast.success(t("nav.loggedOutToast"));
@@ -400,6 +411,7 @@ function MobileNav() {
   const user = useApp((s) => s.user);
   const view = useApp((s) => s.view);
   const unreadCount = useApp((s) => s.unreadCount);
+  const dmUnreadCount = useApp((s) => s.dmUnreadCount);
   const navigate = useApp((s) => s.navigate);
   const t = useT();
 
@@ -408,7 +420,7 @@ function MobileNav() {
       className="md:hidden fixed bottom-0 inset-x-0 z-40 glass pb-safe"
       aria-label={t("nav.mobileNavAria")}
     >
-      <div className="grid grid-cols-6 items-stretch h-16">
+      <div className="grid grid-cols-7 items-stretch h-16">
         <MobileTab icon={House} label={t("common.home")} active={view.name === "home"} onClick={() => navigate({ name: "home" })} />
         <MobileTab icon={Compass} label={t("common.explore")} active={view.name === "explore"} onClick={() => navigate({ name: "explore" })} />
         <MobileTab
@@ -429,6 +441,13 @@ function MobileNav() {
             <Plus className="h-6 w-6" />
           </motion.button>
         </div>
+        <MobileTab
+          icon={MessagesSquare}
+          label={t("dm.title")}
+          active={view.name === "dm"}
+          onClick={() => navigate({ name: "dm" })}
+          badge={dmUnreadCount}
+        />
         <MobileTab
           icon={Bell}
           label={t("nav.alerts")}
@@ -743,6 +762,7 @@ function RightRail() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const user = useApp((s) => s.user);
   const setUnreadCount = useApp((s) => s.setUnreadCount);
+  const setDmUnreadCount = useApp((s) => s.setDmUnreadCount);
   const setSearchOpen = useApp((s) => s.setSearchOpen);
   const t = useT();
   const userId = user?.id ?? null;
@@ -766,6 +786,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       clearInterval(timer);
     };
   }, [userId, setUnreadCount]);
+
+  // Poll unread DM count every 30s while signed in (badge for the messages nav).
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const res = await get<{ unread: number }>("/api/dm/unread");
+        if (!cancelled) setDmUnreadCount(res.unread);
+      } catch {
+        /* silent — background badge poll */
+      }
+    };
+    poll();
+    const timer = setInterval(poll, 30_000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [userId, setDmUnreadCount]);
 
   // "/" opens global search (ignored while typing in form fields).
   useEffect(() => {

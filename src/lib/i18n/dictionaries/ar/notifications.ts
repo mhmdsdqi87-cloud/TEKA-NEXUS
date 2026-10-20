@@ -9,6 +9,7 @@ export const notifications: NotificationsDict = {
   fallback: "لديك إشعار جديد",
   types: {
     newFollower: "بدأ {name} بمتابعتك",
+    newDm: "رسالة جديدة من {name}",
     commentOn: "علّق {name} على {project}",
     commentOnYours: "علّق {name} على مشروعك",
     joinRequest: "طلب {name} الانضمام إلى {project}",

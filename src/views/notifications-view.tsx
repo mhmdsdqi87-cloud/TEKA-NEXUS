@@ -16,6 +16,7 @@ import {
   Info,
   Loader2,
   MessageSquare,
+  MessagesSquare,
   UserPlus,
   Users,
   XCircle,
@@ -35,6 +36,7 @@ type NotifMeta = { icon: LucideIcon; fg: string; bg: string };
 
 const NOTIF_META: Record<string, NotifMeta> = {
   NEW_FOLLOWER: { icon: UserPlus, fg: "text-cyan-300", bg: "bg-cyan-500/10" },
+  NEW_DM: { icon: MessagesSquare, fg: "text-cyan-300", bg: "bg-cyan-500/10" },
   PROJECT_COMMENT: { icon: MessageSquare, fg: "text-violet-300", bg: "bg-violet-500/10" },
   COLLAB_REQUEST: { icon: Handshake, fg: "text-cyan-300", bg: "bg-cyan-500/10" },
   REQUEST_ACCEPTED: { icon: CheckCheck, fg: "text-emerald-300", bg: "bg-emerald-500/10" },
@@ -88,6 +90,12 @@ function notifText(n: NotificationDTO, t: TFunc): string {
   switch (n.type) {
     case "NEW_FOLLOWER":
       return t("notifications.types.newFollower", { name: actorName });
+    case "NEW_DM": {
+      const preview = str(p.preview);
+      return preview
+        ? `${t("notifications.types.newDm", { name: actorName })} — ${preview}`
+        : t("notifications.types.newDm", { name: actorName });
+    }
     case "PROJECT_COMMENT":
       return projectName
         ? t("notifications.types.commentOn", { name: actorName, project: projectName })
@@ -188,7 +196,12 @@ export function NotificationsView() {
         return;
       }
     }
-    // Navigate using only trustworthy payload fields: project slug first, then actor profile.
+    // Navigate using only trustworthy payload fields: DM conversation first,
+    // then project slug, then actor profile.
+    if (n.entityType === "dm" && n.entityId) {
+      navigate({ name: "dm", conversationId: n.entityId });
+      return;
+    }
     const slug = str((n.payload ?? {})["projectSlug"]);
     if (slug) {
       navigate({ name: "project", slug });

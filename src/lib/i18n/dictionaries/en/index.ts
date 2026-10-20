@@ -16,6 +16,7 @@ import { profile } from "./profile";
 import { settings } from "./settings";
 import { academy } from "./academy";
 import { founder } from "./founder";
+import { dm } from "./dm";
 
 export const en = {
   common,
@@ -35,4 +36,5 @@ export const en = {
   notifications,
   profile,
   settings,
+  dm,
 };

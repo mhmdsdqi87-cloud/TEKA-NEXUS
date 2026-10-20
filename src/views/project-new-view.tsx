@@ -14,6 +14,7 @@ import {
   Gamepad2,
   GitBranch,
   Globe,
+  ImageOff,
   Link2,
   Loader2,
   Lock,
@@ -32,7 +33,7 @@ import { cn, normalizeUrlInput } from "@/lib/utils";
 import { useApp } from "@/lib/store";
 import { post } from "@/lib/api";
 import { useT, useLabeled } from "@/lib/i18n";
-import { LIMITS, PROJECT_CATEGORIES, PROJECT_STATUSES, SKILLS } from "@/lib/constants";
+import { LIMITS, PROJECT_CATEGORIES, PROJECT_COVER_GALLERY, PROJECT_STATUSES, SKILLS } from "@/lib/constants";
 
 import { EmptyState } from "@/components/shared/atoms";
 import { HoverLift, SPRING, staggerChild, staggerParent, TapScale } from "@/components/shared/motion";
@@ -110,6 +111,9 @@ export function ProjectNewView() {
   const [repositoryUrl, setRepositoryUrl] = useState("");
   const [demoUrl, setDemoUrl] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
+  const [coverImage, setCoverImage] = useState("");
+  const [customCoverOpen, setCustomCoverOpen] = useState(false);
+  const [customCoverUrl, setCustomCoverUrl] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -154,6 +158,49 @@ export function ProjectNewView() {
   const toggleSkill = (slugKey: string) =>
     setSkills((prev) => (prev.includes(slugKey) ? prev.filter((s) => s !== slugKey) : [...prev, slugKey]));
 
+  const isValidCoverUrl = (v: string) => /^https?:\/\/\S+$/i.test(v) && v.length <= LIMITS.coverImage;
+
+  const clearCoverError = () => setErrors((prev) => ({ ...prev, coverImage: "" }));
+
+  // Pick a gallery cover (toggle off when already selected); clears custom URL.
+  const selectGalleryCover = (path: string) => {
+    setCoverImage((prev) => (prev === path ? "" : path));
+    setCustomCoverUrl("");
+    setCustomCoverOpen(false);
+    clearCoverError();
+  };
+
+  const clearCover = () => {
+    setCoverImage("");
+    setCustomCoverUrl("");
+    clearCoverError();
+  };
+
+  // Custom external URL: live inline validation mirroring the API rule
+  // (must start with http(s)://, max 500 chars).
+  const handleCustomCoverChange = (value: string) => {
+    setCustomCoverUrl(value);
+    const v = value.trim();
+    if (!v) {
+      setCoverImage("");
+      clearCoverError();
+      return;
+    }
+    if (isValidCoverUrl(v)) {
+      setCoverImage(v);
+      clearCoverError();
+    } else {
+      setCoverImage("");
+      setErrors((prev) => ({
+        ...prev,
+        coverImage:
+          v.length > LIMITS.coverImage
+            ? t("projectNew.errors.coverMax", { n: LIMITS.coverImage })
+            : t("projectNew.errors.coverUrl"),
+      }));
+    }
+  };
+
   const validate = (): FieldErrors => {
     const errs: FieldErrors = {};
     const trimmedName = name.trim();
@@ -172,6 +219,13 @@ export function ProjectNewView() {
     if (demoUrl.trim() && demo === null) errs.demoUrl = urlError;
     const site = normalizeUrlInput(websiteUrl);
     if (websiteUrl.trim() && site === null) errs.websiteUrl = urlError;
+    // Cover: local /covers/ paths pass; external URLs must match the API rule.
+    const trimmedCover = coverImage.trim();
+    if (trimmedCover && !trimmedCover.startsWith("/")) {
+      if (!/^https?:\/\//i.test(trimmedCover)) errs.coverImage = t("projectNew.errors.coverUrl");
+      else if (trimmedCover.length > LIMITS.coverImage)
+        errs.coverImage = t("projectNew.errors.coverMax", { n: LIMITS.coverImage });
+    }
     return errs;
   };
 
@@ -198,6 +252,7 @@ export function ProjectNewView() {
         repositoryUrl: (normalizeUrlInput(repositoryUrl) ?? repositoryUrl.trim()) || undefined,
         demoUrl: (normalizeUrlInput(demoUrl) ?? demoUrl.trim()) || undefined,
         websiteUrl: (normalizeUrlInput(websiteUrl) ?? websiteUrl.trim()) || undefined,
+        coverImage: coverImage.trim() || undefined,
       });
       toast.success(t("projectNew.toasts.launched"));
       navigate({ name: "project", slug: res.project.slug });
@@ -520,6 +575,108 @@ export function ProjectNewView() {
               {fieldError(f.key)}
             </div>
           ))}
+        </motion.div>
+
+        {/* Cover picker */}
+        <motion.div variants={staggerChild} className="flex flex-col gap-2">
+          <Label className="text-sm font-medium">
+            {t("projectNew.form.cover")}{" "}
+            <span className="text-muted-foreground font-normal">{t("projectNew.form.optional")}</span>
+          </Label>
+          <p className="text-xs text-muted-foreground">{t("projectNew.form.coverHint")}</p>
+          <div role="group" aria-label={t("projectNew.a11y.coverGroup")} className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {/* None tile */}
+            <button
+              type="button"
+              onClick={clearCover}
+              aria-pressed={coverImage === ""}
+              aria-label={t("projectNew.a11y.coverNone")}
+              title={t("projectNew.a11y.coverNone")}
+              className={cn(
+                "flex aspect-video min-h-[44px] flex-col items-center justify-center gap-1 rounded-lg border-2 overflow-hidden transition-colors outline-none focus-glow",
+                coverImage === ""
+                  ? "border-primary ring-2 ring-primary/30 bg-primary/5"
+                  : "border-transparent bg-white/[0.02] hover:border-white/25"
+              )}
+            >
+              <ImageOff
+                className={cn("h-5 w-5", coverImage === "" ? "text-primary" : "text-muted-foreground")}
+                aria-hidden="true"
+              />
+              <span className={cn("text-xs leading-tight", coverImage === "" ? "text-primary font-medium" : "text-muted-foreground")}>
+                {t("projectNew.form.coverNone")}
+              </span>
+            </button>
+            {PROJECT_COVER_GALLERY.map((path) => {
+              const selected = coverImage === path;
+              const coverName = path.split("/").pop()?.replace(/\.[a-z]+$/i, "") ?? "cover";
+              return (
+                <button
+                  key={path}
+                  type="button"
+                  onClick={() => selectGalleryCover(path)}
+                  aria-pressed={selected}
+                  aria-label={t("projectNew.a11y.coverOption", { name: coverName })}
+                  title={t("projectNew.a11y.coverOption", { name: coverName })}
+                  className={cn(
+                    "relative aspect-video min-h-[44px] rounded-lg overflow-hidden border-2 transition-colors outline-none focus-glow",
+                    selected ? "border-primary ring-2 ring-primary/30" : "border-transparent hover:border-white/25"
+                  )}
+                >
+                  <img src={path} alt={coverName} loading="lazy" className="object-cover w-full h-full" />
+                  <motion.span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 rounded-lg ring-2 ring-inset ring-primary/60"
+                    initial={false}
+                    animate={{ opacity: selected ? 1 : 0 }}
+                    transition={SPRING}
+                  />
+                </button>
+              );
+            })}
+          </div>
+          {/* Custom external image URL */}
+          {customCoverOpen ? (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="project-cover-url" className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Link2 className="h-3 w-3" aria-hidden="true" /> {t("projectNew.form.coverUrlLabel")}
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="project-cover-url"
+                  type="url"
+                  inputMode="url"
+                  value={customCoverUrl}
+                  onChange={(e) => handleCustomCoverChange(e.target.value)}
+                  maxLength={LIMITS.coverImage}
+                  placeholder="https://example.com/cover.png"
+                  aria-invalid={Boolean(errors.coverImage)}
+                  className="bg-white/[0.03] border-white/10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCustomCoverOpen(false)}
+                  aria-label={t("projectNew.a11y.coverUrlHide")}
+                  className="shrink-0 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </Button>
+              </div>
+              {fieldError("coverImage")}
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setCustomCoverOpen(true)}
+              className="self-start mt-1 text-muted-foreground hover:text-foreground"
+            >
+              <Link2 className="h-3.5 w-3.5" aria-hidden="true" /> {t("projectNew.form.coverUrlLabel")}
+            </Button>
+          )}
         </motion.div>
 
         {/* Actions */}

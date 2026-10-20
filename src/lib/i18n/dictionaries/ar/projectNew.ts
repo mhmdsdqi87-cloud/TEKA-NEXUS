@@ -33,11 +33,19 @@ export const projectNew: ProjectNewDict = {
     repoUrl: "رابط المستودع",
     demoUrl: "رابط العرض التجريبي",
     websiteUrl: "رابط الموقع",
+    cover: "غلاف المشروع",
+    coverHint: "اختر صورة أو ألصق رابط صورتك الخاصة.",
+    coverNone: "بدون غلاف",
+    coverUrlLabel: "رابط صورة مخصص",
   },
   a11y: {
     categoryGroup: "فئة المشروع",
     visibilityGroup: "ظهور المشروع",
     removeTag: "إزالة الوسم {tag}",
+    coverGroup: "صورة غلاف المشروع",
+    coverNone: "بدون غلاف",
+    coverOption: "غلاف {name}",
+    coverUrlHide: "إخفاء حقل رابط الصورة",
   },
   visibilityDesc: {
     PUBLIC: "يظهر في صفحة الاستكشاف وفي البث المباشر. يمكن لأي شخص مشاهدته.",
@@ -55,6 +63,8 @@ export const projectNew: ProjectNewDict = {
     taglineMax: "{n} حرفًا كحد أقصى.",
     category: "اختر فئة لمشروعك.",
     url: "يجب أن يبدأ بـ http:// أو https://",
+    coverUrl: "يجب أن يبدأ رابط الصورة بـ http:// أو https://",
+    coverMax: "يجب ألا يتجاوز رابط الصورة {n} حرفًا.",
   },
   toasts: {
     maxTags: "{n} وسوم كحد أقصى",

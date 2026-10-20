@@ -29,7 +29,7 @@ import { useI18n } from "@/lib/i18n/store";
 import { LOCALES } from "@/lib/i18n/locales";
 import { ProfileDetail } from "@/lib/dto";
 import { AVATAR_GRADIENTS, AVATAR_GRADIENT_KEYS, LIMITS, SKILLS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { cn, normalizeUrlInput } from "@/lib/utils";
 import { EmptyState, UserAvatar } from "@/components/shared/atoms";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { EASE, FadeIn, Reveal, TapScale } from "@/components/shared/motion";
@@ -278,8 +278,8 @@ function ProfileTab({ user }: { user: SessionUser }) {
       toast.error(t("settings.errors.emptyDisplayName"));
       return;
     }
-    const site = websiteUrl.trim();
-    if (site && !/^https?:\/\/\S+$/i.test(site)) {
+    const site = normalizeUrlInput(websiteUrl);
+    if (site === null) {
       setWebsiteError(t("settings.profileTab.websiteError"));
       return;
     }
@@ -295,6 +295,7 @@ function ProfileTab({ user }: { user: SessionUser }) {
         ...(skillsLoaded ? { skills } : {}),
       });
       setUser(res.user);
+      setWebsiteUrl(site); // show the canonical https:// form in the input
       toast.success(t("settings.toasts.profileUpdated"));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("settings.errors.saveFailed"));

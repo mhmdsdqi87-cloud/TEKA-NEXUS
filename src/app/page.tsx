@@ -33,6 +33,52 @@ import { MotionRoot, PageTransition } from "@/components/shared/motion";
 const AUTHOptional_VIEWS = new Set(["landing", "login", "signup", "onboarding"]);
 const AUTH_REQUIRED_VIEWS = new Set(["home", "projectNew", "teams", "notifications", "settings", "saved"]);
 
+// ── SSR SEO block ──────────────────────────────────────────────
+// The app is a client-side SPA: crawlers and screen readers get this
+// server-rendered Persian summary straight from the raw HTML (client
+// components still SSR in App Router). Rendered in EVERY state —
+// including the pre-auth boot screen — so raw HTML always carries it.
+// Kept short and truthful — mirrors what the landing actually offers.
+function SeoStaticBlock() {
+  return (
+    <>
+      <div className="sr-only">
+        <h1>تکا نکسوس (TEKA NEXUS)</h1>
+        <p>
+          تکا نکسوس یک آکادمی رایگان برنامه‌نویسی و شبکه اجتماعی تکنولوژی است:
+          پایتون و توسعه وب را از صفر با درس‌های تعاملی، آزمون و گواهینامه یاد
+          بگیر، هم‌تیمی برای پروژه‌های واقعی پیدا کن و مهارتت را با سیستم
+          اعتبار تأییدشده اثبات کن.
+        </p>
+        <ul>
+          <li>آکادمی تکا: آموزش رایگان پایتون، HTML و CSS با گواهینامه</li>
+          <li>پروژه‌ها: پیدا کردن هم‌تیمی و ساخت پروژه واقعی</li>
+          <li>اعتبار تأییدشده: اثبات مهارت با امضای دیجیتال</li>
+        </ul>
+        <p lang="en" dir="ltr">
+          TEKA NEXUS is a free programming academy and a social platform where
+          developers learn Python and web development, find teammates, and
+          build real projects together.
+        </p>
+      </div>
+      <noscript>
+        <div style={{ padding: "2rem", direction: "rtl" }}>
+          <h1>تکا نکسوس (TEKA NEXUS)</h1>
+          <p>
+            تکا نکسوس یک آکادمی رایگان برنامه‌نویسی و شبکه اجتماعی تکنولوژی
+            است. پایتون و توسعه وب را رایگان یاد بگیر، هم‌تیمی پیدا کن و
+            پروژه‌ی واقعی بساز.
+          </p>
+          <p>
+            برای استفاده از سایت، جاوااسکریپت را فعال کن یا به نسخه اپلیکیشن
+            مایکت سر بزن.
+          </p>
+        </div>
+      </noscript>
+    </>
+  );
+}
+
 function BootScreen() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-6">
@@ -119,7 +165,13 @@ export default function Page() {
     }
   }, [authChecked, user, view.name, navigate]);
 
-  if (!authChecked) return <BootScreen />;
+  if (!authChecked)
+    return (
+      <>
+        <SeoStaticBlock />
+        <BootScreen />
+      </>
+    );
 
   let content: React.ReactNode;
 
@@ -189,6 +241,7 @@ export default function Page() {
 
   return (
     <MotionRoot>
+      <SeoStaticBlock />
       <div className="min-h-screen flex flex-col">
         {inShell ? (
           <AppShell>

@@ -1,2 +1,7 @@
 User-agent: *
 Allow: /
+
+# TEKA NEXUS — public pages only; API routes stay out of the index.
+Disallow: /api/
+
+Sitemap: https://teka-nexus.vercel.app/sitemap.xml

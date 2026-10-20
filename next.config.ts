@@ -7,9 +7,17 @@ import type { NextConfig } from "next";
 if (process.env.DATABASE_URL?.startsWith("file:")) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { config } = require("dotenv") as typeof import("dotenv");
-  config({ path: ".env", quiet: true });
-  if (process.env.DATABASE_URL?.startsWith("file:")) delete process.env.DATABASE_URL;
+  // override: true is CRITICAL — the sandbox shell exports a stale `file:` URL
+  // and plain dotenv refuses to replace an existing env var, which left
+  // Prisma without any DATABASE_URL (every API 500'd).
+  config({ path: ".env", quiet: true, override: true });
+  if (!process.env.DATABASE_URL?.startsWith("postgres")) {
+    delete process.env.DATABASE_URL;
+  }
 }
+console.log(
+  `[teka-boot] DATABASE_URL protocol = ${(process.env.DATABASE_URL ?? "(undefined)").slice(0, 13)}…`
+);
 
 const nextConfig: NextConfig = {
   output: "standalone",

@@ -107,3 +107,37 @@
 
 ## نکته چت زنده
 سرویس چت (socket.io) روی Vercel اجرا نمی‌شود؛ برای نسخه منتشرشده یا باید روی سرویس کوچکی مثل Railway بالا بیاید یا بعداً به معماری بدون سرور تبدیل شود. بقیه اپ (آکادمی، پروژه‌ها، پروفایل، احراز هویت) کامل روی Vercel کار می‌کند.
+
+---
+
+## 🏗 بازسازی نسخه‌های بعدی (Rebuild) — تکا نکسوس
+
+سورس TWA در پوشه `android/` ریپو هست. کی‌استور و پسوردها **بیرون** از ریپو (ریپوی خصوصی `teka-nexus-keys`).
+
+### ابزار لازم
+| ابزار | نسخه |
+|---|---|
+| JDK | 17 (Temurin) — javac لازم است، JRE کافی نیست |
+| Gradle | 8.11.1 |
+| AGP | 8.9.2 |
+| Android SDK | platform 36 + build-tools 34 |
+
+### مراحل
+```bash
+export JAVA_HOME=/path/to/jdk17
+export ANDROID_HOME=/path/to/android-sdk
+export TEKA_KEYSTORE_PATH=/path/to/teka-release.keystore
+export TEKA_STORE_PASS='TekaNexus2026!Secure'
+export TEKA_KEY_PASS='TekaNexus2026!Secure'
+# ۱) versionCode را در android/app/build.gradle زیاد کن (۱ → ۲ → …)
+cd android && gradle :app:bundleRelease
+# خروجی: app/build/outputs/bundle/release/app-release.aab
+```
+
+### نکته‌های نسخه‌بندی
+- `versionName` را هم زیاد کن (۱.۰.۰ → ۱.۱.۰)
+- فینگرپرینت عوض نمی‌شود — assetlinks.json دست‌نخورده می‌ماند
+- AAB جدید را در مایکت «به‌روزرسانی» همان اپ آپلود کن
+
+### دانلود نسخه ۱.۰.۰
+- ریلیز گیت‌هاب: `github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases` → `myket-v1.0.0`

@@ -39,21 +39,46 @@ const notoArabic = Noto_Sans_Arabic({
   weight: ["400", "500", "600", "700"],
 });
 
+// Google Search Console / Bing / Yandex verification via env vars —
+// set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in Vercel (or skip and use the HTML-file method).
+const verification: Record<string, string> = {};
+if (process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION)
+  verification.google = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
+if (process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION)
+  verification.other = { "msvalidate.01": [process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION] };
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://teka-nexus.vercel.app"),
   title: {
-    default: "TEKA NEXUS — Learn Programming Free, Build Real Projects",
-    template: "%s · TEKA NEXUS",
+    // Persian-first: the target audience searches Google in Persian —
+    // «تکا» must appear in the raw <title> for the brand query to hit.
+    default: "تکا نکسوس — آموزش رایگان برنامه‌نویسی و ساخت پروژه واقعی | TEKA NEXUS",
+    template: "%s | تکا نکسوس",
   },
   description:
-    "Join TEKA NEXUS: a free programming academy (Python & web development), a social platform to find teammates for real projects, and a verified reputation system that proves your skills. Where ideas become real technology.",
+    "تکا نکسوس: آکادمی رایگان برنامه‌نویسی (پایتون و وب) + شبکه اجتماعی برای پیدا کردن هم‌تیمی و ساخت پروژه واقعی. با آزمون و گواهینامه. ایده‌ها رو به تکنولوژی واقعی تبدیل کن.",
   keywords: [
+    // Brand — Persian spellings users actually type in Google:
+    "تکا",
+    "تکا نکسوس",
+    "اکادمی تکا",
+    "آکادمی تکا",
+    "سایت تکا",
+    "تکا نکسوس آموزش برنامه نویسی",
     "TEKA NEXUS",
+    "Teka",
     "TEKA Academy",
-    "learn programming free",
+    // Persian intent queries:
     "آموزش رایگان برنامه‌نویسی",
     "آموزش پایتون",
+    "آموزش پایتون از صفر",
     "یادگیری کدنویسی",
+    "برنامه‌نویسی",
+    "پروژه‌های برنامه‌نویسی",
+    "گواهینامه برنامه نویسی",
+    "شبکه اجتماعی برنامه نویسان",
+    // English intent queries:
+    "learn programming free",
     "social platform for developers",
     "find teammates for projects",
     "programming academy",
@@ -62,8 +87,6 @@ export const metadata: Metadata = {
     "HTML CSS course",
     "developer community",
     "software collaboration",
-    "برنامه‌نویسی",
-    "پروژه‌های برنامه‌نویسی",
   ],
   authors: [{ name: "TEKA" }],
   creator: "TEKA",
@@ -84,7 +107,14 @@ export const metadata: Metadata = {
     ],
     apple: "/icons/apple-touch-icon.png",
   },
-  alternates: { canonical: "/" },
+  alternates: {
+    canonical: "/",
+    // The SPA serves one URL; declare both audience languages for it.
+    languages: {
+      "fa-IR": "/",
+      "en-US": "/",
+    },
+  },
   robots: {
     index: true,
     follow: true,
@@ -97,12 +127,12 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "TEKA NEXUS — Where Ideas Become Real Technology",
+    title: "تکا نکسوس — آموزش رایگان برنامه‌نویسی و ساخت پروژه واقعی",
     description:
-      "Free programming academy + a social platform to build real projects together. Learn Python and web development, find teammates, earn verified reputation.",
-    siteName: "TEKA NEXUS",
-    locale: "en_US",
-    alternateLocale: ["fa_IR"],
+      "آکادمی رایگان برنامه‌نویسی + شبکه اجتماعی برای ساخت پروژه واقعی با هم‌تیمی. پایتون و وب رو یاد بگیر، اعتبار تأییدشده بگیر.",
+    siteName: "تکا نکسوس",
+    locale: "fa_IR",
+    alternateLocale: ["en_US"],
     type: "website",
     images: [
       {
@@ -115,11 +145,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TEKA NEXUS — Where Ideas Become Real Technology",
+    title: "تکا نکسوس — آموزش رایگان برنامه‌نویسی",
     description:
-      "Free programming academy + a social platform to build real projects together.",
+      "آکادمی رایگان برنامه‌نویسی + شبکه اجتماعی برای ساخت پروژه واقعی با هم‌تیمی.",
     images: ["/og.png"],
   },
+  verification,
 };
 
 export const viewport: Viewport = {
@@ -131,27 +162,42 @@ export const viewport: Viewport = {
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://teka-nexus.vercel.app";
 
-// Structured data for Google Rich Results (WebSite + MobileApplication).
+// Structured data for Google Rich Results — teaches Google the Persian
+// brand name «تکا نکسوس» via alternateName so the brand query maps to us.
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#org`,
+      name: "TEKA NEXUS",
+      alternateName: ["تکا نکسوس", "تکا", "Teka", "TEKA"],
+      url: `${SITE_URL}/`,
+      logo: `${SITE_URL}/icons/icon-512.png`,
+      description:
+        "تکا نکسوس: آکادمی رایگان برنامه‌نویسی و شبکه اجتماعی ساخت پروژه واقعی برای برنامه‌نویسان.",
+      sameAs: ["https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS"],
+    },
+    {
       "@type": "WebSite",
       "@id": `${SITE_URL}/#website`,
       url: `${SITE_URL}/`,
-      name: "TEKA NEXUS",
+      name: "تکا نکسوس",
+      alternateName: ["TEKA NEXUS", "تکا"],
+      publisher: { "@id": `${SITE_URL}/#org` },
       description:
-        "Free programming academy and social platform for building real projects together.",
-      inLanguage: ["en", "fa"],
+        "آکادمی رایگان برنامه‌نویسی (پایتون و وب) + شبکه اجتماعی پیدا کردن هم‌تیمی و ساخت پروژه واقعی.",
+      inLanguage: ["fa", "en"],
     },
     {
       "@type": "MobileApplication",
       "@id": `${SITE_URL}/#app`,
-      name: "TEKA NEXUS",
+      name: "تکا نکسوس",
+      alternateName: "TEKA NEXUS",
       operatingSystem: "ANDROID, WEB",
       applicationCategory: "EducationalApplication",
       description:
-        "Learn programming for free (Python & web development), find teammates, and build real projects with a verified reputation system.",
+        "برنامه‌نویسی رو رایگان یاد بگیر (پایتون و وب)، هم‌تیمی پیدا کن و پروژه واقعی بساز با سیستم اعتبار تأییدشده.",
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       url: `${SITE_URL}/`,
     },

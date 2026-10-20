@@ -9,7 +9,10 @@
 
 | مورد | فایل | توضیح |
 |---|---|---|
-| متاتگ‌های کامل (title, description, keywords فارسی+انگلیسی) | `src/app/layout.tsx` | با `metadataBase` درست |
+| متاتگ‌های کامل (title, description, keywords فارسی+انگلیسی) | `src/app/layout.tsx` | با `metadataBase` درست — **عنوان فارسی‌محور: «تکا نکسوس — آموزش رایگان برنامه‌نویسی…»** |
+| محتوای فارسی SSR (h1 + توضیح برند) | `src/app/page.tsx` | متن فارسی مستقیم توی HTML خام — برای گوگل و اسکرین‌ریدر (بلاک sr-only + noscript) |
+| `alternateName` فارسی («تکا نکسوس»، «تکا») | `src/app/layout.tsx` JSON-LD | به گوگل یاد می‌ده اسم فارسی برند چیه → جستجوی «تکا» به ما وصل می‌شه |
+| hreflang fa-IR / en-US | `src/app/layout.tsx` | گوگل می‌فهمه سایت برای مخاطب فارسیه |
 | Open Graph + Twitter Card بزرگ (summary_large_image) | `src/app/layout.tsx` | لینک‌ها تو تلگرام/واتساپ/X خوشگل دیده می‌شن |
 | تصویر اشتراک‌گذاری `public/og.png` (۱۴۴۰×۷۳۶) | AI-generated | بنر تیره نئونی متناسب با برند |
 | `sitemap.xml` | `src/app/sitemap.ts` | به‌صورت خودکار ساخته می‌شه: `/sitemap.xml` |
@@ -20,6 +23,16 @@
 ### بعد از دیپلوی — دو قدم دستی (۵ دقیقه):
 1. **Google Search Console**: برو به [search.google.com/search-console](https://search.google.com/search-console) → Add Property → `https://teka-nexus.vercel.app` → Submit sitemap: `sitemap.xml`
 2. **Bing Webmaster Tools** (اختیاری ولی تو ایران Bing و Google هر دو مهم‌ان): [bing.com/webmasters](https://www.bing.com/webmasters) → ایمپورت از Search Console.
+
+### چقدر طول می‌کشه تا «تکا» رو بیاره؟ (انتظار واقعی)
+- **فقط اگه تو Search Console ثبت کنی** گوگل سریع ایندکس می‌کنه. بدون ثبت، ممکنه هفته‌ها طول بکشه یا اصلاً پیدا نشه.
+- بعد از ثبت: اول **«تکا نکسوس»** رو بیاره (چند روز تا ۲ هفته) — بعد کم‌کم **«تکا»** تنها هم جواب می‌ده (چند هفته تا چند ماه، بستگی به بک‌لینک و اشتراک‌گذاری داره).
+- «تکا» یه کلمه‌ی رقابتیه؛ برای رتبه بهتر تو این کوئری، لینک سایت رو تو بایو تلگرام/اینستاگرام/گیت‌هاب بذار (بک‌لینک = مهم‌ترین سیگنال).
+- ترفند: تو Search Console بعد از ثبت، بالاترین سرعت ایندکس رو با URL Inspection → Request Indexing بگیر.
+
+### تأیید مالکیت (Verification) بدون تغییر کد:
+- موقع Add Property، روش **HTML file** رو انتخاب کن → فایل `googleXXXX.html` رو دانلود کن → بذار توی `public/` → پوش کن. تمام!
+- یا: تو Vercel متغیر محیطی `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` رو با مقدار `content` تگ متا ست کن (کد آماده‌ست، خودش تگ رو می‌سازه).
 
 ---
 

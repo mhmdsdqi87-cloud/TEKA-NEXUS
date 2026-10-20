@@ -39,6 +39,18 @@ export const common = {
     learn: "Learn new technology",
     discover: "Discover projects",
   },
+  share: {
+    label: "Share",
+    native: "Share via device",
+    telegram: "Telegram",
+    whatsapp: "WhatsApp",
+    x: "X (Twitter)",
+    copyLink: "Copy link",
+    linkCopied: "Link copied to clipboard",
+    copyFailed: "Couldn't copy the link",
+    shareFailed: "Sharing didn't complete",
+    shareText: "{title} — check it out on TEKA NEXUS!",
+  },
 };
 
 export type CommonDict = typeof common;

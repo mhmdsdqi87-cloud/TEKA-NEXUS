@@ -60,7 +60,6 @@ import {
   Plus,
   Send,
   Settings2,
-  Share2,
   Shield,
   Smartphone,
   Sparkles,
@@ -104,6 +103,7 @@ import {
   StatusPill,
   UserAvatar,
 } from "@/components/shared/atoms";
+import { ShareMenu } from "@/components/shared/share-menu";
 import {
   AnimatedNumber,
   EASE,
@@ -541,15 +541,6 @@ export function ProjectView({ slug }: { slug: string }) {
     }
   }
 
-  async function share() {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success(t("project.toasts.linkCopied"));
-    } catch {
-      toast.error(t("project.toasts.copyFailed"));
-    }
-  }
-
   async function archiveProject() {
     try {
       await del(`${base}`);
@@ -722,10 +713,7 @@ export function ProjectView({ slug }: { slug: string }) {
               </motion.span>
               <span className="hidden sm:inline">{detail.saved ? t("common.saved") : t("common.save")}</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={share} className="h-9">
-              <Share2 className="h-4 w-4" />
-              <span className="hidden sm:inline">{t("project.actions.share")}</span>
-            </Button>
+            <ShareMenu size="sm" title={project.name} />
             {user && (
               <Button
                 variant="ghost"

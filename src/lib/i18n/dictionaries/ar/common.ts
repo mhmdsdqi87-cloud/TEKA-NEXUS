@@ -41,4 +41,16 @@ export const common: CommonDict = {
     learn: "تعلّم تقنيات جديدة",
     discover: "استكشاف المشاريع",
   },
+  share: {
+    label: "مشاركة",
+    native: "مشاركة عبر الجهاز",
+    telegram: "تيليجرام",
+    whatsapp: "واتساب",
+    x: "إكس (تويتر)",
+    copyLink: "نسخ الرابط",
+    linkCopied: "تم نسخ الرابط",
+    copyFailed: "تعذّر نسخ الرابط",
+    shareFailed: "لم تكتمل المشاركة",
+    shareText: "اطّلع على {title} في تيكا نكسوس!",
+  },
 };

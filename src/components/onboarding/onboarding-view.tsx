@@ -47,7 +47,7 @@ import { useApp, type SessionUser } from "@/lib/store";
 import { post } from "@/lib/api";
 import { useT, useLabeled } from "@/lib/i18n";
 import { AVATAR_GRADIENTS, AVATAR_GRADIENT_KEYS, GOALS, LIMITS, PROJECT_CATEGORIES, SKILLS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import { cn, normalizeUrlInput } from "@/lib/utils";
 
 // Icon name → component lookup for PROJECT_CATEGORIES (spec §7).
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
@@ -121,12 +121,13 @@ export function OnboardingView() {
       toast.error(t("onboarding.err.displayName"));
       return;
     }
-    const url = websiteUrl.trim();
-    if (url && !/^https?:\/\/\S+$/i.test(url)) {
+    const url = normalizeUrlInput(websiteUrl);
+    if (url === null) {
       setWebsiteError(true);
       toast.error(t("onboarding.err.website"));
       return;
     }
+    if (url !== websiteUrl.trim()) setWebsiteUrl(url); // canonical https:// form
     setWebsiteError(false);
     goTo(1);
   }
@@ -144,7 +145,7 @@ export function OnboardingView() {
       const res = await post<{ user: SessionUser }>("/api/onboarding", {
         displayName: name,
         bio: bio.trim(),
-        websiteUrl: websiteUrl.trim(),
+        websiteUrl: normalizeUrlInput(websiteUrl) ?? websiteUrl.trim(),
         avatarColor,
         skills: skills.length ? skills : [FALLBACK_SKILL],
         interests: interests.length ? interests : [FALLBACK_INTEREST],

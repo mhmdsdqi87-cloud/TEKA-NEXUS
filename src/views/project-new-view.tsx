@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { cn } from "@/lib/utils";
+import { cn, normalizeUrlInput } from "@/lib/utils";
 import { useApp } from "@/lib/store";
 import { post } from "@/lib/api";
 import { useT, useLabeled } from "@/lib/i18n";
@@ -166,9 +166,12 @@ export function ProjectNewView() {
       errs.tagline = t("projectNew.errors.taglineMax", { n: LIMITS.tagline });
     if (!category) errs.category = t("projectNew.errors.category");
     const urlError = t("projectNew.errors.url");
-    if (repositoryUrl.trim() && !/^https?:\/\//i.test(repositoryUrl.trim())) errs.repositoryUrl = urlError;
-    if (demoUrl.trim() && !/^https?:\/\//i.test(demoUrl.trim())) errs.demoUrl = urlError;
-    if (websiteUrl.trim() && !/^https?:\/\//i.test(websiteUrl.trim())) errs.websiteUrl = urlError;
+    const repo = normalizeUrlInput(repositoryUrl);
+    if (repositoryUrl.trim() && repo === null) errs.repositoryUrl = urlError;
+    const demo = normalizeUrlInput(demoUrl);
+    if (demoUrl.trim() && demo === null) errs.demoUrl = urlError;
+    const site = normalizeUrlInput(websiteUrl);
+    if (websiteUrl.trim() && site === null) errs.websiteUrl = urlError;
     return errs;
   };
 
@@ -192,9 +195,9 @@ export function ProjectNewView() {
         visibility,
         tags,
         requiredSkills: skills,
-        repositoryUrl: repositoryUrl.trim() || undefined,
-        demoUrl: demoUrl.trim() || undefined,
-        websiteUrl: websiteUrl.trim() || undefined,
+        repositoryUrl: (normalizeUrlInput(repositoryUrl) ?? repositoryUrl.trim()) || undefined,
+        demoUrl: (normalizeUrlInput(demoUrl) ?? demoUrl.trim()) || undefined,
+        websiteUrl: (normalizeUrlInput(websiteUrl) ?? websiteUrl.trim()) || undefined,
       });
       toast.success(t("projectNew.toasts.launched"));
       navigate({ name: "project", slug: res.project.slug });

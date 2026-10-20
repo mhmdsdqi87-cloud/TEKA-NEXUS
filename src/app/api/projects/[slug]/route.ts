@@ -199,6 +199,7 @@ const urlField = z
   .string()
   .trim()
   .max(500, "URL must be at most 500 characters.")
+  .transform((v) => (!v || /^https?:\/\//i.test(v) ? v : `https://${v}`))
   .refine((v) => v === "" || /^https?:\/\/\S+$/i.test(v), "Must be a valid http(s) URL.");
 
 const patchSchema = z.object({

@@ -20,6 +20,7 @@ const patchSchema = z.object({
   websiteUrl: z
     .string()
     .max(500, "Website URL is too long.")
+    .transform((v) => (!v || /^https?:\/\//i.test(v) ? v : `https://${v}`))
     .refine((v) => v === "" || /^https?:\/\/\S+$/i.test(v), {
       message: "Website must be a valid http(s) URL.",
     })

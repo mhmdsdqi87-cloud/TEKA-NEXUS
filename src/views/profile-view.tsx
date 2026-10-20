@@ -37,6 +37,7 @@ import { ContributionDTO, ProfileDetail, ProjectCard } from "@/lib/dto";
 import { GOALS, PROJECT_CATEGORIES, SKILLS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { EmptyState, ReputationChip, UserAvatar } from "@/components/shared/atoms";
+import { ShareMenu } from "@/components/shared/share-menu";
 import { ProjectCardView } from "@/components/shared/project-card";
 import { AnimatedNumber, SPRING, Stagger, StaggerItem, staggerChild, staggerParent } from "@/components/shared/motion";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -478,10 +479,13 @@ export function ProfileView({ username }: { username: string }) {
 
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
               {profile.isSelf ? (
-                <Button onClick={() => navigate({ name: "settings", tab: "profile" })} className="btn-hero">
-                  <Settings2 className="h-4 w-4" />
-                  {t("profile.actions.editProfile")}
-                </Button>
+                <>
+                  <Button onClick={() => navigate({ name: "settings", tab: "profile" })} className="btn-hero">
+                    <Settings2 className="h-4 w-4" />
+                    {t("profile.actions.editProfile")}
+                  </Button>
+                  <ShareMenu size="sm" title={profile.displayName} />
+                </>
               ) : (
                 <>
                   <Button
@@ -512,6 +516,7 @@ export function ProfileView({ username }: { username: string }) {
                     {dmPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
                     {t("dm.profileCta")}
                   </Button>
+                  <ShareMenu size="sm" title={profile.displayName} />
                   <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" aria-label={t("profile.actions.moreActions")} className="focus-glow">

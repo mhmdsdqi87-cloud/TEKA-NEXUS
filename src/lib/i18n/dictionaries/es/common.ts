@@ -41,4 +41,16 @@ export const common: CommonDict = {
     learn: "Aprender nueva tecnología",
     discover: "Descubrir proyectos",
   },
+  share: {
+    label: "Compartir",
+    native: "Compartir con el dispositivo",
+    telegram: "Telegram",
+    whatsapp: "WhatsApp",
+    x: "X (Twitter)",
+    copyLink: "Copiar enlace",
+    linkCopied: "Enlace copiado al portapapeles",
+    copyFailed: "No se pudo copiar el enlace",
+    shareFailed: "No se pudo compartir",
+    shareText: "{title} — ¡míralo en TEKA NEXUS!",
+  },
 };

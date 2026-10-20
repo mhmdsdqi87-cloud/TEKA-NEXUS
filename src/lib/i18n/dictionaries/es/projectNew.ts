@@ -33,11 +33,19 @@ export const projectNew: ProjectNewDict = {
     repoUrl: "URL del repositorio",
     demoUrl: "URL de la demo",
     websiteUrl: "URL del sitio web",
+    cover: "Imagen de portada",
+    coverHint: "Elige una imagen o pega un enlace a la tuya.",
+    coverNone: "Sin portada",
+    coverUrlLabel: "URL de imagen personalizada",
   },
   a11y: {
     categoryGroup: "Categoría del proyecto",
     visibilityGroup: "Visibilidad del proyecto",
     removeTag: "Eliminar etiqueta {tag}",
+    coverGroup: "Imagen de portada del proyecto",
+    coverNone: "Sin portada",
+    coverOption: "Portada {name}",
+    coverUrlHide: "Ocultar campo de URL de imagen",
   },
   visibilityDesc: {
     PUBLIC: "Aparece en Explorar y en el feed en vivo. Cualquiera puede verlo.",
@@ -55,6 +63,8 @@ export const projectNew: ProjectNewDict = {
     taglineMax: "Máximo {n} caracteres.",
     category: "Elige una categoría para tu proyecto.",
     url: "Debe empezar por http:// o https://",
+    coverUrl: "La URL de la imagen debe empezar por http:// o https://",
+    coverMax: "La URL de la imagen puede tener máximo {n} caracteres.",
   },
   toasts: {
     maxTags: "Máximo {n} etiquetas",

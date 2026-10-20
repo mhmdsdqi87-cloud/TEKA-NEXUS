@@ -35,6 +35,53 @@ const DEMO_EMAIL_DOMAIN = "community.teka.dev";
 /** Shared demo password — tell the founder so they can post as these personas. */
 const DEMO_PASSWORD = "TekaDemo!1404";
 
+/** Themed cover for every seeded project (matches /public/covers). */
+const PROJECT_COVERS: Record<string, string> = {
+  "takbook": "/covers/takbook.png",
+  "challenge-kadeh": "/covers/challenge-kadeh.png",
+  "hamyar-python": "/covers/hamyar-python.png",
+  "donyaye-pixel": "/covers/donyaye-pixel.png",
+  "masiryar": "/covers/masiryar.png",
+  "negahban-form": "/covers/negahban-form.png",
+};
+
+// Ghost community: social-proof followers for the founder + organic likes.
+const GHOST_TARGET_FOLLOWERS = 2578;
+const GHOST_EMAIL_DOMAIN = "ghost.teka.dev";
+// Weighted like distribution so "popular" ordering is believable.
+const GHOST_LIKE_WEIGHTS: [string, number][] = [
+  ["takbook", 0.35],
+  ["hamyar-python", 0.25],
+  ["challenge-kadeh", 0.15],
+  ["donyaye-pixel", 0.12],
+  ["masiryar", 0.08],
+  ["negahban-form", 0.05],
+];
+
+function pickWeighted(weights: [string, number][]): string {
+  const r = Math.random();
+  let acc = 0;
+  for (const [key, w] of weights) {
+    acc += w;
+    if (r < acc) return key;
+  }
+  return weights[weights.length - 1][0];
+}
+
+const GHOST_NAME_PREFIX = [
+  "ali", "reza", "sara", "amir", "mahdi", "nima", "shirin", "elham",
+  "hasan", "fateme", "pourya", "zeinab", "hossein", "maryam", "behnam",
+  "nasim", "sina", "taraneh", "kaveh", "parisa",
+];
+const GHOST_NAME_SUFFIX = [
+  "dev", "code", "web", "py", "js", "ui", "ops", "hex", "byte", "node",
+  "pixel", "logic", "wave", "spark", "bit", "cloud", "stack", "flow",
+];
+const GHOST_BIOS = [
+  "", "", "", "در حال یادگیری برنامه‌نویسی", "دوستدار تکنولوژی", "علاقه‌مند به دنیای وب",
+  "پایتون‌باز", "دنبال‌کنندهٔ اخبار تک", "", "",
+];
+
 // ─── demo personas (Persian-first) ───────────────────────────
 
 type Persona = {
@@ -406,6 +453,101 @@ async function ensureSkills() {
   }
 }
 
+/** Sets themed covers on seeded projects (safe to re-run). */
+async function applyCovers() {
+  for (const [slug, cover] of Object.entries(PROJECT_COVERS)) {
+    const project = await db.project.findUnique({ where: { slug }, select: { id: true, coverImage: true } });
+    if (project && project.coverImage !== cover) {
+      await db.project.update({ where: { id: project.id }, data: { coverImage: cover } });
+      console.log(`  ~ cover set for ${slug}`);
+    }
+  }
+}
+
+/**
+ * Ghost community — tops the founder up to GHOST_TARGET_FOLLOWERS followers
+ * with plausible lightweight accounts (idempotent: only creates the missing
+ * delta) and spreads organic-looking likes over the seeded projects.
+ */
+async function seedGhostCommunity() {
+  const founder = await db.user.findUnique({
+    where: { email: "mhmdsdqi87@gmail.com" },
+    select: { id: true },
+  });
+  if (!founder) {
+    console.warn("  ! founder not found — ghost seeding skipped");
+    return;
+  }
+
+  const existingFollows = await db.follow.count({ where: { followingId: founder.id } });
+  const missing = Math.max(0, GHOST_TARGET_FOLLOWERS - existingFollows);
+  console.log(`  ghost followers: have ${existingFollows}, target ${GHOST_TARGET_FOLLOWERS}, missing ${missing}`);
+
+  if (missing > 0) {
+    const ghostHash = hashPassword(DEMO_PASSWORD);
+    const used = new Set<string>();
+    const ghosts: {
+      email: string; username: string; passwordHash: string; displayName: string;
+      avatarColor: string; bio: string; xp: number; reputation: number;
+      onboardingCompleted: boolean; createdAt: Date;
+    }[] = [];
+    for (let i = 0; i < missing; i++) {
+      let username = "";
+      do {
+        username = `${GHOST_NAME_PREFIX[Math.floor(Math.random() * GHOST_NAME_PREFIX.length)]}_${
+          GHOST_NAME_SUFFIX[Math.floor(Math.random() * GHOST_NAME_SUFFIX.length)]
+        }${Math.floor(Math.random() * 900) + 100}`;
+      } while (used.has(username));
+      used.add(username);
+      ghosts.push({
+        email: `${username}@${GHOST_EMAIL_DOMAIN}`,
+        username,
+        passwordHash: ghostHash,
+        displayName: username,
+        avatarColor: ["cyan", "violet", "ember", "lime", "rose", "gold"][Math.floor(Math.random() * 6)],
+        bio: GHOST_BIOS[Math.floor(Math.random() * GHOST_BIOS.length)],
+        xp: Math.floor(Math.random() * 150),
+        reputation: Math.floor(Math.random() * 10),
+        onboardingCompleted: true,
+        createdAt: daysAgo(1 + Math.floor(Math.random() * 120), Math.floor(Math.random() * 24)),
+      });
+    }
+    for (let i = 0; i < ghosts.length; i += 300) {
+      await db.user.createMany({ data: ghosts.slice(i, i + 300) });
+    }
+    console.log(`  + ${ghosts.length} ghost users created`);
+  }
+
+  // ensure every ghost follows the founder
+  const ghostIds = await db.user.findMany({
+    where: { email: { endsWith: `@${GHOST_EMAIL_DOMAIN}` } },
+    select: { id: true },
+  });
+  const followRows = ghostIds.map((g) => ({ followerId: g.id, followingId: founder.id }));
+  for (let i = 0; i < followRows.length; i += 500) {
+    await db.follow.createMany({ data: followRows.slice(i, i + 500), skipDuplicates: true });
+  }
+  console.log(`  + follows ensured for ${ghostIds.length} ghosts`);
+
+  // organic likes: each ghost has a 30% chance to like one weighted project
+  const projectIds = await db.project.findMany({
+    where: { slug: { in: Object.keys(PROJECT_COVERS) } },
+    select: { id: true, slug: true },
+  });
+  const idBySlug = new Map(projectIds.map((p) => [p.slug, p.id]));
+  const likeRows: { userId: string; projectId: string }[] = [];
+  for (const g of ghostIds) {
+    if (Math.random() >= 0.3) continue;
+    const slug = pickWeighted(GHOST_LIKE_WEIGHTS);
+    const projectId = idBySlug.get(slug);
+    if (projectId) likeRows.push({ userId: g.id, projectId });
+  }
+  for (let i = 0; i < likeRows.length; i += 500) {
+    await db.projectLike.createMany({ data: likeRows.slice(i, i + 500), skipDuplicates: true });
+  }
+  console.log(`  + ${likeRows.length} ghost likes distributed`);
+}
+
 async function ensureUser(p: Persona) {
   const existing = await db.user.findUnique({ where: { email: p.email } });
   if (existing) return existing;
@@ -710,6 +852,8 @@ async function main() {
 
   await seedComments(usersByUsername, projectsBySlug);
   await seedFollows(usersByUsername);
+  await applyCovers();
+  await seedGhostCommunity();
   await seedAcademy(usersByUsername);
   await seedCollabRequest(usersByUsername, projectsBySlug);
 

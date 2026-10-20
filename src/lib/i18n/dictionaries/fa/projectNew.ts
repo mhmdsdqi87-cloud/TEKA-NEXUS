@@ -33,11 +33,19 @@ export const projectNew: ProjectNewDict = {
     repoUrl: "نشانی مخزن",
     demoUrl: "نشانی نسخه نمایشی",
     websiteUrl: "نشانی وب‌سایت",
+    cover: "کاور پروژه",
+    coverHint: "یه تصویر انتخاب کن یا لینک عکس خودت رو بذار",
+    coverNone: "بدون کاور",
+    coverUrlLabel: "لینک تصویر دلخواه",
   },
   a11y: {
     categoryGroup: "دسته‌بندی پروژه",
     visibilityGroup: "قابلیت مشاهده پروژه",
     removeTag: "حذف برچسب {tag}",
+    coverGroup: "کاور پروژه",
+    coverNone: "بدون کاور",
+    coverOption: "کاور {name}",
+    coverUrlHide: "بستن فیلد لینک تصویر",
   },
   visibilityDesc: {
     PUBLIC: "در بخش کاوش و جریان زنده نمایش داده می‌شود. همه می‌توانند ببینند.",
@@ -55,6 +63,8 @@ export const projectNew: ProjectNewDict = {
     taglineMax: "حداکثر {n} نویسه.",
     category: "برای پروژه‌تان دسته‌بندی انتخاب کنید.",
     url: "باید با http:// یا https:// شروع شود",
+    coverUrl: "لینک تصویر باید با http:// یا https:// شروع شه",
+    coverMax: "لینک تصویر حداکثر می‌تونه {n} نویسه باشه.",
   },
   toasts: {
     maxTags: "حداکثر {n} برچسب",

@@ -79,8 +79,35 @@ const cardInclude = {
   owner: { select: userCardFields },
   tags: { select: { tag: true }, orderBy: { tag: "asc" as const } },
   requiredSkills: { select: { skill: { select: { slug: true } } } },
-  _count: { select: { members: true, likes: true } },
+  _count: { select: { members: true, likes: true, comments: true, saves: true, updates: true } },
 };
+
+// ─── Popularity score (sort=popular) ────────────────────────
+// Engagement counts weighted by how hard each signal is to earn, damped by
+// freshness so long-dead projects don't squat the top forever:
+//   raw      = likes*3 + comments*2 + saves*2 + members*4 + updates*3
+//   freshness= 1 (today) → 0 (60+ days since last update)
+//   score    = raw * (0.5 + freshness)   // fresh work gets up to 1.5×
+const POPULARITY_WEIGHTS = { likes: 3, comments: 2, saves: 2, members: 4, updates: 3 };
+const FRESHNESS_WINDOW_DAYS = 60;
+
+type PopularityRow = {
+  _count: { likes: number; comments: number; saves: number; members: number; updates: number };
+  updatedAt: Date;
+  createdAt: Date;
+};
+
+function popularityScore(p: PopularityRow): number {
+  const raw =
+    p._count.likes * POPULARITY_WEIGHTS.likes +
+    p._count.comments * POPULARITY_WEIGHTS.comments +
+    p._count.saves * POPULARITY_WEIGHTS.saves +
+    p._count.members * POPULARITY_WEIGHTS.members +
+    p._count.updates * POPULARITY_WEIGHTS.updates;
+  const days = (Date.now() - p.updatedAt.getTime()) / 86_400_000;
+  const freshness = Math.max(0, 1 - days / FRESHNESS_WINDOW_DAYS);
+  return raw * (0.5 + freshness);
+}
 
 function toUserCard(u: OwnerRow): UserCard {
   return {
@@ -170,14 +197,33 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    const orderBy: Prisma.ProjectOrderByWithRelationInput[] =
-      sort === "updated"
-        ? [{ updatedAt: "desc" }]
-        : sort === "popular"
-          ? [{ likes: { _count: "desc" } }, { createdAt: "desc" }]
-          : [{ createdAt: "desc" }];
-
     const pageSize = LIMITS.pageSize;
+
+    // "popular" needs engagement counts that don't exist as sortable columns,
+    // so we score in JS. The catalog is small (tens of rows), making this
+    // cheaper and far more honest than a likes-only SQL sort.
+    if (sort === "popular") {
+      const rows = await db.project.findMany({
+        where,
+        include: cardInclude,
+        orderBy: [{ createdAt: "desc" }],
+      });
+      const scored = rows
+        .map((p) => ({ p, score: popularityScore(p) }))
+        .sort((a, b) => b.score - a.score || b.p.createdAt.getTime() - a.p.createdAt.getTime());
+      const total = scored.length;
+      const pageRows = scored.slice((page - 1) * pageSize, page * pageSize).map((s) => s.p);
+      return ok({
+        projects: pageRows.map(toProjectCard),
+        page,
+        pages: Math.max(1, Math.ceil(total / pageSize)),
+        total,
+      });
+    }
+
+    const orderBy: Prisma.ProjectOrderByWithRelationInput[] =
+      sort === "updated" ? [{ updatedAt: "desc" }] : [{ createdAt: "desc" }];
+
     const [total, rows] = await Promise.all([
       db.project.count({ where }),
       db.project.findMany({

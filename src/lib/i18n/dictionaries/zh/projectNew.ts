@@ -33,11 +33,19 @@ export const projectNew: ProjectNewDict = {
     repoUrl: "仓库 URL",
     demoUrl: "演示 URL",
     websiteUrl: "网站 URL",
+    cover: "项目封面",
+    coverHint: "选一张图片，或粘贴你自己的图片链接。",
+    coverNone: "无封面",
+    coverUrlLabel: "自定义图片链接",
   },
   a11y: {
     categoryGroup: "项目分类",
     visibilityGroup: "项目可见性",
     removeTag: "移除标签 {tag}",
+    coverGroup: "项目封面图片",
+    coverNone: "无封面",
+    coverOption: "封面 {name}",
+    coverUrlHide: "隐藏图片链接输入框",
   },
   visibilityDesc: {
     PUBLIC: "出现在探索页和实时动态中，任何人都可以查看。",
@@ -55,6 +63,8 @@ export const projectNew: ProjectNewDict = {
     taglineMax: "最多 {n} 个字符。",
     category: "请为你的项目选择一个分类。",
     url: "必须以 http:// 或 https:// 开头",
+    coverUrl: "图片链接必须以 http:// 或 https:// 开头",
+    coverMax: "图片链接最多 {n} 个字符。",
   },
   toasts: {
     maxTags: "最多 {n} 个标签",

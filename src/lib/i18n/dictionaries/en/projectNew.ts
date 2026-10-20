@@ -32,11 +32,19 @@ export const projectNew = {
     repoUrl: "Repository URL",
     demoUrl: "Demo URL",
     websiteUrl: "Website URL",
+    cover: "Cover image",
+    coverHint: "Pick an image or paste a link to your own.",
+    coverNone: "No cover",
+    coverUrlLabel: "Custom image URL",
   },
   a11y: {
     categoryGroup: "Project category",
     visibilityGroup: "Project visibility",
     removeTag: "Remove tag {tag}",
+    coverGroup: "Project cover image",
+    coverNone: "No cover",
+    coverOption: "Cover {name}",
+    coverUrlHide: "Hide image URL field",
   },
   visibilityDesc: {
     PUBLIC: "Listed in Explore and the live feed. Anyone can view it.",
@@ -54,6 +62,8 @@ export const projectNew = {
     taglineMax: "Max {n} characters.",
     category: "Pick a category for your project.",
     url: "Must start with http:// or https://",
+    coverUrl: "Image URL must start with http:// or https://",
+    coverMax: "Image URL can be at most {n} characters.",
   },
   toasts: {
     maxTags: "Max {n} tags",

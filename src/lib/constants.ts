@@ -30,6 +30,31 @@ export const PROJECT_STATUSES = [
 
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number]["slug"];
 
+// Cover gallery for the new-project form — local paths (public/covers) or
+// external http(s) URLs are both accepted by POST /api/projects (max 500 chars).
+export const PROJECT_COVER_GALLERY = [
+  // themed covers (match seeded projects)
+  "/covers/takbook.png",
+  "/covers/challenge-kadeh.png",
+  "/covers/hamyar-python.png",
+  "/covers/donyaye-pixel.png",
+  "/covers/masiryar.png",
+  "/covers/negahban-form.png",
+  // generic covers
+  "/covers/choreograph.png",
+  "/covers/datadock.png",
+  "/covers/echoform.png",
+  "/covers/guardrail.png",
+  "/covers/herald.png",
+  "/covers/hivemote.png",
+  "/covers/neuron-forge.png",
+  "/covers/nexus-core.png",
+  "/covers/pitchframe.png",
+  "/covers/pulseboard.png",
+] as const;
+
+export type ProjectCover = (typeof PROJECT_COVER_GALLERY)[number];
+
 export const TASK_STATUSES = [
   { slug: "BACKLOG", name: "Backlog" },
   { slug: "TODO", name: "To Do" },
@@ -118,6 +143,7 @@ export const LIMITS = {
   updateBody: 6000,
   updateTitle: 140,
   projectDescription: 8000,
+  coverImage: 500,
   tagline: 140,
   searchQuery: 80,
   pageSize: 12,

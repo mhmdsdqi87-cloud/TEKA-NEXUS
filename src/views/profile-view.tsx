@@ -8,9 +8,11 @@ import { motion, MotionConfig } from "framer-motion";
 import { toast } from "sonner";
 import { useT, useRelativeTime, useFormatDate, useLabeled } from "@/lib/i18n";
 import {
+  BadgeCheck,
   Ban,
   CalendarDays,
   CheckCircle2,
+  Crown,
   ExternalLink,
   Flag,
   FileText,
@@ -356,6 +358,9 @@ export function ProfileView({ username }: { username: string }) {
   const websiteHost = profile.websiteUrl
     ? profile.websiteUrl.replace(/^https?:\/\//i, "").replace(/\/$/, "")
     : "";
+  // The founder gets an exclusive, premium profile treatment: golden aura,
+  // crown ring + the official blue verification tick next to the name.
+  const isFounder = profile.role === "FOUNDER";
 
   return (
     <MotionConfig reducedMotion="user">
@@ -365,7 +370,11 @@ export function ProfileView({ username }: { username: string }) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className="aurora-border rounded-2xl p-5 md:p-7"
+          className={cn(
+            "aurora-border rounded-2xl p-5 md:p-7",
+            isFounder &&
+              "ring-1 ring-amber-300/25 shadow-[0_0_60px_-16px_rgba(251,191,36,0.4)]",
+          )}
         >
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div className="flex min-w-0 flex-1 flex-col gap-5 sm:flex-row sm:items-start">
@@ -375,7 +384,26 @@ export function ProfileView({ username }: { username: string }) {
                 transition={{ ...SPRING, delay: 0.08 }}
                 className="shrink-0"
               >
-                <UserAvatar user={profile} size={72} />
+                {isFounder ? (
+                  <div className="relative">
+                    {/* golden aura + crown ring */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute -inset-1.5 rounded-full bg-[conic-gradient(from_140deg,rgba(251,191,36,0.9),rgba(253,224,71,0.5),rgba(245,158,11,0.9),rgba(251,191,36,0.9))] opacity-70 blur-[3px]"
+                    />
+                    <div className="relative rounded-full ring-2 ring-amber-300/70 ring-offset-2 ring-offset-background">
+                      <UserAvatar user={profile} size={72} />
+                    </div>
+                    <span
+                      aria-hidden="true"
+                      className="absolute -bottom-1 -right-1 grid h-7 w-7 place-items-center rounded-full border border-amber-200/40 bg-gradient-to-br from-amber-400 to-yellow-500 text-white shadow-lg shadow-amber-500/30"
+                    >
+                      <Crown className="h-3.5 w-3.5" />
+                    </span>
+                  </div>
+                ) : (
+                  <UserAvatar user={profile} size={72} />
+                )}
               </motion.div>
               <motion.div
                 className="min-w-0 flex-1 space-y-3"
@@ -383,10 +411,26 @@ export function ProfileView({ username }: { username: string }) {
                 initial="hidden"
                 animate="show"
               >
-                <motion.div variants={staggerChild}>
-                  <h1 className="font-display text-2xl font-bold leading-tight md:text-3xl">
-                    {profile.displayName}
-                  </h1>
+                <motion.div variants={staggerChild} className="space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <h1 className="font-display text-2xl font-bold leading-tight md:text-3xl">
+                      {profile.displayName}
+                    </h1>
+                    {isFounder && (
+                      <span
+                        title={t("profile.founder.verified")}
+                        aria-label={t("profile.founder.verified")}
+                      >
+                        <BadgeCheck className="h-6 w-6 fill-sky-500 text-white md:h-7 md:w-7" />
+                      </span>
+                    )}
+                  </div>
+                  {isFounder && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/30 bg-gradient-to-r from-amber-500/15 to-yellow-400/15 px-2.5 py-0.5 text-xs font-semibold text-amber-200 ring-1 ring-inset ring-amber-300/25">
+                      <Crown className="h-3.5 w-3.5" aria-hidden="true" />
+                      {t("profile.founder.badge")}
+                    </span>
+                  )}
                   <p className="font-mono text-sm text-muted-foreground">@{profile.username}</p>
                 </motion.div>
 

@@ -25,6 +25,10 @@ export const profile: ProfileDict = {
   header: {
     memberSince: "加入于 {date}",
   },
+  founder: {
+    badge: "创始人",
+    verified: "官方认证账号",
+  },
   sections: {
     goals: "目标",
     interests: "兴趣",

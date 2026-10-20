@@ -24,6 +24,10 @@ export const profile = {
   header: {
     memberSince: "Member since {date}",
   },
+  founder: {
+    badge: "Founder",
+    verified: "Officially verified account",
+  },
   sections: {
     goals: "Goals",
     interests: "Interests",

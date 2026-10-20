@@ -25,6 +25,10 @@ export const profile: ProfileDict = {
   header: {
     memberSince: "عضو از {date}",
   },
+  founder: {
+    badge: "بنیان‌گذار",
+    verified: "حساب رسمی تأییدشده",
+  },
   sections: {
     goals: "اهداف",
     interests: "علاقه‌مندی‌ها",

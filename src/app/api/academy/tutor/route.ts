@@ -303,7 +303,7 @@ const LOCAL_TOPICS: LocalTopic[] = [
   },
 ];
 
-const GREETING_RE = /^\s*(سلام|درود|هی|سلام علیکم|hi\b|hello\b|hey\b)/i;
+const GREETING_RE = /^\s*(سلام|درود|هی|چطوری|چطورید|خوبی|چه\s*خبر|چه\s*خبرها|سلام علیکم|whats\s*up|what\'s\s*up|hi\b|hello\b|hey\b)/i;
 
 function localTopicReply(locale: string, question: string): string | null {
   const isFa = locale === "fa";
@@ -316,6 +316,56 @@ function localTopicReply(locale: string, question: string): string | null {
     if (topic.keys.test(question)) return isFa ? topic.fa : topic.en;
   }
   return null;
+}
+
+// ─── External provider (production hosting) ─────────────────
+// The sandbox SDK talks to a private endpoint that doesn't exist on real
+// hosting. Any OpenAI-compatible provider (e.g. Z.ai's public API with the
+// FREE glm-4.5-flash model) fills that gap via env vars:
+//   AI_BASE_URL = https://api.z.ai/api/paas/v4
+//   AI_API_KEY  = <your key>
+//   AI_MODEL    = optional (default glm-4.5-flash)
+
+function externalProviderConfig() {
+  const base = process.env.AI_BASE_URL?.replace(/\/+$/, "");
+  const key = process.env.AI_API_KEY;
+  if (!base || !key) return null;
+  return {
+    base,
+    key,
+    model: process.env.AI_MODEL || "glm-4.5-flash",
+    isZai: /z\.ai$/i.test(new URL(base).hostname),
+  };
+}
+
+async function externalCompletion(
+  cfg: NonNullable<ReturnType<typeof externalProviderConfig>>,
+  system: string,
+  messages: TutorMessage[],
+): Promise<string> {
+  const body: Record<string, unknown> = {
+    model: cfg.model,
+    messages: [{ role: "system", content: system }, ...messages],
+    max_tokens: 700,
+  };
+  // The `thinking` switch is Z.ai-specific; other providers may reject it.
+  if (cfg.isZai) body.thinking = { type: "disabled" };
+
+  const res = await withTimeout(
+    fetch(`${cfg.base}/chat/completions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.key}` },
+      body: JSON.stringify(body),
+    }),
+    ZAI_TIMEOUT_MS,
+    "external-completion",
+  );
+  if (!res.ok) throw new Error(`provider responded ${res.status}`);
+  const data = (await res.json()) as { choices?: { message?: { content?: unknown } }[] };
+  const raw = data?.choices?.[0]?.message?.content;
+  const reply = typeof raw === "string" ? raw.trim() : "";
+  if (!reply) throw new Error("empty provider reply");
+  return reply;
 }
 
 // ─── Handler ─────────────────────────────────────────────────
@@ -337,7 +387,21 @@ export async function POST(req: Request) {
 
     const lastUser = [...body.messages].reverse().find((m) => m.role === "user");
 
+    const ext = externalProviderConfig();
     try {
+      // 1) Explicitly configured provider (production hosting, e.g. Vercel).
+      if (ext) {
+        try {
+          const reply = await externalCompletion(ext, system, body.messages);
+          return ok({ reply });
+        } catch (extErr) {
+          console.error(
+            "[tutor] external provider failed:",
+            extErr instanceof Error ? extErr.message : extErr,
+          );
+        }
+      }
+      // 2) Sandbox SDK (private endpoint — works in this dev environment).
       const zai = await withTimeout(ZAI.create(), ZAI_TIMEOUT_MS, "zai-create");
       const completion = await withTimeout(
         zai.chat.completions.create({

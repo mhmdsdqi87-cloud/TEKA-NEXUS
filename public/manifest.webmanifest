@@ -1,7 +1,7 @@
 {
-  "name": "TEKA NEXUS — Learn, Build, Connect",
-  "short_name": "TEKA",
-  "description": "Discover projects, find your people, and build what comes next. Free programming academy + real collaboration community.",
+  "name": "تکا نکسوس — آموزش رایگان برنامه‌نویسی و تیم‌سازی",
+  "short_name": "تکا نکسوس",
+  "description": "آکادمی رایگان برنامه‌نویسی (پایتون و وب) + شبکه اجتماعی پیدا کردن هم‌تیمی و ساخت پروژه واقعی. با آزمون و گواهینامه.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
@@ -9,9 +9,13 @@
   "orientation": "portrait-primary",
   "background_color": "#08080d",
   "theme_color": "#08080d",
-  "lang": "en",
-  "dir": "auto",
-  "categories": ["education", "productivity", "social"],
+  "lang": "fa",
+  "dir": "rtl",
+  "categories": [
+    "education",
+    "productivity",
+    "social"
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -30,6 +34,23 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "/screenshots/landing-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "تکا نکسوس — آکادمی رایگان برنامه‌نویسی و تیم‌سازی"
+    },
+    {
+      "src": "/screenshots/landing-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "تکا نکسوس — جایی که ایده‌ها به تکنولوژی واقعی تبدیل می‌شن"
     }
   ]
 }

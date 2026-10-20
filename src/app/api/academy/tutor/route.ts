@@ -157,7 +157,12 @@ function buildSystemPrompt(locale: string, context?: { courseId?: string; lesson
 // It never pretends to be the live model and never fabricates new facts.
 
 const OFFLINE_THEORY_CAP = 700;
-const ZAI_TIMEOUT_MS = 15_000;
+const SDK_TIMEOUT_MS = 15_000;
+// The public Z.ai endpoint can be slow from Vercel regions (cold TLS + model
+// latency) — the original 15s cap timed out in production logs, so give the
+// external provider a generous window. maxDuration is 60s, and the SDK attempt
+// only runs when the external provider throws, so this stays inside budget.
+const EXTERNAL_TIMEOUT_MS = 30_000;
 
 function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
   return Promise.race([
@@ -357,7 +362,7 @@ async function externalCompletion(
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.key}` },
       body: JSON.stringify(body),
     }),
-    ZAI_TIMEOUT_MS,
+    EXTERNAL_TIMEOUT_MS,
     "external-completion",
   );
   if (!res.ok) throw new Error(`provider responded ${res.status}`);
@@ -402,13 +407,13 @@ export async function POST(req: Request) {
         }
       }
       // 2) Sandbox SDK (private endpoint — works in this dev environment).
-      const zai = await withTimeout(ZAI.create(), ZAI_TIMEOUT_MS, "zai-create");
+      const zai = await withTimeout(ZAI.create(), SDK_TIMEOUT_MS, "zai-create");
       const completion = await withTimeout(
         zai.chat.completions.create({
           messages: sdkMessages,
           thinking: { type: "disabled" },
         }),
-        ZAI_TIMEOUT_MS,
+        SDK_TIMEOUT_MS,
         "zai-completion",
       );
       const raw = completion?.choices?.[0]?.message?.content;

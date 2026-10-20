@@ -17,6 +17,7 @@ import {
   Globe,
   Info,
   Loader2,
+  MessageCircle,
   MoreHorizontal,
   Rocket,
   Settings2,
@@ -154,6 +155,7 @@ export function ProfileView({ username }: { username: string }) {
   const [loadFailed, setLoadFailed] = useState(false);
 
   const [followPending, setFollowPending] = useState(false);
+  const [dmPending, setDmPending] = useState(false);
   const [blockedByMe, setBlockedByMe] = useState(false);
   const [blockPending, setBlockPending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -223,6 +225,29 @@ export function ProfileView({ username }: { username: string }) {
       toast.error(e instanceof Error ? e.message : t("profile.errors.followFailed"));
     } finally {
       setFollowPending(false);
+    }
+  }
+
+  // Open (or create) the 1:1 DM conversation with this user (Task dm-1).
+  async function openDm() {
+    if (!profile || profile.isSelf) return;
+    if (!user) {
+      toast.error(t("profile.errors.signInToFollow"));
+      navigate({ name: "login" });
+      return;
+    }
+    if (blockedByMe) return;
+    setDmPending(true);
+    try {
+      const res = await post<{ conversation: { id: string } }>(
+        "/api/dm/conversations",
+        { username: profile.username }
+      );
+      navigate({ name: "dm", conversationId: res.conversation.id });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("dm.toasts.conversationFailed"));
+    } finally {
+      setDmPending(false);
     }
   }
 
@@ -407,7 +432,7 @@ export function ProfileView({ username }: { username: string }) {
               </motion.div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
               {profile.isSelf ? (
                 <Button onClick={() => navigate({ name: "settings", tab: "profile" })} className="btn-hero">
                   <Settings2 className="h-4 w-4" />
@@ -433,6 +458,15 @@ export function ProfileView({ username }: { username: string }) {
                       : profile.isFollowing
                         ? t("profile.actions.following")
                         : t("profile.actions.follow")}
+                  </Button>
+                  <Button
+                    onClick={openDm}
+                    disabled={dmPending || blockedByMe}
+                    variant="outline"
+                    aria-label={t("dm.profileCta")}
+                  >
+                    {dmPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+                    {t("dm.profileCta")}
                   </Button>
                   <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
                     <DropdownMenuTrigger asChild>

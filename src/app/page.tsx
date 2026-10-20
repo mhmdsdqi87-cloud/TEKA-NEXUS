@@ -22,6 +22,7 @@ import { ProjectView } from "@/views/project-view";
 import { TeamsView } from "@/views/teams-view";
 import { ProfileView } from "@/views/profile-view";
 import { NotificationsView } from "@/views/notifications-view";
+import { DmView } from "@/views/dm-view";
 import { SettingsView } from "@/views/settings-view";
 import { SavedView } from "@/views/saved-view";
 import { AcademyView } from "@/views/academy-view";
@@ -31,7 +32,7 @@ import { LogoMark } from "@/components/brand/logo";
 import { MotionRoot, PageTransition } from "@/components/shared/motion";
 
 const AUTHOptional_VIEWS = new Set(["landing", "login", "signup", "onboarding"]);
-const AUTH_REQUIRED_VIEWS = new Set(["home", "projectNew", "teams", "notifications", "settings", "saved"]);
+const AUTH_REQUIRED_VIEWS = new Set(["home", "projectNew", "teams", "notifications", "dm", "settings", "saved"]);
 
 // ── SSR SEO block ──────────────────────────────────────────────
 // The app is a client-side SPA: crawlers and screen readers get this
@@ -206,6 +207,9 @@ export default function Page() {
     case "notifications":
       content = <NotificationsView />;
       break;
+    case "dm":
+      content = <DmView key={view.conversationId ?? "list"} initialConversationId={view.conversationId} />;
+      break;
     case "profile":
       content = <ProfileView key={view.username} username={view.username} />;
       break;
@@ -228,13 +232,14 @@ export default function Page() {
       content = <LandingView />;
   }
 
-  const shellViews = new Set(["home", "explore", "projectNew", "project", "teams", "notifications", "profile", "settings", "saved", "academy", "academyPortal", "founder"]);
+  const shellViews = new Set(["home", "explore", "projectNew", "project", "teams", "notifications", "dm", "profile", "settings", "saved", "academy", "academyPortal", "founder"]);
   const inShell = shellViews.has(view.name);
 
   const viewKey =
     view.name +
     (view.name === "project" ? `:${view.slug}:${view.tab ?? ""}` : "") +
     (view.name === "profile" ? `:${view.username}` : "") +
+    (view.name === "dm" ? `:${view.conversationId ?? ""}` : "") +
     (view.name === "settings" ? `:${view.tab ?? ""}` : "") +
     (view.name === "academy" ? `:${view.course ?? ""}:${view.lesson ?? ""}` : "") +
     (view.name === "academyPortal" ? `:${view.section ?? ""}` : "");

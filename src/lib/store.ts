@@ -16,6 +16,7 @@ export type View =
   | { name: "project"; slug: string; tab?: string }
   | { name: "teams" }
   | { name: "notifications" }
+  | { name: "dm"; conversationId?: string }
   | { name: "profile"; username: string }
   | { name: "settings"; tab?: "profile" | "account" | "notifications" | "privacy" }
   | { name: "saved" }
@@ -48,12 +49,14 @@ type RouterState = {
   authChecked: boolean;
   user: SessionUser | null;
   unreadCount: number;
+  dmUnreadCount: number;
   navigate: (view: View) => void;
   back: () => void;
   setSearchOpen: (open: boolean) => void;
   setAuthChecked: (v: boolean) => void;
   setUser: (u: SessionUser | null) => void;
   setUnreadCount: (n: number) => void;
+  setDmUnreadCount: (n: number) => void;
 };
 
 export const useApp = create<RouterState>((set, get) => ({
@@ -63,6 +66,7 @@ export const useApp = create<RouterState>((set, get) => ({
   authChecked: false,
   user: null,
   unreadCount: 0,
+  dmUnreadCount: 0,
   navigate: (view) => {
     const { view: current, history } = get();
     // avoid pushing identical consecutive views
@@ -80,4 +84,5 @@ export const useApp = create<RouterState>((set, get) => ({
   setAuthChecked: (v) => set({ authChecked: v }),
   setUser: (u) => set({ user: u }),
   setUnreadCount: (n) => set({ unreadCount: n }),
+  setDmUnreadCount: (n) => set({ dmUnreadCount: n }),
 }));

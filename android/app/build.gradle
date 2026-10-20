@@ -1,0 +1,43 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'ir.teka.nexus'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'ir.teka.nexus'
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    signingConfigs {
+        release {
+            // Keystore + passwords live OUTSIDE the repo (see docs/MYKET.md §بازسازی).
+            // Provide TEKA_STORE_PASS / TEKA_KEY_PASS env vars when building release.
+            storeFile file(System.getenv('TEKA_KEYSTORE_PATH') ?: '../keystore/teka-release.keystore')
+            storePassword System.getenv('TEKA_STORE_PASS') ?: ''
+            keyAlias 'teka'
+            keyPassword System.getenv('TEKA_KEY_PASS') ?: ''
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.4'
+}

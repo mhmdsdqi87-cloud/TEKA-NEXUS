@@ -76,33 +76,62 @@ export async function PATCH(req: NextRequest) {
     const me = await requireUser();
     const body = await parseBody(req, patchSchema);
 
-    const user = await db.$transaction(async (tx) => {
-      if (body.skills) {
-        // Replace the user's skill rows atomically. Upsert Skill taxonomy rows
-        // on demand so the FK is always satisfied even before global seeding.
-        const skills = [...new Set(body.skills)];
-        await tx.userSkill.deleteMany({ where: { userId: me.id } });
-        for (const slug of skills) {
-          const def = SKILLS.find((s) => s.slug === slug);
-          const skill = await tx.skill.upsert({
-            where: { slug },
-            create: { slug, name: def ? def.name : slug },
-            update: {},
+    // Interactive transaction: the default 5s timeout is too tight on Vercel,
+    // where every pooled-connection round-trip to Supabase adds latency — the
+    // old per-skill upsert loop (2 queries × N skills) blew past it and the
+    // whole PATCH (including websiteUrl) failed with P2028. Bulk queries keep
+    // the round-trip count at ~5 regardless of skill count, and the explicit
+    // timeout adds headroom.
+    const user = await db.$transaction(
+      async (tx) => {
+        if (body.skills) {
+          // Replace the user's skill rows atomically. Create any missing
+          // Skill taxonomy rows in ONE bulk insert so the FK is always
+          // satisfied even before global seeding.
+          const skills = [...new Set(body.skills)];
+          const existing = await tx.skill.findMany({
+            where: { slug: { in: skills } },
+            select: { id: true, slug: true },
           });
-          await tx.userSkill.create({ data: { userId: me.id, skillId: skill.id } });
-        }
-      }
+          const known = new Set(existing.map((s) => s.slug));
+          const missing = skills.filter((slug) => !known.has(slug));
+          if (missing.length > 0) {
+            await tx.skill.createMany({
+              data: missing.map((slug) => {
+                const def = SKILLS.find((s) => s.slug === slug);
+                return { slug, name: def ? def.name : slug };
+              }),
+            });
+          }
 
-      return tx.user.update({
-        where: { id: me.id },
-        data: {
-          ...(body.displayName !== undefined ? { displayName: body.displayName } : {}),
-          ...(body.bio !== undefined ? { bio: body.bio } : {}),
-          ...(body.websiteUrl !== undefined ? { websiteUrl: body.websiteUrl } : {}),
-          ...(body.avatarColor !== undefined ? { avatarColor: body.avatarColor } : {}),
-        },
-      });
-    });
+          await tx.userSkill.deleteMany({ where: { userId: me.id } });
+          // Re-fetch ids (covers just-created rows) only when needed.
+          const rows =
+            missing.length > 0
+              ? await tx.skill.findMany({
+                  where: { slug: { in: skills } },
+                  select: { id: true, slug: true },
+                })
+              : existing;
+          if (rows.length > 0) {
+            await tx.userSkill.createMany({
+              data: rows.map((s) => ({ userId: me.id, skillId: s.id })),
+            });
+          }
+        }
+
+        return tx.user.update({
+          where: { id: me.id },
+          data: {
+            ...(body.displayName !== undefined ? { displayName: body.displayName } : {}),
+            ...(body.bio !== undefined ? { bio: body.bio } : {}),
+            ...(body.websiteUrl !== undefined ? { websiteUrl: body.websiteUrl } : {}),
+            ...(body.avatarColor !== undefined ? { avatarColor: body.avatarColor } : {}),
+          },
+        });
+      },
+      { timeout: 15_000, maxWait: 10_000 },
+    );
 
     return ok({ user: toSessionUser(user) });
   });

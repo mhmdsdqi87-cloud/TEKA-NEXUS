@@ -9,7 +9,7 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { motion } from "framer-motion";
-import { BookOpen, Eraser, RotateCcw, SendHorizontal } from "lucide-react";
+import { BookOpen, Eraser, RotateCcw, SendHorizontal, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
@@ -19,7 +19,7 @@ import { EASE } from "@/components/shared/motion";
 import { LogoMark } from "@/components/brand/logo";
 import { TUTOR_DICT } from "./tutor-dict";
 
-type ChatMsg = { role: "user" | "assistant"; content: string };
+type ChatMsg = { role: "user" | "assistant"; content: string; offline?: boolean };
 type ChatError = { message: string; rate: boolean } | null;
 
 export type TutorContext = {
@@ -49,7 +49,7 @@ export function TutorPanel({ context }: { context?: TutorContext }) {
   }, [messages, pending, error]);
 
   const callTutor = async (history: ChatMsg[]) => {
-    const res = await post<{ reply: string }>("/api/academy/tutor", {
+    const res = await post<{ reply: string; offline?: boolean }>("/api/academy/tutor", {
       messages: history,
       context: {
         courseId: context?.courseId,
@@ -57,7 +57,7 @@ export function TutorPanel({ context }: { context?: TutorContext }) {
         locale,
       },
     });
-    return res.reply;
+    return { reply: res.reply, offline: res.offline === true };
   };
 
   const fail = (err: unknown) => {
@@ -75,9 +75,10 @@ export function TutorPanel({ context }: { context?: TutorContext }) {
     setMessages(history);
     setPending(true);
     try {
-      const reply = (await callTutor(history)).trim();
-      if (reply) {
-        const replyMsg: ChatMsg = { role: "assistant", content: reply };
+      const { reply, offline } = await callTutor(history);
+      const trimmed = reply.trim();
+      if (trimmed) {
+        const replyMsg: ChatMsg = { role: "assistant", content: trimmed, offline };
         setMessages((prev) => [...prev, replyMsg].slice(-MAX_HISTORY));
       } else {
         setError({ message: dict.errGeneric, rate: false });
@@ -95,9 +96,10 @@ export function TutorPanel({ context }: { context?: TutorContext }) {
     setError(null);
     setPending(true);
     try {
-      const reply = (await callTutor(messages.slice(-MAX_HISTORY))).trim();
-      if (reply) {
-        const replyMsg: ChatMsg = { role: "assistant", content: reply };
+      const { reply, offline } = await callTutor(messages.slice(-MAX_HISTORY));
+      const trimmed = reply.trim();
+      if (trimmed) {
+        const replyMsg: ChatMsg = { role: "assistant", content: trimmed, offline };
         setMessages((prev) => [...prev, replyMsg].slice(-MAX_HISTORY));
       } else {
         setError({ message: dict.errGeneric, rate: false });
@@ -179,7 +181,9 @@ export function TutorPanel({ context }: { context?: TutorContext }) {
           m.role === "user" ? (
             <UserBubble key={i}>{m.content}</UserBubble>
           ) : (
-            <TutorBubble key={i}>{m.content}</TutorBubble>
+            <TutorBubble key={i} offline={m.offline} offlineLabel={dict.offlineBadge}>
+              {m.content}
+            </TutorBubble>
           ),
         )}
 
@@ -259,7 +263,15 @@ export function TutorPanel({ context }: { context?: TutorContext }) {
 // ─── Bubbles ─────────────────────────────────────────────────
 // y/opacity-only animations — RTL-safe by construction.
 
-function TutorBubble({ children }: { children: ReactNode }) {
+function TutorBubble({
+  children,
+  offline,
+  offlineLabel,
+}: {
+  children: ReactNode;
+  offline?: boolean;
+  offlineLabel?: string;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -278,6 +290,12 @@ function TutorBubble({ children }: { children: ReactNode }) {
         className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-es-md border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm leading-6 text-slate-100"
       >
         {children}
+        {offline && offlineLabel && (
+          <span className="mt-2 flex items-center gap-1 text-[10px] font-medium text-amber-300/90">
+            <WifiOff className="h-3 w-3" aria-hidden="true" />
+            {offlineLabel}
+          </span>
+        )}
       </div>
     </motion.div>
   );

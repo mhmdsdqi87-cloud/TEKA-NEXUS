@@ -27,6 +27,8 @@ export type TutorDict = {
   errGeneric: string;
   /** Fallback for HTTP 429 when the server message is missing */
   errRate: string;
+  /** Badge shown on replies produced by the offline lesson-notes fallback */
+  offlineBadge: string;
   /** Honest-AI footer line */
   disclaimer: string;
 };
@@ -51,6 +53,7 @@ export const TUTOR_DICT: Record<Locale, TutorDict> = {
     retry: "Retry",
     errGeneric: "The tutor is unreachable right now. Please try again.",
     errRate: "You've hit the chat limit — take a short break and come back.",
+    offlineBadge: "Offline mode — answered from lesson notes",
     disclaimer: "AI can make mistakes — verify anything important.",
   },
 
@@ -73,6 +76,7 @@ export const TUTOR_DICT: Record<Locale, TutorDict> = {
     retry: "دوباره تلاش کن",
     errGeneric: "الان معلم در دسترس نیست. لطفاً دوباره امتحان کن.",
     errRate: "به سقف گفت‌وگو رسیدی — یه استراحت کوتاه بده و برگرد.",
+    offlineBadge: "حالت آفلاین — از جزوهٔ درس جواب دادم",
     disclaimer: "هوش مصنوعی ممکنه اشتباه کنه — چیزهای مهم رو خودت هم چک کن.",
   },
 
@@ -95,6 +99,7 @@ export const TUTOR_DICT: Record<Locale, TutorDict> = {
     retry: "Reintentar",
     errGeneric: "El tutor no está disponible ahora mismo. Inténtalo de nuevo.",
     errRate: "Alcanzaste el límite del chat — toma un respiro y vuelve.",
+    offlineBadge: "Modo sin conexión — respondido con apuntes de la lección",
     disclaimer: "La IA puede equivocarse — verifica lo importante.",
   },
 
@@ -117,6 +122,7 @@ export const TUTOR_DICT: Record<Locale, TutorDict> = {
     retry: "重试",
     errGeneric: "导师暂时联系不上，请重试。",
     errRate: "你已达到聊天上限——休息几分钟再回来吧。",
+    offlineBadge: "离线模式 — 已用课程笔记回答",
     disclaimer: "AI 可能出错——重要内容请自行核实。",
   },
 
@@ -139,6 +145,7 @@ export const TUTOR_DICT: Record<Locale, TutorDict> = {
     retry: "إعادة المحاولة",
     errGeneric: "المعلّم غير متاح حاليًا. حاول مرة أخرى.",
     errRate: "وصلتَ إلى حد المحادثة — خذ استراحة قصيرة وعُد لاحقًا.",
+    offlineBadge: "وضع عدم الاتصال — أُجيب من ملاحظات الدرس",
     disclaimer: "قد يخطئ الذكاء الاصطناعي — تحقّق مما هو مهم.",
   },
 
@@ -161,6 +168,7 @@ export const TUTOR_DICT: Record<Locale, TutorDict> = {
     retry: "Réessayer",
     errGeneric: "Le tuteur est injoignable pour le moment. Réessaie.",
     errRate: "Tu as atteint la limite de chat — fais une pause et reviens.",
+    offlineBadge: "Mode hors ligne — répondu depuis les notes du cours",
     disclaimer: "L'IA peut se tromper — vérifie ce qui est important.",
   },
 };

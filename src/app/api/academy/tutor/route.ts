@@ -149,6 +149,80 @@ function buildSystemPrompt(locale: string, context?: { courseId?: string; lesson
     : base;
 }
 
+// ─── Offline fallback (AI backend unreachable) ───────────────
+// When the LLM backend is unavailable (e.g. hosting without AI credentials),
+// the tutor stays useful: it answers from the lesson's own goal + theory
+// with a Socratic nudge, and the client badges the reply as offline mode.
+// It never pretends to be the live model and never fabricates new facts.
+
+const OFFLINE_THEORY_CAP = 700;
+
+type OfflineLesson = {
+  lessonTitle?: string;
+  lessonGoal?: string;
+  theory: string;
+  courseTitle?: string;
+};
+
+function extractLesson(context: { courseId?: string; lessonId?: string } | undefined): OfflineLesson {
+  const out: OfflineLesson = { theory: "" };
+  if (!context?.courseId) return out;
+  const course = getCourse(context.courseId);
+  if (!course) return out;
+
+  let lesson = null as null | (typeof course.modules)[number]["lessons"][number];
+  for (const mod of course.modules) {
+    const found = mod.lessons.find((l) => l.id === context.lessonId);
+    if (found) {
+      lesson = found;
+      break;
+    }
+  }
+  if (!lesson) return { courseTitle: pick(course.title, "en"), theory: "" };
+
+  let theory = "";
+  outer: for (const step of lesson.steps) {
+    if (step.kind !== "theory") continue;
+    for (const block of step.blocks) {
+      if (block.type === "text" || block.type === "tip") {
+        theory += (theory ? " " : "") + pick(block, "en");
+        if (theory.length >= OFFLINE_THEORY_CAP) break outer;
+      }
+    }
+  }
+  return {
+    courseTitle: pick(course.title, "en"),
+    lessonTitle: pick(lesson.title, "en"),
+    lessonGoal: pick(lesson.goal, "en"),
+    theory: theory.slice(0, OFFLINE_THEORY_CAP),
+  };
+}
+
+function offlineReplyFa(l: OfflineLesson, question: string): string {
+  const lines: string[] = [];
+  lines.push("🛰 حالت آفلاین: الان به مغز اصلی وصل نیستم، پس از خودِ جزوهٔ درس جواب می‌دم.");
+  if (l.lessonTitle) lines.push(`📚 درس: ${l.lessonTitle}`);
+  if (l.lessonGoal) lines.push(`🎯 هدف درس: ${l.lessonGoal}`);
+  if (l.theory) lines.push(`\nنکتهٔ کلیدی از جزوه:\n${l.theory.trim()}`);
+  lines.push(
+    `\nحالا نوبت توئه: ${question ? `سؤالت («${question.slice(0, 120)}») رو` : "همین نکته رو"} با یه مثال کوچیک در ادیتور پایین درس امتحان کن — کد رو اجرا کن و ببین خروجی چی می‌شه. اگه خواستی بعداً دوباره من رو آنلاین صدا بزن تا عمیق‌تر بریم! 🚀`,
+  );
+  return lines.join("\n");
+}
+
+function offlineReplyEn(l: OfflineLesson, question: string): string {
+  const lines: string[] = [];
+  lines.push("🛰 Offline mode: I can't reach the AI backend right now, so here's what the lesson notes themselves say.");
+  if (l.courseTitle) lines.push(`📖 Course: ${l.courseTitle}`);
+  if (l.lessonTitle) lines.push(`📚 Lesson: ${l.lessonTitle}`);
+  if (l.lessonGoal) lines.push(`🎯 Lesson goal: ${l.lessonGoal}`);
+  if (l.theory) lines.push(`\nKey note from the lesson:\n${l.theory.trim()}`);
+  lines.push(
+    `\nYour move: ${question ? `take your question ("${question.slice(0, 120)}") and` : "take this note and"} try it in the code runner below this lesson — run it, tweak it, see what happens. Ping me again once I'm back online and we'll go deeper! 🚀`,
+  );
+  return lines.join("\n");
+}
+
 // ─── Handler ─────────────────────────────────────────────────
 
 export async function POST(req: Request) {
@@ -180,10 +254,14 @@ export async function POST(req: Request) {
       if (err instanceof HttpError) throw err;
       // Never leak internals (config paths, stacks) to the client.
       console.error("[tutor] completion failed:", err instanceof Error ? err.message : err);
-      throw new HttpError(
-        "The tutor couldn't reach the chalkboard just now — give it a moment and try again.",
-        502,
-      );
+      // AI backend unreachable (e.g. hosting without AI credentials) →
+      // fall back to the lesson-aware offline tutor instead of failing.
+      const lastUser = [...body.messages].reverse().find((m) => m.role === "user");
+      const lesson = extractLesson(body.context);
+      const reply = locale === "fa"
+        ? offlineReplyFa(lesson, lastUser?.content ?? "")
+        : offlineReplyEn(lesson, lastUser?.content ?? "");
+      return ok({ reply, offline: true });
     }
   });
 }

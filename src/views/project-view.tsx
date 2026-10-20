@@ -667,8 +667,8 @@ export function ProjectView({ slug }: { slug: string }) {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex flex-wrap items-center gap-2 lg:shrink-0 lg:justify-end">
+          {/* Actions — capped so the title never gets squeezed to a sliver */}
+          <div className="flex flex-wrap items-center gap-2 lg:max-w-[46%] lg:shrink-0 lg:justify-end">
             <Button
               variant="outline"
               size="sm"

@@ -99,6 +99,7 @@ export const project: ProjectDict = {
   },
   menu: {
     edit: "Editar proyecto",
+    duplicate: "Crear un proyecto similar",
   },
   toasts: {
     signInToLike: "Inicia sesión para dar me gusta a los proyectos",
@@ -247,6 +248,16 @@ export const project: ProjectDict = {
     dropHere: "Suelta las tareas aquí",
     doneChip: "Completada",
     theAssignee: "el responsable",
+    presetsLabel: "Tareas rápidas",
+    preset: {
+      ui: "Diseñar la interfaz",
+      backend: "Construir el backend",
+      bugs: "Corregir errores conocidos",
+      testing: "Probar y revisar el código",
+      docs: "Escribir la documentación inicial",
+      deploy: "Lanzar la primera versión",
+    },
+    presetAdded: "«{title}» añadido al tablero",
   },
   taskDetail: {
     title: "Tarea",

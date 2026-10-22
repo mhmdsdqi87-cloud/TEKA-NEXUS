@@ -99,6 +99,7 @@ export const project: ProjectDict = {
   },
   menu: {
     edit: "ویرایش پروژه",
+    duplicate: "ساخت پروژهٔ مشابه",
   },
   toasts: {
     signInToLike: "برای پسندیدن پروژه‌ها وارد شوید",
@@ -248,6 +249,16 @@ export const project: ProjectDict = {
     dropHere: "وظایف را این‌جا رها کنید",
     doneChip: "انجام‌شده",
     theAssignee: "مسئول",
+    presetsLabel: "تسک‌های آماده",
+    preset: {
+      ui: "طراحی رابط کاربری",
+      backend: "پیاده‌سازی بک‌اند",
+      bugs: "رفع باگ‌های شناخته‌شده",
+      testing: "تست و بازبینی کد",
+      docs: "مستندسازی اولیه",
+      deploy: "راه‌اندازی نسخهٔ اول",
+    },
+    presetAdded: "«{title}» به بورد اضافه شد",
   },
   taskDetail: {
     title: "وظیفه",

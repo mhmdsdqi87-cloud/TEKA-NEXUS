@@ -37,6 +37,7 @@ import {
   Clock3,
   Columns3,
   Cpu,
+  Copy,
   ExternalLink,
   Eye,
   EyeOff,
@@ -587,6 +588,32 @@ export function ProjectView({ slug }: { slug: string }) {
     team: membersResp?.members.length,
   };
 
+  // "Build similar" — stash the current draft into sessionStorage and open the
+  // launch form pre-filled. Status/visibility deliberately start fresh.
+  const duplicateToNew = () => {
+    try {
+      window.sessionStorage.setItem(
+        "teka:project-prefill:v1",
+        JSON.stringify({
+          name: project.name,
+          tagline: project.tagline,
+          description: detail.description,
+          category: project.category,
+          tags: project.tags,
+          skills: project.requiredSkills,
+          repositoryUrl: detail.repositoryUrl,
+          demoUrl: detail.demoUrl,
+          websiteUrl: detail.websiteUrl,
+          coverImage: project.coverImage,
+          sourceName: project.name,
+        }),
+      );
+    } catch {
+      /* storage unavailable */
+    }
+    navigate({ name: "projectNew" });
+  };
+
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-4 md:px-6 md:pt-6">
       {/* Back */}
@@ -738,6 +765,9 @@ export function ProjectView({ slug }: { slug: string }) {
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={() => setEditOpen(true)}>
                     <Pencil className="h-4 w-4" /> {t("project.menu.edit")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={duplicateToNew}>
+                    <Copy className="h-4 w-4" /> {t("project.menu.duplicate")}
                   </DropdownMenuItem>
                   {myRole === "OWNER" && (
                     <>
@@ -1595,7 +1625,10 @@ function UpdatesTab({
   );
 }
 
-// ─── Tasks tab ────────────────────────────────────────────────────────────────
+// ─── Tasks tab ──────────────────────────────────────────────────────────────
+
+// One-click starter tasks — the boring scaffolding every project needs anyway.
+const TASK_PRESETS = ["ui", "backend", "bugs", "testing", "docs", "deploy"] as const;
 
 function TasksTab({
   base,
@@ -1615,9 +1648,25 @@ function TasksTab({
   const [createOpen, setCreateOpen] = useState(false);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [presetPending, setPresetPending] = useState<string | null>(null);
   const dragMovedRef = useRef(false);
   const t = useT();
   const err = useErrText();
+
+  async function addPreset(key: string) {
+    if (presetPending) return;
+    const title = t(`project.tasks.preset.${key}`);
+    setPresetPending(key);
+    try {
+      const r = await post<{ task: TaskDTO }>(`${base}/tasks`, { title, status: "TODO" });
+      setTasks((prev) => [r.task, ...(prev ?? [])]);
+      toast.success(t("project.tasks.presetAdded", { title }));
+    } catch (e) {
+      toast.error(err(e));
+    } finally {
+      setPresetPending(null);
+    }
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -1764,6 +1813,27 @@ function TasksTab({
           )}
         </div>
       </div>
+
+      {/* Quick task presets — one click adds a starter task to the board. */}
+      {canContribute && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+            <Sparkles className="h-3 w-3" aria-hidden="true" /> {t("project.tasks.presetsLabel")}
+          </span>
+          {TASK_PRESETS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              disabled={presetPending !== null}
+              onClick={() => addPreset(key)}
+              className="inline-flex min-h-[30px] items-center gap-1 rounded-full border border-white/10 bg-white/[0.02] px-3 py-1 text-[11px] text-muted-foreground outline-none transition-colors focus-glow hover:border-cyan-400/40 hover:text-cyan-200 disabled:opacity-50"
+            >
+              {presetPending === key && <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />}
+              {t(`project.tasks.preset.${key}`)}
+            </button>
+          ))}
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <EmptyState

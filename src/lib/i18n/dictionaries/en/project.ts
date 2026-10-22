@@ -98,6 +98,7 @@ export const project = {
   },
   menu: {
     edit: "Edit project",
+    duplicate: "Build a similar project",
   },
   toasts: {
     signInToLike: "Sign in to like projects",
@@ -246,6 +247,16 @@ export const project = {
     dropHere: "Drop tasks here",
     doneChip: "Completed",
     theAssignee: "the assignee",
+    presetsLabel: "Quick tasks",
+    preset: {
+      ui: "Design the UI",
+      backend: "Build the backend",
+      bugs: "Fix known bugs",
+      testing: "Test & review the code",
+      docs: "Write starter docs",
+      deploy: "Ship the first version",
+    },
+    presetAdded: "“{title}” added to the board",
   },
   taskDetail: {
     title: "Task",

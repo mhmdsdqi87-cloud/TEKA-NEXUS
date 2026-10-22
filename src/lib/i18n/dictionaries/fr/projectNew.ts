@@ -47,6 +47,29 @@ export const projectNew: ProjectNewDict = {
     coverOption: "Couverture {name}",
     coverUrlHide: "Masquer le champ d’URL d’image",
   },
+  ai: {
+    panelTitle: "Copilote IA du projet",
+    panelSubtitle: "Décris ton idée — je remplis le formulaire pour toi.",
+    ideaLabel: "Idée du projet",
+    ideaPlaceholder: "ex. une appli de livres audio persans pour les écoliers…",
+    generate: "Proposer un brouillon",
+    generating: "Je réfléchis…",
+    apply: "Appliquer les suggestions",
+    discard: "Abandonner",
+    applied: "Suggestions appliquées — modifie tout ce que tu veux.",
+    coverPicked: "J’ai aussi choisi une couverture assortie",
+    failed: "L’assistant n’a pas répondu. Réessaie.",
+    minIdea: "Dis-m’en un peu plus (au moins 10 caractères).",
+  },
+  draft: {
+    restored: "Ton brouillon précédent a été restauré",
+    discardAction: "Abandonner",
+    discarded: "Brouillon effacé",
+  },
+  prefill: {
+    applied: "Pré-rempli à partir de « {name} »",
+    aProject: "un projet existant",
+  },
   visibilityDesc: {
     PUBLIC:
       "Répertorié dans Explorer et le flux en direct. Tout le monde peut le voir.",

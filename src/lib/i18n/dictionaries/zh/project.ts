@@ -99,6 +99,7 @@ export const project: ProjectDict = {
   },
   menu: {
     edit: "编辑项目",
+    duplicate: "创建类似项目",
   },
   toasts: {
     signInToLike: "登录后才能为项目点赞",
@@ -247,6 +248,16 @@ export const project: ProjectDict = {
     dropHere: "将任务拖到这里",
     doneChip: "已完成",
     theAssignee: "负责人",
+    presetsLabel: "快捷任务",
+    preset: {
+      ui: "设计用户界面",
+      backend: "搭建后端",
+      bugs: "修复已知问题",
+      testing: "测试与代码审查",
+      docs: "编写初始文档",
+      deploy: "发布第一个版本",
+    },
+    presetAdded: "「{title}」已加入看板",
   },
   taskDetail: {
     title: "任务",

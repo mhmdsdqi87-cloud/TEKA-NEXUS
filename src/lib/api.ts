@@ -40,6 +40,9 @@ export function setSessionToken(token: string | null): void {
 //      (only on gateway errors 502/503/504 where the server never processed
 //      the request) with a short backoff.
 const REQUEST_TIMEOUT_MS = 20_000;
+// Slow-but-legit calls (e.g. the AI project copilot on a cold serverless
+// backend) can outlive the default window — callers pass a bigger budget.
+export const AI_TIMEOUT_MS = 45_000;
 
 function isIdempotent(method: string) {
   return method === "GET" || method === "HEAD";
@@ -49,19 +52,20 @@ function isGatewayError(status: number) {
   return status === 502 || status === 503 || status === 504;
 }
 
-async function fetchOnce(path: string, init: RequestInit): Promise<Response> {
+function fetchWithTimeout(path: string, init: RequestInit, timeoutMs: number): Promise<Response> {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    return await fetch(path, { ...init, signal: ctrl.signal });
+    return fetch(path, { ...init, signal: ctrl.signal });
   } finally {
     clearTimeout(timer);
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, timeoutMs?: number): Promise<T> {
   const token = getSessionToken();
   const method = (init?.method ?? "GET").toUpperCase();
+  const budget = timeoutMs ?? REQUEST_TIMEOUT_MS;
   const baseInit: RequestInit = {
     ...init,
     headers: {
@@ -79,7 +83,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     if (attempt > 1) await new Promise((r) => setTimeout(r, 400 * attempt));
     let res: Response;
     try {
-      res = await fetchOnce(path, baseInit);
+      res = await fetchWithTimeout(path, baseInit, budget);
     } catch (e) {
       // Network failure / timeout: only idempotent requests are safe to retry.
       lastError = e;
@@ -118,11 +122,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     : new ApiError("Network connection failed — check your connection and try again.", 0);
 }
 
-export const get = <T>(path: string) => request<T>(path);
-export const post = <T>(path: string, body?: unknown) =>
-  request<T>(path, { method: "POST", body: body === undefined ? "{}" : JSON.stringify(body) });
-export const patch = <T>(path: string, body?: unknown) =>
-  request<T>(path, { method: "PATCH", body: body === undefined ? "{}" : JSON.stringify(body) });
+export const get = <T>(path: string, timeoutMs?: number) => request<T>(path, undefined, timeoutMs);
+export const post = <T>(path: string, body?: unknown, timeoutMs?: number) =>
+  request<T>(
+    path,
+    { method: "POST", body: body === undefined ? "{}" : JSON.stringify(body) },
+    timeoutMs,
+  );
+export const patch = <T>(path: string, body?: unknown, timeoutMs?: number) =>
+  request<T>(
+    path,
+    { method: "PATCH", body: body === undefined ? "{}" : JSON.stringify(body) },
+    timeoutMs,
+  );
 export const del = <T>(path: string, body?: unknown) =>
   request<T>(path, { method: "DELETE", body: body === undefined ? undefined : JSON.stringify(body) });
 

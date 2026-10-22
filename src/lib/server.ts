@@ -97,8 +97,13 @@ export async function awardContribution(opts: {
   eventType: keyof typeof XP_RULES;
   sourceType: string;
   sourceId: string;
+  /** Optional per-call override (e.g. rotating weekly challenge rewards). */
+  xpOverride?: number;
+  reputationOverride?: number;
 }) {
   const rule = XP_RULES[opts.eventType];
+  const xp = opts.xpOverride ?? rule.xp;
+  const reputation = opts.reputationOverride ?? rule.reputation;
   try {
     await db.contributionEvent.create({
       data: {
@@ -107,13 +112,13 @@ export async function awardContribution(opts: {
         eventType: opts.eventType,
         sourceType: opts.sourceType,
         sourceId: opts.sourceId,
-        xp: rule.xp,
-        reputation: rule.reputation,
+        xp,
+        reputation,
       },
     });
     await db.user.update({
       where: { id: opts.userId },
-      data: { xp: { increment: rule.xp }, reputation: { increment: rule.reputation } },
+      data: { xp: { increment: xp }, reputation: { increment: reputation } },
     });
   } catch {
     // Duplicate award — unique constraint hit. Idempotent, safe to ignore.

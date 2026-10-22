@@ -3,7 +3,7 @@
 
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { ok, handle, requireUser, requireProjectAccess } from "@/lib/server";
+import { ok, handle, requireUser, requireProjectAccess, awardContribution } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +24,15 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ slug: str
     } else {
       await db.projectLike.create({ data: { userId: user.id, projectId: project.id } });
       liked = true;
+      // Social XP (Live Pulse): +4 for the like, idempotent per (user, project)
+      // — unliking and re-liking never re-awards.
+      await awardContribution({
+        userId: user.id,
+        projectId: project.id,
+        eventType: "LIKE_GIVEN",
+        sourceType: "project",
+        sourceId: project.id,
+      });
     }
 
     const likeCount = await db.projectLike.count({ where: { projectId: project.id } });

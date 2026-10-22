@@ -17,6 +17,7 @@ import { settings } from "./settings";
 import { academy } from "./academy";
 import { founder } from "./founder";
 import { dm } from "./dm";
+import { pulse } from "./pulse";
 
 export const zh = {
   common,
@@ -37,4 +38,5 @@ export const zh = {
   profile,
   settings,
   dm,
+  pulse,
 };

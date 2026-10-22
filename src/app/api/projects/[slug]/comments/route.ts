@@ -16,6 +16,7 @@ import {
   getProjectRole,
   requireProjectAccess,
   notify,
+  awardContribution,
 } from "@/lib/server";
 import { getAuthUser } from "@/lib/auth";
 import { LIMITS } from "@/lib/constants";
@@ -156,6 +157,15 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: stri
       entityType: "project",
       entityId: project.id,
       payload: { projectName: project.name, commenterName: user.displayName },
+    });
+
+    // Social XP (Live Pulse): +6 per comment, idempotent per comment id.
+    await awardContribution({
+      userId: user.id,
+      projectId: project.id,
+      eventType: "COMMENT_POSTED",
+      sourceType: "comment",
+      sourceId: comment.id,
     });
 
     return ok({ comment: toCommentDTO(comment) }, 201);

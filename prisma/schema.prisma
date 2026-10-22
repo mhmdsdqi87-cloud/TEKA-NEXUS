@@ -72,6 +72,8 @@ model User {
   dmConversationsA     DmConversation[]    @relation("DmUserA")
   dmConversationsB     DmConversation[]    @relation("DmUserB")
   dmMessages           DmMessage[]
+  chatMessages         ChatMessage[]
+  challengeEntries     ChallengeEntry[]
 }
 
 model Session {
@@ -143,6 +145,7 @@ model Project {
   comments           ProjectComment[]
   activities         ProjectActivity[]
   contributionEvents ContributionEvent[]
+  chatMessages       ChatMessage[]
 
   @@index([category, status, visibility])
   @@index([createdAt])
@@ -494,4 +497,56 @@ model DmMessage {
 
   @@index([conversationId, createdAt])
   @@index([senderId])
+}
+
+// ─────────────────────────────────────────────────
+// LIVE PULSE (Task pulse-1): team chat + weekly challenge
+// ─────────────────────────────────────────────────
+
+// Live per-project team chat. Polled (3s cursor delta) — serverless-safe,
+// no websocket server required.
+model ChatMessage {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String // validated ≤ 500 chars in the API layer
+  createdAt DateTime @default(now())
+
+  @@index([projectId, createdAt])
+  @@index([userId])
+}
+
+// One active challenge per week window (Saturday → Friday, computed in
+// src/lib/week.ts). Auto-created on first read of the week.
+model Challenge {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  xpReward    Int      @default(150)
+  target      Int      @default(15) // activities needed to complete
+  weekStart   DateTime
+  weekEnd     DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  entries ChallengeEntry[]
+
+  @@index([weekStart])
+}
+
+model ChallengeEntry {
+  id          String    @id @default(cuid())
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  progress    Int       @default(0) // recomputed from activity on read
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  joinedAt    DateTime  @default(now())
+
+  @@unique([challengeId, userId])
+  @@index([userId])
 }

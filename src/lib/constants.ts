@@ -121,6 +121,11 @@ export const XP_RULES = {
   // TEKA Academy (free Python & HTML courses)
   ACADEMY_LESSON: { xp: 15, reputation: 2 },
   ACADEMY_COURSE: { xp: 100, reputation: 25 },
+  // Live Pulse (Task pulse-1): social engagement XP
+  COMMENT_POSTED: { xp: 6, reputation: 1 },
+  LIKE_GIVEN: { xp: 4, reputation: 0 },
+  CHAT_MESSAGE: { xp: 2, reputation: 0 },
+  CHALLENGE_COMPLETED: { xp: 150, reputation: 30 },
 } as const;
 
 export const AVATAR_GRADIENTS: Record<string, string> = {

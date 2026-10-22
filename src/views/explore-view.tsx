@@ -19,6 +19,9 @@ import { useT, useLabeled } from "@/lib/i18n";
 import { EmptyState } from "@/components/shared/atoms";
 import { ProjectCardView, ProjectCardSkeleton } from "@/components/shared/project-card";
 import { FadeIn, Reveal, SPRING, Stagger, StaggerItem } from "@/components/shared/motion";
+import { NexusTerminal } from "@/components/pulse/nexus-terminal";
+import { ChallengeCard } from "@/components/pulse/challenge-card";
+import { LeaderboardCard } from "@/components/pulse/leaderboard-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -237,6 +240,19 @@ export function ExploreView() {
           </TabsList>
         </Tabs>
       </Reveal>
+
+      {/* Live Pulse: community challenge + leaderboard + live terminal */}
+      <section className="mb-8 space-y-4" aria-label={t("pulse.title")}>
+        <FadeIn className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h2 className="font-display text-xl font-bold tracking-tight">{t("pulse.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("pulse.subtitle")}</p>
+        </FadeIn>
+        <NexusTerminal />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ChallengeCard />
+          <LeaderboardCard />
+        </div>
+      </section>
 
       {/* Grid */}
       {loading ? (

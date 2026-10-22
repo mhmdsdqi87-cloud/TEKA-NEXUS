@@ -105,6 +105,8 @@ import {
   UserAvatar,
 } from "@/components/shared/atoms";
 import { ShareMenu } from "@/components/shared/share-menu";
+import { GithubPanel } from "@/components/project/github-panel";
+import { ProjectChat } from "@/components/project/project-chat";
 import {
   AnimatedNumber,
   EASE,
@@ -381,6 +383,7 @@ const TAB_ITEMS = [
   { value: "tasks", icon: ListChecks },
   { value: "milestones", icon: Flag },
   { value: "team", icon: Users },
+  { value: "chat", icon: MessageSquare },
   { value: "activity", icon: Activity },
 ] as const;
 
@@ -902,6 +905,8 @@ export function ProjectView({ slug }: { slug: string }) {
               />
             )}
 
+            {tab === "chat" && <ProjectChat slug={slug} />}
+
             {tab === "activity" && (
               <ActivityTab updates={updates} tasks={tasks} milestones={milestones} />
             )}
@@ -1143,6 +1148,9 @@ function OverviewTab({
           )}
           </section>
         </FadeIn>
+
+        {/* Live GitHub repository intelligence (hidden quietly when unreachable) */}
+        {project.repositoryUrl && <GithubPanel repositoryUrl={project.repositoryUrl} />}
 
         <FadeIn delay={0.12}>
           <HoverLift>

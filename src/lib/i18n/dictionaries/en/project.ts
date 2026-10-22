@@ -9,6 +9,7 @@ export const project = {
     tasks: "Tasks",
     milestones: "Milestones",
     team: "Team",
+    chat: "Live chat",
     activity: "Activity",
   },
   kanban: {

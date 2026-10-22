@@ -10,6 +10,7 @@ export const project: ProjectDict = {
     tasks: "وظایف",
     milestones: "نقاط عطف",
     team: "اعضا",
+    chat: "چت زنده",
     activity: "فعالیت",
   },
   kanban: {

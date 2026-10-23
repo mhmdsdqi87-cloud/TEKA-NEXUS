@@ -1,5 +1,8 @@
 // TEKA NEXUS — Database Schema
-// Adapted from the master spec (§21) for Prisma + SQLite.
+// PRODUCTION (Vercel + Supabase Postgres): provider = "postgresql" + directUrl.
+// LOCAL SANDBOX DEV: uses prisma/schema.local.prisma (SQLite mirror) — NEVER
+// switch this file to sqlite for local work. The smart postinstall + pre-push
+// hook (scripts/postinstall-prisma.ts) guarantee this file stays postgres.
 // SQLite notes: no native enums or arrays → status enums are plain Strings
 // validated in application code (see src/lib/constants.ts), and multi-value
 // fields are stored as JSON strings.
@@ -15,8 +18,8 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   // Migrations need session/pooled-stable semantics — transaction pooler
-  // (pgbouncer) rejects some DDL. Runtime uses DATABASE_URL (port 6543,
-  // transaction pooler), migrations use DIRECT_URL (port 5432, session pooler).
+  // (pgbouncer) rejects some DDL. Runtime uses DATABASE_URL (pooler),
+  // migrations use DIRECT_URL (port 5432, session pooler).
   directUrl = env("DIRECT_URL")
 }
 
@@ -28,17 +31,21 @@ model User {
   id                  String    @id @default(cuid())
   email               String    @unique
   username            String    @unique // normalized lowercase, 3-24 chars
-  passwordHash        String
+  passwordHash        String // scrypt hash
   displayName         String
   bio                 String    @default("")
   avatarColor         String    @default("cyan") // brand gradient key: cyan|violet|ember|lime|rose|gold
   avatarUrl           String?   // optional external avatar
+  googleId            String?   @unique // Google OAuth subject (linked accounts)
   websiteUrl          String    @default("")
   role                String    @default("user") // user | moderator | admin
   goals               String    @default("[]") // JSON: build|contribute|learn|discover
   interests           String    @default("[]") // JSON: category slugs
   xp                  Int       @default(0)
   reputation          Int       @default(0)
+  coins               Int       @default(0) // TEKA Coin wallet (Task 19)
+  team                String?   // RED | BLUE — Red vs Blue War (Task 19)
+  title               String?   // earned boss title, e.g. "قاتل پایتون"
   onboardingCompleted Boolean   @default(false)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -74,6 +81,23 @@ model User {
   dmMessages           DmMessage[]
   chatMessages         ChatMessage[]
   challengeEntries     ChallengeEntry[]
+  wsFilesCreated       WorkspaceFile[]  @relation("WsFilesCreated")
+  wsFilesUpdated       WorkspaceFile[]  @relation("WsFilesUpdated")
+  wsDebugLogs          DebugLog[]       @relation("WsDebugLogsUser")
+
+  // ── TEKA OS (Task 19) ──
+  pet             Pet?
+  bossBattles     BossBattle[]
+  skillNodes      SkillNodeState[]
+  warActions      WarAction[]
+  cards           Card[]
+  tradesOut       CardTrade[] @relation("TradeFrom")
+  tradesIn        CardTrade[] @relation("TradeTo")
+  coinLedger      CoinLedger[]
+  items           UserItem[]
+  speedruns       SpeedrunRecord[]
+  crimeProgress   CrimeProgress[]
+  activityLogs    ActivityLog[]
 }
 
 model Session {
@@ -124,6 +148,7 @@ model Project {
   status        String    @default("IDEA") // IDEA|PLANNING|IN_DEVELOPMENT|BETA|RELEASED|PAUSED|ARCHIVED
   visibility    String    @default("PUBLIC") // PUBLIC|PRIVATE|UNLISTED
   coverImage    String    @default("") // path under /covers or external
+  bgImage       String    @default("") // personalized hero background (owner-chosen)
   repositoryUrl String    @default("")
   demoUrl       String    @default("")
   websiteUrl    String    @default("")
@@ -146,6 +171,8 @@ model Project {
   activities         ProjectActivity[]
   contributionEvents ContributionEvent[]
   chatMessages       ChatMessage[]
+  workspaceFiles     WorkspaceFile[]     @relation("WsFiles")
+  debugLogs          DebugLog[]          @relation("WsDebugLogs")
 
   @@index([category, status, visibility])
   @@index([createdAt])
@@ -491,7 +518,7 @@ model DmMessage {
   conversation  DmConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   senderId      String
   sender        User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  body          String    @db.Text // validated ≤ 2000 chars in the API layer
+  body          String // validated ≤ 2000 chars in the API layer
   readAt        DateTime? // set when the recipient fetches the conversation
   createdAt     DateTime  @default(now())
 
@@ -536,6 +563,67 @@ model Challenge {
   @@index([weekStart])
 }
 
+// ─────────────────────────────────────────────────
+// PROJECT WORKSPACE (Task ws-1): shared file system + debug console
+// Files live in the DB as text (≤ 100 KB each, enforced in the API layer),
+// organized by folder path. Every save snapshots a FileRevision (≤ 20 kept).
+// ─────────────────────────────────────────────────
+
+model WorkspaceFile {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation("WsFiles", fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  folder      String   @default("/") // normalized parent path, "/" = root
+  isFolder    Boolean  @default(false)
+  content     String   @default("") // text content for files, empty for folders
+  language    String   @default("plaintext") // detected from the extension
+  size        Int      @default(0)
+  starred     Boolean  @default(false)
+  createdById String?
+  createdBy   User?    @relation("WsFilesCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById String?
+  updatedBy   User?    @relation("WsFilesUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  revisions FileRevision[]
+
+  @@unique([projectId, folder, name])
+  @@index([projectId, updatedAt])
+  @@index([projectId, folder])
+}
+
+// Automatic snapshot created on every content save (max 20 per file,
+// trimmed by the API after each write).
+model FileRevision {
+  id         String        @id @default(cuid())
+  fileId     String
+  file       WorkspaceFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  content    String
+  size       Int           @default(0)
+  editorName String? // displayName of who saved it
+  createdAt  DateTime      @default(now())
+
+  @@index([fileId, createdAt])
+}
+
+// Team debug console — structured log lines posted by the API (diagnostics)
+// or manually by members from their own runs.
+model DebugLog {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation("WsDebugLogs", fields: [projectId], references: [id], onDelete: Cascade)
+  level     String   @default("info") // info | success | warn | error
+  source    String   @default("system")
+  message   String // ≤ 1000 chars, enforced in the API layer
+  userId    String?
+  user      User?    @relation("WsDebugLogsUser", fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([projectId, createdAt])
+}
+
 model ChallengeEntry {
   id          String    @id @default(cuid())
   challengeId String
@@ -549,4 +637,167 @@ model ChallengeEntry {
 
   @@unique([challengeId, userId])
   @@index([userId])
+}
+
+// ─────────────────────────────────────────────────
+// TEKA OS (Task 19) — pet / boss / skill tree / war /
+// cards / coin economy / speedrun / crime / activity
+// ─────────────────────────────────────────────────
+
+// CODE PET — virtual companion that grows as you learn.
+model Pet {
+  id         String    @id @default(cuid())
+  userId     String    @unique
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String    @default("")
+  stage      Int       @default(0) // 0 egg → 1 baby → 2 teen → 3 adult → 4 legendary
+  hunger     Int       @default(100) // 0-100, decays ~1/hour
+  feeds      Int       @default(0)
+  plays      Int       @default(0)
+  lastFedAt  DateTime?
+  lastTickAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+}
+
+// BOSS FIGHT — one battle row per attempt (ACTIVE | WON | LOST).
+model BossBattle {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId   String
+  moduleId   String // module id, or "__final__" for the course master boss
+  questions  String    @default("[]") // JSON: ordered quiz question payloads
+  cursor     Int       @default(0) // index of the current question
+  bossHp     Int       @default(100)
+  playerHp   Int       @default(100)
+  status     String    @default("ACTIVE")
+  hits       Int       @default(0)
+  misses     Int       @default(0)
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  @@index([userId, status])
+}
+
+// SKILL TREE — explicit completion marks for non-lesson nodes (boss/crime/...).
+model SkillNodeState {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nodeId      String
+  completedAt DateTime @default(now())
+
+  @@unique([userId, nodeId])
+  @@index([userId])
+}
+
+// RED vs BLUE WAR — point actions per weekly window.
+model WarAction {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team      String // RED | BLUE at action time
+  weekKey   String // e.g. "2026-W07"
+  kind      String // ENLIST|LESSON|BOSS|PET|CRIME|SPEEDRUN
+  points    Int
+  createdAt DateTime @default(now())
+
+  @@unique([userId, weekKey, kind])
+  @@index([weekKey])
+}
+
+// CODER CARDS — collectible, serial-numbered achievement cards.
+model Card {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String // WELCOME|STREAK7|BOSS1|FINAL_PY|...|COLLECTOR
+  rarity    String // COMMON|RARE|EPIC|LEGENDARY
+  serial    String   @unique // e.g. TEKA-BOSS1-8F2KQA
+  createdAt DateTime @default(now())
+
+  trades CardTrade[]
+
+  @@unique([userId, kind])
+}
+
+model CardTrade {
+  id         String    @id @default(cuid())
+  cardId     String
+  card       Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  fromUserId String
+  from       User      @relation("TradeFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+  to         User      @relation("TradeTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  status     String    @default("PENDING") // PENDING|ACCEPTED|DECLINED|CANCELLED
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@index([toUserId, status])
+  @@index([fromUserId, status])
+}
+
+// TEKA COIN — full ledger; User.coins is the cached balance.
+model CoinLedger {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  delta     Int // positive earn, negative spend
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// SHOP — owned cosmetics (frames / titles / pet skins).
+model UserItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemKey   String
+  equipped  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, itemKey])
+}
+
+// SPEEDRUN — best time per user per module.
+model SpeedrunRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  moduleId  String
+  ms        Int
+  createdAt DateTime @default(now())
+
+  @@index([moduleId, ms])
+  @@index([userId])
+}
+
+// CRIME SCENE — per-case forensic progress.
+model CrimeProgress {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId     String
+  clues      String    @default("[]") // JSON array of solved clue ids
+  solved     Boolean   @default(false)
+  finishedAt DateTime?
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([userId, caseId])
+  @@index([userId])
+}
+
+// ACTIVITY LOG — powers profile heatmap + time machine.
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String // lesson|boss|crime|war|pet|card|speedrun|shop|voice|coin
+  meta      String   @default("{}") // JSON
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }

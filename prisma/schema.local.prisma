@@ -1,0 +1,805 @@
+// TEKA NEXUS — Database Schema
+// ⚙️ AUTO-GENERATED SQLite mirror of schema.prisma (scripts/postinstall-prisma.ts).
+// ⚠️ DO NOT EDIT — edit prisma/schema.prisma (PostgreSQL, canonical) instead.
+// PRODUCTION (Vercel + Supabase Postgres): provider = "postgresql" + directUrl.
+// LOCAL SANDBOX DEV: uses prisma/schema.local.prisma (SQLite mirror) — NEVER
+// switch this file to sqlite for local work. The smart postinstall + pre-push
+// hook (scripts/postinstall-prisma.ts) guarantee this file stays postgres.
+// SQLite notes: no native enums or arrays → status enums are plain Strings
+// validated in application code (see src/lib/constants.ts), and multi-value
+// fields are stored as JSON strings.
+
+generator client {
+  provider      = "prisma-client-js"
+  // Vercel: build image and Lambda runtime use different OpenSSL flavors —
+  // ship both engines or every Prisma query 500s in production.
+  binaryTargets = ["native", "rhel-openssl-3.0.x", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider  = "sqlite"
+  url       = env("DATABASE_URL")
+  // Migrations need session/pooled-stable semantics — transaction pooler
+  // (pgbouncer) rejects some DDL. Runtime uses DATABASE_URL (pooler),
+  // migrations use DIRECT_URL (port 5432, session pooler).
+
+}
+
+// ─────────────────────────────────────────────────────────────
+// IDENTITY & AUTH
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  username            String    @unique // normalized lowercase, 3-24 chars
+  passwordHash        String // scrypt hash
+  displayName         String
+  bio                 String    @default("")
+  avatarColor         String    @default("cyan") // brand gradient key: cyan|violet|ember|lime|rose|gold
+  avatarUrl           String?   // optional external avatar
+  googleId            String?   @unique // Google OAuth subject (linked accounts)
+  websiteUrl          String    @default("")
+  role                String    @default("user") // user | moderator | admin
+  goals               String    @default("[]") // JSON: build|contribute|learn|discover
+  interests           String    @default("[]") // JSON: category slugs
+  xp                  Int       @default(0)
+  reputation          Int       @default(0)
+  coins               Int       @default(0) // TEKA Coin wallet (Task 19)
+  team                String?   // RED | BLUE — Red vs Blue War (Task 19)
+  title               String?   // earned boss title, e.g. "قاتل پایتون"
+  onboardingCompleted Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  sessions             Session[]
+  userSkills           UserSkill[]
+  ownedProjects        Project[]           @relation("ProjectOwner")
+  projectMemberships   ProjectMember[]
+  collaborationRequests CollaborationRequest[]
+  projectUpdates       ProjectUpdate[]
+  tasksCreated         Task[]              @relation("TaskCreator")
+  tasksAssigned        Task[]              @relation("TaskAssignee")
+  taskComments         TaskComment[]
+  milestonesCreated    Milestone[]
+  followers            Follow[]            @relation("FollowFollowing")
+  following            Follow[]            @relation("FollowFollower")
+  projectLikes         ProjectLike[]
+  projectSaves         ProjectSave[]
+  projectComments      ProjectComment[]
+  notificationsSent    Notification[]      @relation("NotificationActor")
+  notifications        Notification[]      @relation("NotificationRecipient")
+  reportsFiled         Report[]
+  activities           ProjectActivity[]
+  contributionEvents   ContributionEvent[]
+  blocksIssued         UserBlock[]         @relation("Blocker")
+  blocksReceived       UserBlock[]         @relation("Blocked")
+  notificationPrefs    UserNotificationPrefs?
+  academyProgress      AcademyProgress[]
+  academyCertificates  AcademyCertificate[]
+  academyExams         AcademyExam[]
+  dmConversationsA     DmConversation[]    @relation("DmUserA")
+  dmConversationsB     DmConversation[]    @relation("DmUserB")
+  dmMessages           DmMessage[]
+  chatMessages         ChatMessage[]
+  challengeEntries     ChallengeEntry[]
+  wsFilesCreated       WorkspaceFile[]  @relation("WsFilesCreated")
+  wsFilesUpdated       WorkspaceFile[]  @relation("WsFilesUpdated")
+  wsDebugLogs          DebugLog[]       @relation("WsDebugLogsUser")
+
+  // ── TEKA OS (Task 19) ──
+  pet             Pet?
+  bossBattles     BossBattle[]
+  skillNodes      SkillNodeState[]
+  warActions      WarAction[]
+  cards           Card[]
+  tradesOut       CardTrade[] @relation("TradeFrom")
+  tradesIn        CardTrade[] @relation("TradeTo")
+  coinLedger      CoinLedger[]
+  items           UserItem[]
+  speedruns       SpeedrunRecord[]
+  crimeProgress   CrimeProgress[]
+  activityLogs    ActivityLog[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique // 48-byte random hex
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// SKILLS TAXONOMY
+// ─────────────────────────────────────────────────────────────
+
+model Skill {
+  id   String @id @default(cuid())
+  slug String @unique
+  name String
+
+  users          UserSkill[]
+  projectNeeds   ProjectRequiredSkill[]
+}
+
+model UserSkill {
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillId     String
+  skill       Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([userId, skillId])
+  @@index([skillId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// PROJECTS
+// ─────────────────────────────────────────────────────────────
+
+model Project {
+  id            String    @id @default(cuid())
+  slug          String    @unique // kebab-case, unique
+  name          String
+  tagline       String
+  description   String    @default("")
+  category      String // e.g. WEB_DEVELOPMENT (see constants)
+  status        String    @default("IDEA") // IDEA|PLANNING|IN_DEVELOPMENT|BETA|RELEASED|PAUSED|ARCHIVED
+  visibility    String    @default("PUBLIC") // PUBLIC|PRIVATE|UNLISTED
+  coverImage    String    @default("") // path under /covers or external
+  bgImage       String    @default("") // personalized hero background (owner-chosen)
+  repositoryUrl String    @default("")
+  demoUrl       String    @default("")
+  websiteUrl    String    @default("")
+  ownerId       String
+  owner         User      @relation("ProjectOwner", fields: [ownerId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  archivedAt    DateTime?
+
+  members            ProjectMember[]
+  tags               ProjectTag[]
+  requiredSkills     ProjectRequiredSkill[]
+  requests           CollaborationRequest[]
+  updates            ProjectUpdate[]
+  tasks              Task[]
+  milestones         Milestone[]
+  likes              ProjectLike[]
+  saves              ProjectSave[]
+  comments           ProjectComment[]
+  activities         ProjectActivity[]
+  contributionEvents ContributionEvent[]
+  chatMessages       ChatMessage[]
+  workspaceFiles     WorkspaceFile[]     @relation("WsFiles")
+  debugLogs          DebugLog[]          @relation("WsDebugLogs")
+
+  @@index([category, status, visibility])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([ownerId])
+}
+
+model ProjectTag {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag       String
+
+  @@unique([projectId, tag])
+  @@index([tag])
+}
+
+model ProjectRequiredSkill {
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  skillId   String
+  skill     Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, skillId])
+  @@index([skillId])
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("CONTRIBUTOR") // OWNER|ADMIN|CONTRIBUTOR|VIEWER
+  joinedAt  DateTime @default(now())
+
+  @@unique([projectId, userId])
+  @@index([userId])
+}
+
+model CollaborationRequest {
+  id            String    @id @default(cuid())
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  applicantId   String
+  applicant     User      @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  requestedRole String    @default("CONTRIBUTOR")
+  introduction  String
+  portfolioUrl  String    @default("")
+  status        String    @default("PENDING") // PENDING|ACCEPTED|REJECTED|WITHDRAWN
+  reviewedById  String?
+  reviewedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([projectId, applicantId]) // no duplicate active requests
+  @@index([applicantId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// WORKSPACE: UPDATES / TASKS / MILESTONES
+// ─────────────────────────────────────────────────────────────
+
+model ProjectUpdate {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId, createdAt])
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String    @default("")
+  status      String    @default("BACKLOG") // BACKLOG|TODO|IN_PROGRESS|IN_REVIEW|DONE
+  priority    String    @default("NORMAL") // LOW|NORMAL|HIGH|URGENT
+  assigneeId  String?
+  assignee    User?     @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  createdById String
+  creator     User      @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  dueAt       DateTime?
+  position    Float     @default(1000)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  comments TaskComment[]
+
+  @@index([projectId, status])
+  @@index([assigneeId])
+}
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([taskId, createdAt])
+}
+
+model Milestone {
+  id          String    @id @default(cuid())
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String    @default("")
+  dueAt       DateTime?
+  completedAt DateTime?
+  createdById String
+  creator     User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@index([projectId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// SOCIAL GRAPH
+// ─────────────────────────────────────────────────────────────
+
+model Follow {
+  followerId  String
+  follower    User     @relation("FollowFollower", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User     @relation("FollowFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@id([followerId, followingId])
+  @@index([followingId])
+}
+
+model ProjectLike {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, projectId])
+  @@index([projectId])
+}
+
+model ProjectSave {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, projectId])
+  @@index([projectId])
+}
+
+model ProjectComment {
+  id        String    @id @default(cuid())
+  projectId String
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentId  String?
+  body      String
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([projectId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// NOTIFICATIONS / MODERATION / ACTIVITY / REPUTATION
+// ─────────────────────────────────────────────────────────────
+
+model Notification {
+  id          String    @id @default(cuid())
+  recipientId String
+  recipient   User      @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actorId     String?
+  actor       User?     @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  type        String // NEW_FOLLOWER|PROJECT_COMMENT|COLLAB_REQUEST|REQUEST_ACCEPTED|REQUEST_REJECTED|TASK_ASSIGNED|MEMBER_JOINED|SYSTEM
+  entityType  String?   // project|user|task|request
+  entityId    String?
+  payload     String    @default("{}") // JSON safe payload (display strings only)
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([recipientId, readAt])
+  @@index([recipientId, createdAt])
+}
+
+model UserNotificationPrefs {
+  userId                 String  @id
+  user                   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectActivity        Boolean @default(true)
+  collaborationRequests  Boolean @default(true)
+  socialActivity         Boolean @default(true)
+  updatedAt              DateTime @updatedAt
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  reporterId String
+  reporter   User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  targetType String // project|user|comment
+  targetId   String
+  reason     String // SPAM|HARASSMENT|INAPPROPRIATE|COPYRIGHT|OTHER
+  details    String   @default("")
+  status     String   @default("OPEN") // OPEN|REVIEWED|RESOLVED
+  createdAt  DateTime @default(now())
+
+  @@index([targetType, targetId])
+}
+
+model ProjectActivity {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  eventType String // PROJECT_CREATED|UPDATE_POSTED|MILESTONE_COMPLETED|RELEASE_PUBLISHED|MEMBER_JOINED|TASK_COMPLETED
+  metadata  String   @default("{}") // JSON safe metadata
+  createdAt DateTime @default(now())
+
+  @@index([projectId, createdAt])
+  @@index([createdAt])
+}
+
+model ContributionEvent {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId  String?
+  project    Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  eventType  String // TASK_COMPLETED|UPDATE_POSTED|MILESTONE_COMPLETED|RELEASE_PUBLISHED|COLLABORATION_ACCEPTED|PROJECT_CREATED
+  sourceType String // task|milestone|update|project|request
+  sourceId   String
+  xp         Int      @default(0)
+  reputation Int      @default(0)
+  verifiedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, eventType, sourceType, sourceId]) // idempotent awards
+  @@index([userId])
+}
+
+model UserBlock {
+  blockerId String
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// ACADEMY (TEKA Academy — free Python & HTML courses)
+// ─────────────────────────────────────────────────────────────
+
+model AcademyProgress {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId         String   // "python-basics" | "html-basics"
+  completedLessons String   @default("[]") // JSON array of lessonIds
+  lastLessonId     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+}
+
+model AcademyCertificate {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  code      String   @unique // human-readable certificate code, e.g. TEKA-PY-8F2KQA
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+  @@index([userId])
+}
+
+model AcademyExam {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String    // "python-basics" | "html-basics"
+  status      String    @default("ACTIVE") // ACTIVE|PASSED|FAILED|VOID
+  score       Int       @default(0) // 0-100, graded server-side
+  answers     String    @default("{}") // JSON: { questionId: chosenOptionIndex }
+  questionIds String    @default("[]") // JSON array of exam-bank question ids (correct answers never leave the server)
+  startedAt   DateTime  @default(now())
+  expiresAt   DateTime // server timer: startedAt + 15 min
+  submittedAt DateTime?
+  attemptNo   Int       @default(1)
+
+  @@index([userId])
+  @@index([userId, courseId, status])
+}
+
+// ─────────────────────────────────────────────────────────────
+// DIRECT MESSAGES (private 1:1 chats) — added in Task dm-1
+// ─────────────────────────────────────────────────────────────
+
+model DmConversation {
+  id            String   @id @default(cuid())
+  // Ordered participant pair (lexicographically sorted user ids) so the
+  // @@unique constraint guarantees at most one conversation per user pair.
+  userAId       String
+  userA         User     @relation("DmUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId       String
+  userB         User     @relation("DmUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  messages DmMessage[]
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
+  @@index([lastMessageAt])
+}
+
+model DmMessage {
+  id            String    @id @default(cuid())
+  conversationId String
+  conversation  DmConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId      String
+  sender        User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body          String // validated ≤ 2000 chars in the API layer
+  readAt        DateTime? // set when the recipient fetches the conversation
+  createdAt     DateTime  @default(now())
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+// ─────────────────────────────────────────────────
+// LIVE PULSE (Task pulse-1): team chat + weekly challenge
+// ─────────────────────────────────────────────────
+
+// Live per-project team chat. Polled (3s cursor delta) — serverless-safe,
+// no websocket server required.
+model ChatMessage {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String // validated ≤ 500 chars in the API layer
+  createdAt DateTime @default(now())
+
+  @@index([projectId, createdAt])
+  @@index([userId])
+}
+
+// One active challenge per week window (Saturday → Friday, computed in
+// src/lib/week.ts). Auto-created on first read of the week.
+model Challenge {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  xpReward    Int      @default(150)
+  target      Int      @default(15) // activities needed to complete
+  weekStart   DateTime
+  weekEnd     DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  entries ChallengeEntry[]
+
+  @@index([weekStart])
+}
+
+// ─────────────────────────────────────────────────
+// PROJECT WORKSPACE (Task ws-1): shared file system + debug console
+// Files live in the DB as text (≤ 100 KB each, enforced in the API layer),
+// organized by folder path. Every save snapshots a FileRevision (≤ 20 kept).
+// ─────────────────────────────────────────────────
+
+model WorkspaceFile {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation("WsFiles", fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  folder      String   @default("/") // normalized parent path, "/" = root
+  isFolder    Boolean  @default(false)
+  content     String   @default("") // text content for files, empty for folders
+  language    String   @default("plaintext") // detected from the extension
+  size        Int      @default(0)
+  starred     Boolean  @default(false)
+  createdById String?
+  createdBy   User?    @relation("WsFilesCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById String?
+  updatedBy   User?    @relation("WsFilesUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  revisions FileRevision[]
+
+  @@unique([projectId, folder, name])
+  @@index([projectId, updatedAt])
+  @@index([projectId, folder])
+}
+
+// Automatic snapshot created on every content save (max 20 per file,
+// trimmed by the API after each write).
+model FileRevision {
+  id         String        @id @default(cuid())
+  fileId     String
+  file       WorkspaceFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  content    String
+  size       Int           @default(0)
+  editorName String? // displayName of who saved it
+  createdAt  DateTime      @default(now())
+
+  @@index([fileId, createdAt])
+}
+
+// Team debug console — structured log lines posted by the API (diagnostics)
+// or manually by members from their own runs.
+model DebugLog {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation("WsDebugLogs", fields: [projectId], references: [id], onDelete: Cascade)
+  level     String   @default("info") // info | success | warn | error
+  source    String   @default("system")
+  message   String // ≤ 1000 chars, enforced in the API layer
+  userId    String?
+  user      User?    @relation("WsDebugLogsUser", fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([projectId, createdAt])
+}
+
+model ChallengeEntry {
+  id          String    @id @default(cuid())
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  progress    Int       @default(0) // recomputed from activity on read
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  joinedAt    DateTime  @default(now())
+
+  @@unique([challengeId, userId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────
+// TEKA OS (Task 19) — pet / boss / skill tree / war /
+// cards / coin economy / speedrun / crime / activity
+// ─────────────────────────────────────────────────
+
+// CODE PET — virtual companion that grows as you learn.
+model Pet {
+  id         String    @id @default(cuid())
+  userId     String    @unique
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String    @default("")
+  stage      Int       @default(0) // 0 egg → 1 baby → 2 teen → 3 adult → 4 legendary
+  hunger     Int       @default(100) // 0-100, decays ~1/hour
+  feeds      Int       @default(0)
+  plays      Int       @default(0)
+  lastFedAt  DateTime?
+  lastTickAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+}
+
+// BOSS FIGHT — one battle row per attempt (ACTIVE | WON | LOST).
+model BossBattle {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId   String
+  moduleId   String // module id, or "__final__" for the course master boss
+  questions  String    @default("[]") // JSON: ordered quiz question payloads
+  cursor     Int       @default(0) // index of the current question
+  bossHp     Int       @default(100)
+  playerHp   Int       @default(100)
+  status     String    @default("ACTIVE")
+  hits       Int       @default(0)
+  misses     Int       @default(0)
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  @@index([userId, status])
+}
+
+// SKILL TREE — explicit completion marks for non-lesson nodes (boss/crime/...).
+model SkillNodeState {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nodeId      String
+  completedAt DateTime @default(now())
+
+  @@unique([userId, nodeId])
+  @@index([userId])
+}
+
+// RED vs BLUE WAR — point actions per weekly window.
+model WarAction {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team      String // RED | BLUE at action time
+  weekKey   String // e.g. "2026-W07"
+  kind      String // ENLIST|LESSON|BOSS|PET|CRIME|SPEEDRUN
+  points    Int
+  createdAt DateTime @default(now())
+
+  @@unique([userId, weekKey, kind])
+  @@index([weekKey])
+}
+
+// CODER CARDS — collectible, serial-numbered achievement cards.
+model Card {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String // WELCOME|STREAK7|BOSS1|FINAL_PY|...|COLLECTOR
+  rarity    String // COMMON|RARE|EPIC|LEGENDARY
+  serial    String   @unique // e.g. TEKA-BOSS1-8F2KQA
+  createdAt DateTime @default(now())
+
+  trades CardTrade[]
+
+  @@unique([userId, kind])
+}
+
+model CardTrade {
+  id         String    @id @default(cuid())
+  cardId     String
+  card       Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  fromUserId String
+  from       User      @relation("TradeFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+  to         User      @relation("TradeTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  status     String    @default("PENDING") // PENDING|ACCEPTED|DECLINED|CANCELLED
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@index([toUserId, status])
+  @@index([fromUserId, status])
+}
+
+// TEKA COIN — full ledger; User.coins is the cached balance.
+model CoinLedger {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  delta     Int // positive earn, negative spend
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// SHOP — owned cosmetics (frames / titles / pet skins).
+model UserItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemKey   String
+  equipped  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, itemKey])
+}
+
+// SPEEDRUN — best time per user per module.
+model SpeedrunRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  moduleId  String
+  ms        Int
+  createdAt DateTime @default(now())
+
+  @@index([moduleId, ms])
+  @@index([userId])
+}
+
+// CRIME SCENE — per-case forensic progress.
+model CrimeProgress {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId     String
+  clues      String    @default("[]") // JSON array of solved clue ids
+  solved     Boolean   @default(false)
+  finishedAt DateTime?
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([userId, caseId])
+  @@index([userId])
+}
+
+// ACTIVITY LOG — powers profile heatmap + time machine.
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String // lesson|boss|crime|war|pet|card|speedrun|shop|voice|coin
+  meta      String   @default("{}") // JSON
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}

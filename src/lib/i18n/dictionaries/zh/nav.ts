@@ -7,6 +7,7 @@ export const nav: NavDict = {
   academy: "学院",
   portal: "学习门户",
   founder: "创始人控制台",
+  workspaceHub: "工作台",
   primaryNavAria: "主导航",
   mainAria: "导航",
   mobileNavAria: "移动端导航",

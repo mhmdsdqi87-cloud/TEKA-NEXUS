@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Search, Telescope, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Radio, Search, Telescope, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { useApp } from "@/lib/store";
@@ -19,9 +19,6 @@ import { useT, useLabeled } from "@/lib/i18n";
 import { EmptyState } from "@/components/shared/atoms";
 import { ProjectCardView, ProjectCardSkeleton } from "@/components/shared/project-card";
 import { FadeIn, Reveal, SPRING, Stagger, StaggerItem } from "@/components/shared/motion";
-import { NexusTerminal } from "@/components/pulse/nexus-terminal";
-import { ChallengeCard } from "@/components/pulse/challenge-card";
-import { LeaderboardCard } from "@/components/pulse/leaderboard-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,6 +47,7 @@ const SORT_TABS: { value: SortKey; labelKey: string }[] = [
 
 export function ExploreView() {
   const view = useApp((s) => s.view);
+  const navigate = useApp((s) => s.navigate);
   const initialQuery = view.name === "explore" ? (view.query ?? "") : "";
   const t = useT();
   const lbl = useLabeled();
@@ -241,18 +239,45 @@ export function ExploreView() {
         </Tabs>
       </Reveal>
 
-      {/* Live Pulse: community challenge + leaderboard + live terminal */}
-      <section className="mb-8 space-y-4" aria-label={t("pulse.title")}>
-        <FadeIn className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h2 className="font-display text-xl font-bold tracking-tight">{t("pulse.title")}</h2>
-          <p className="text-sm text-muted-foreground">{t("pulse.subtitle")}</p>
-        </FadeIn>
-        <NexusTerminal />
-        <div className="grid gap-4 lg:grid-cols-2">
-          <ChallengeCard />
-          <LeaderboardCard />
-        </div>
-      </section>
+      {/* Live Pulse → Command Center CTA (terminal + feed + AI + GitHub live in one hub) */}
+      <Reveal y={12} className="mb-8">
+        <button
+          onClick={() => navigate({ name: "live" })}
+          className="focus-glow group relative block w-full overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-cyan-500/[0.08] via-transparent to-violet-500/[0.08] p-4 text-start transition hover:border-cyan-400/30 md:p-5"
+          aria-label={t("pulse.live.ctaFromExplore")}
+        >
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.1]"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(34,211,238,0.4) 4px, transparent 5px)",
+            }}
+          />
+          <div className="relative flex items-center gap-3">
+            <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-cyan-400/30 bg-cyan-500/10">
+              <Radio className="h-5 w-5 text-cyan-300" />
+              <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-500" />
+              </span>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-2 font-display text-base font-bold md:text-lg">
+                {t("pulse.live.ctaFromExplore")}
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold tracking-widest text-emerald-300" dir="ltr">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                  {t("pulse.live.badge")}
+                </span>
+              </span>
+              <span className="mt-0.5 block truncate text-xs text-muted-foreground sm:text-sm">
+                {t("pulse.live.ctaSubtitle")}
+              </span>
+            </span>
+            <ChevronLeft className="h-5 w-5 shrink-0 text-muted-foreground transition group-hover:text-cyan-300 rtl:rotate-180" />
+          </div>
+        </button>
+      </Reveal>
 
       {/* Grid */}
       {loading ? (

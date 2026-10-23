@@ -7,8 +7,13 @@ export const landing: LandingDict = {
   topbar: {
     navAria: "Navegación principal",
     startBuilding: "Empieza a construir",
+    about: "Acerca de",
   },
   hero: {
+    startFree: "Empieza Gratis",
+    statLessons: "lecciones interactivas",
+    statPaths: "rutas de aprendizaje",
+    statFree: "gratis para siempre",
     badge: "TEKA NEXUS — ahora en beta abierta",
     title1: "Donde las ideas se convierten en ",
     title2: "tecnología real",
@@ -83,6 +88,23 @@ export const landing: LandingDict = {
     done: "Hecho",
     taskCard: "Tarjeta de tarea",
     assignee: "Responsable",
+  },
+  arena: {
+    eyebrow: "TEKA ARENA",
+    title: "Doce mundos de juego. Una sola navegación principal.",
+    subtitle:
+      "TEKA Arena es la capa de juego de TEKA NEXUS — jefes finales, un árbol de habilidades galáctico, Code Pet, guerras de Rojos contra Azules, cartas coleccionables, una terminal real y más. Cada juego es ahora una página de primera clase en la barra lateral, no un escritorio oculto.",
+    appsBadge: "12 juegos dentro",
+    cardTitle: "Elige tu campo de batalla",
+    cardBody:
+      "Pelea contra los jefes de cada curso para ganar títulos de campeón, cría una Code Pet que evoluciona contigo, colecciona Coder Cards con número de serie, únete a la guerra semanal de Rojos contra Azules y gasta tus monedas TEKA en la tienda. Todo vive en la navegación principal.",
+    f1: "12 juegos a pantalla completa — Boss Arena, Árbol de Habilidades, Code Pet, Coder Cards…",
+    f2: "Una terminal que funciona de verdad: open boss, teka learn python-basics",
+    f3: "TEKA Nights — evento mensual con XP×2 y cuenta regresiva en vivo",
+    f4: "Capa de juego en todas partes: jefes, mascota, cartas, monedas y guerras",
+    f5: "A un clic desde cualquier página — toda la arena vive en la barra lateral",
+    cta: "Crea tu cuenta y entra a la arena",
+    note: "Gratis para siempre — sin tarjeta, sin trampas.",
   },
   academy: {
     eyebrow: "Academia TEKA",

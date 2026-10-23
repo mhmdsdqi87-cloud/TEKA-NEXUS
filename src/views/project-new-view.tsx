@@ -37,6 +37,7 @@ import { useI18n } from "@/lib/i18n/store";
 import { LIMITS, PROJECT_CATEGORIES, PROJECT_COVER_GALLERY, PROJECT_STATUSES, SKILLS } from "@/lib/constants";
 
 import { EmptyState } from "@/components/shared/atoms";
+import { BackgroundPicker } from "@/components/shared/background-picker";
 import { HoverLift, SPRING, staggerChild, staggerParent, TapScale } from "@/components/shared/motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -147,6 +148,7 @@ export function ProjectNewView() {
   const [coverImage, setCoverImage] = useState("");
   const [customCoverOpen, setCustomCoverOpen] = useState(false);
   const [customCoverUrl, setCustomCoverUrl] = useState("");
+  const [bgImage, setBgImage] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -180,6 +182,7 @@ export function ProjectNewView() {
         if (typeof p.demoUrl === "string") setDemoUrl(p.demoUrl);
         if (typeof p.websiteUrl === "string") setWebsiteUrl(p.websiteUrl);
         if (typeof p.coverImage === "string") setCoverImage(p.coverImage.slice(0, LIMITS.coverImage));
+        if (typeof p.bgImage === "string") setBgImage(p.bgImage.slice(0, 500));
         toast.info(t("projectNew.prefill.applied", { name: typeof p.sourceName === "string" && p.sourceName ? p.sourceName : t("projectNew.prefill.aProject") }));
         return;
       }
@@ -203,6 +206,7 @@ export function ProjectNewView() {
       if (typeof d.demoUrl === "string") setDemoUrl(d.demoUrl);
       if (typeof d.websiteUrl === "string") setWebsiteUrl(d.websiteUrl);
       if (typeof d.coverImage === "string") setCoverImage(d.coverImage.slice(0, LIMITS.coverImage));
+      if (typeof d.bgImage === "string") setBgImage(d.bgImage.slice(0, 500));
       toast.info(t("projectNew.draft.restored"), {
         action: { label: t("projectNew.draft.discardAction"), onClick: clearDraft },
         duration: 8000,
@@ -218,20 +222,20 @@ export function ProjectNewView() {
     if (submitting) return;
     const hasContent =
       name.trim() || tagline.trim() || description.trim() || tags.length || skills.length ||
-      repositoryUrl.trim() || demoUrl.trim() || websiteUrl.trim() || coverImage;
+      repositoryUrl.trim() || demoUrl.trim() || websiteUrl.trim() || coverImage || bgImage;
     if (!hasContent) return;
     const id = window.setTimeout(() => {
       try {
         window.localStorage.setItem(
           DRAFT_KEY,
-          JSON.stringify({ name, tagline, description, category, status, visibility, tags, skills, repositoryUrl, demoUrl, websiteUrl, coverImage, savedAt: Date.now() }),
+          JSON.stringify({ name, tagline, description, category, status, visibility, tags, skills, repositoryUrl, demoUrl, websiteUrl, coverImage, bgImage, savedAt: Date.now() }),
         );
       } catch {
         /* storage unavailable */
       }
     }, 800);
     return () => window.clearTimeout(id);
-  }, [name, tagline, description, category, status, visibility, tags, skills, repositoryUrl, demoUrl, websiteUrl, coverImage, submitting]);
+  }, [name, tagline, description, category, status, visibility, tags, skills, repositoryUrl, demoUrl, websiteUrl, coverImage, bgImage, submitting]);
 
   const clearDraft = useCallback(() => {
     try {
@@ -252,6 +256,7 @@ export function ProjectNewView() {
     setWebsiteUrl("");
     setCoverImage("");
     setCustomCoverUrl("");
+    setBgImage("");
     toast.success(t("projectNew.draft.discarded"));
      
   }, [t]);
@@ -430,6 +435,7 @@ export function ProjectNewView() {
         demoUrl: (normalizeUrlInput(demoUrl) ?? demoUrl.trim()) || undefined,
         websiteUrl: (normalizeUrlInput(websiteUrl) ?? websiteUrl.trim()) || undefined,
         coverImage: coverImage.trim() || undefined,
+        bgImage: bgImage.trim() || undefined,
       });
       toast.success(t("projectNew.toasts.launched"));
       try {
@@ -979,6 +985,11 @@ export function ProjectNewView() {
               <Link2 className="h-3.5 w-3.5" aria-hidden="true" /> {t("projectNew.form.coverUrlLabel")}
             </Button>
           )}
+        </motion.div>
+
+        {/* Personalized background (hero image behind the project header) */}
+        <motion.div variants={staggerChild} className="space-y-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <BackgroundPicker value={bgImage} onChange={setBgImage} name={name || "TEKA"} seed={6} />
         </motion.div>
 
         {/* Actions */}

@@ -179,6 +179,13 @@ function runChecks(doc: Document, checks: HtmlCheck[]): CheckResult[] {
         const hit = els.some((el) => el.getAttribute(check.attrName!) === val);
         if (!hit) return { check, ok: false, detail: `attribute ${check.attrName}="${val}" missing` };
       }
+      if (check.styleIncludes !== undefined) {
+        const needle = check.styleIncludes.replace(/\s+/g, "").toLowerCase();
+        const hit = els.some((el) =>
+          (el.getAttribute("style") ?? "").replace(/\s+/g, "").toLowerCase().includes(needle),
+        );
+        if (!hit) return { check, ok: false, detail: `style "${check.styleIncludes}" missing` };
+      }
       return { check, ok: true };
     } catch {
       return { check, ok: false, detail: "invalid selector" };

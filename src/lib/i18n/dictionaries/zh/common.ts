@@ -31,6 +31,7 @@ export const common: CommonDict = {
   comingSoon: "即将推出",
   saved: "收藏",
   explore: "探索",
+  live: "直播",
   home: "首页",
   notifications: "通知",
   profile: "个人主页",

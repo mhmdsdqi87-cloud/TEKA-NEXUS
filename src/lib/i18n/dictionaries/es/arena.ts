@@ -1,0 +1,38 @@
+// TEKA NEXUS — arena dictionary (es): Arena hub + game blurbs (Task 23).
+export const arena = {
+  hub: {
+    section: "ARENA",
+    navLabel: "Centro de la Arena",
+    eyebrow: "TEKA ARENA",
+    title: "Doce mundos de juego. Una sola arena.",
+    subtitle:
+      "Pelea contra jefes, avanza en el árbol de habilidades, cría tu mascota de código, únete a la guerra de equipos y colecciona cartas — todo vive ahora en la navegación principal.",
+    nightsLive: "TEKA NIGHTS en vivo — XP ×2",
+    nightsIn: "TEKA NIGHTS en",
+    statCoins: "Monedas TEKA",
+    statTeam: "Equipo",
+    statNoTeam: "Sin equipo",
+    statTitle: "Título de campeón",
+    statNoTitle: "Aún sin título — ¡pelea contra un jefe!",
+    statCards: "Cartas de coder",
+    statPet: "Mascota de código",
+    statPetNone: "Sin eclosionar",
+    gamesTitle: "Elige tu campo de batalla",
+    academyCta: "Cada jefe se desbloquea con lecciones — la Academia es donde empieza todo.",
+    terminalHint: "La terminal todavía esconde secretos…",
+  },
+  blurb: {
+    boss: "Jefes finales de cada curso con barras de vida, títulos y gloria.",
+    tree: "Un mapa RPG galáctico de todo lo que puedes aprender.",
+    pet: "Un compañero que eclosiona, evoluciona y nunca te deja estudiar solo.",
+    cards: "Colecciona cartas de coder con números de serie únicos.",
+    war: "Rojos contra Azules — guerra semanal de equipos con puntuación en vivo.",
+    shop: "Gasta tus monedas TEKA en mejoras, temas y ventajas.",
+    crime: "Criminalística digital: lee registros, rastrea IPs, resuelve casos.",
+    speedrun: "Carrera contra el reloj por módulos — marca un récord global.",
+    timemachine: "Revive todo tu viaje de aprendizaje, día a día.",
+    heatmap: "Cuadrícula estilo GitHub de cada lección que has tocado.",
+    voice: "Salas de audio en vivo con narración por IA.",
+    terminal: "Un shell real para toda la plataforma. Prueba sudo hack.",
+  },
+};

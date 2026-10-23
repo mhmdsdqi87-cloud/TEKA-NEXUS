@@ -44,6 +44,24 @@ export const auth: AuthDict = {
   haveAccount: "¿Ya tienes una cuenta?",
   newToTeka: "¿Nuevo en TEKA NEXUS?",
   createAccountLink: "Crear una cuenta",
+  google: {
+    setupWhy: "¿Por qué aún no está activo?",
+    setupTitle: "Acceso con Google — guía de activación",
+    setupBody: "Todo ya está listo en el servidor. El acceso con Google se activa al añadir las dos variables de entorno OAuth en el panel de despliegue — sin tocar el código.",
+    setupStep1: "Abre console.cloud.google.com y crea un proyecto (gratis).",
+    setupStep2: "APIs & Services → OAuth consent screen → elige External y registra el nombre de la app.",
+    setupStep3: "Credentials → Create credentials → OAuth client ID → Web application.",
+    setupStep4: "Añade la URI de redirección de abajo, luego define GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Vercel y vuelve a desplegar.",
+    setupRedirect: "URI de redirección autorizada",
+    button: 'Continuar con Google',
+    divider: 'o continúa con tu correo',
+    redirecting: 'Conectando con Google…',
+  },
+  portal: {
+    welcome: 'Bienvenido de nuevo,',
+    entering: 'Entrando al Nexus…',
+    secured: 'Sesión protegida',
+  },
   err: {
     username:
       "El nombre de usuario debe tener 3–24 caracteres: letras minúsculas, números y guiones bajos.",
@@ -53,5 +71,9 @@ export const auth: AuthDict = {
     emailTaken: "Este correo ya está registrado. Prueba a iniciar sesión.",
     usernameTaken: "Ese nombre de usuario ya está en uso. Elige otro.",
     invalidCredentials: "Correo o contraseña incorrectos.",
+    googleFailed: 'Falló el inicio de sesión con Google. Inténtalo de nuevo.',
+    googleCancelled: 'Se canceló el inicio de sesión con Google.',
+    googleNotConfigured: 'El inicio de sesión con Google aún no está activo — faltan GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET (ver docs/GOOGLE_OAUTH.md).',
+    googleState: 'El intento de inicio con Google expiró. Inténtalo otra vez.',
   },
 };

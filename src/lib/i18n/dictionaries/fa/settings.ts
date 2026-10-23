@@ -41,7 +41,7 @@ export const settings: SettingsDict = {
   },
   accountTab: {
     language: "زبان",
-    languageDescription: "زبان رابط کاربری را انتخاب کن — English, Español, 中文, العربية, فارسی or Français.",
+    languageDescription: "زبان رابط کاربری را انتخاب کن — English, Español, 中文, العربية, فارسی, Français or Русский.",
     email: "ایمیل",
     emailHint: "ایمیل ورودت — در دوره بتا فقط‌خواندنی است.",
     changePassword: "تغییر رمز عبور",

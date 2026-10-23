@@ -7,8 +7,13 @@ export const landing: LandingDict = {
   topbar: {
     navAria: "主导航",
     startBuilding: "开始构建",
+    about: "关于项目",
   },
   hero: {
+    startFree: "免费开始",
+    statLessons: "互动课程",
+    statPaths: "学习路径",
+    statFree: "永久免费",
     badge: "TEKA NEXUS — 现已开启公开 Beta",
     title1: "让想法成为",
     title2: "真正的科技",
@@ -82,6 +87,23 @@ export const landing: LandingDict = {
     done: "已完成",
     taskCard: "任务卡片",
     assignee: "负责人",
+  },
+  arena: {
+    eyebrow: "TEKA 竞技场",
+    title: "十二个游戏世界，一条主导航。",
+    subtitle:
+      "TEKA 竞技场是 TEKA NEXUS 的游戏层 — Boss 战、银河技能树、代码宠物、红蓝大战、收藏卡牌、真正可用的终端等等。每个游戏现在都是侧边栏里的一等页面，而不是隐藏的桌面。",
+    appsBadge: "内置 12 个游戏",
+    cardTitle: "选择你的战场",
+    cardBody:
+      "挑战各课程的 Boss 赢得冠军头衔，养一只随你学习而进化的代码宠物，收集带唯一序列号的编程卡牌，参加每周红蓝大战，再用 TEKA 金币在商店购物。一切就在主导航里。",
+    f1: "12 个整页游戏 — Boss 竞技场、技能树、代码宠物、编程卡牌…",
+    f2: "真正能用的终端：open boss、teka learn python-basics",
+    f3: "TEKA Nights — 每月活动，双倍 XP 与实时倒计时",
+    f4: "游戏层无处不在：Boss、宠物、卡牌、金币与战争",
+    f5: "任何页面一键直达 — 整个竞技场就在侧边栏",
+    cta: "注册账号，进入竞技场",
+    note: "永久免费 — 无需信用卡，没有套路。",
   },
   academy: {
     eyebrow: "TEKA 学院",

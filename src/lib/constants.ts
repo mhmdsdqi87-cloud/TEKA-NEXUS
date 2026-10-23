@@ -1,6 +1,9 @@
 // TEKA NEXUS — Domain constants shared by backend and frontend.
 // Single source of truth for every enum-ish string in the platform.
 
+// The open-source repo that powers this very platform (GitHub Command Center).
+export const PLATFORM_REPO_URL = "https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS";
+
 export const PROJECT_CATEGORIES = [
   { slug: "WEB_DEVELOPMENT", name: "Web Development", icon: "Globe" },
   { slug: "MOBILE_DEVELOPMENT", name: "Mobile Development", icon: "Smartphone" },
@@ -152,4 +155,8 @@ export const LIMITS = {
   tagline: 140,
   searchQuery: 80,
   pageSize: 12,
+  wsFileName: 80,
+  wsFilePath: 240,
+  wsFileContent: 100000,
+  wsLogMessage: 1000,
 };

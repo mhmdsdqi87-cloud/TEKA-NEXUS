@@ -1,55 +1,25 @@
 "use client";
 
-// TEKA NEXUS — Nexus Terminal (Live Pulse, Task pulse-1).
-// A CRT-styled live community console embedded in Explore:
-//   • boot sequence + live activity stream from /api/pulse (7s poll)
-//   • interactive command line: help, projects, top, challenge, stats,
-//     whoami, date, matrix (easter egg), clear
+// TEKA NEXUS — Nexus Terminal v3 (Task 13).
+// A CRT-styled live community console in the Command Center:
+//   • boot sequence + REAL live activity stream from /api/pulse (5s poll)
+//   • interactive commands: help, projects, top, challenge, stats, feed,
+//     user <u>, search <q>, github [repo], ai <question>, whoami, date,
+//     matrix (easter egg), clear
 //   • scanlines, phosphor glow, blinking cursor, expand/collapse
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Maximize2, Minimize2, TerminalSquare } from "lucide-react";
 
-import { get } from "@/lib/api";
+import { get, post } from "@/lib/api";
 import { useT } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/store";
 import { cn } from "@/lib/utils";
+import { PLATFORM_REPO_URL } from "@/lib/constants";
 import { MatrixRain } from "./matrix-rain";
+import { EVENT_CLASS, EVENT_GLYPH, type PulseEventType, type PulseResponse } from "./events";
 
-type PulseEvent = {
-  id: string;
-  type: "join" | "project" | "like" | "comment" | "chat" | "update";
-  at: string;
-  actor: string;
-  actorColor: string;
-  target: string;
-  slug?: string;
-  preview?: string;
-};
-
-type PulseResponse = {
-  events: PulseEvent[];
-  stats: { users: number; projects: number; likes: number; comments: number; chats: number };
-};
-
-type Line = { id: string; kind: "sys" | "in" | "out" | "err" | `ev-${PulseEvent["type"]}`; text: string };
-
-const EVENT_GLYPH: Record<PulseEvent["type"], string> = {
-  join: "✦",
-  project: "▲",
-  like: "♥",
-  comment: "✎",
-  chat: "✉",
-  update: "⚡",
-};
-
-const EVENT_CLASS: Record<PulseEvent["type"], string> = {
-  join: "text-cyan-300",
-  project: "text-violet-300",
-  like: "text-rose-300",
-  comment: "text-amber-300",
-  chat: "text-emerald-300",
-  update: "text-lime-300",
-};
+type Line = { id: string; kind: "sys" | "in" | "out" | "err" | `ev-${PulseEventType}`; text: string };
 
 function clock(iso: string): string {
   const d = new Date(iso);
@@ -59,6 +29,7 @@ function clock(iso: string): string {
 
 export function NexusTerminal({ className }: { className?: string }) {
   const t = useT();
+  const locale = useI18n((s) => s.locale);
   const [expanded, setExpanded] = useState(false);
   const [lines, setLines] = useState<Line[]>([]);
   const [input, setInput] = useState("");
@@ -73,7 +44,7 @@ export function NexusTerminal({ className }: { className?: string }) {
   const push = useCallback((kind: Line["kind"], text: string, id?: string) => {
     setLines((prev) => {
       const next = [...prev, { id: id ?? `l${prev.length}-${Date.now()}-${Math.random()}`, kind, text }];
-      return next.length > 240 ? next.slice(next.length - 240) : next;
+      return next.length > 300 ? next.slice(next.length - 300) : next;
     });
   }, []);
 
@@ -82,9 +53,9 @@ export function NexusTerminal({ className }: { className?: string }) {
     if (bootedRef.current) return;
     bootedRef.current = true;
     const boot: [Line["kind"], string][] = [
-      ["sys", "TEKA NEXUS OS v2.6 — kernel boot ............ OK"],
+      ["sys", "TEKA NEXUS OS v3.0 — kernel boot ............ OK"],
       ["sys", "connecting to pulse relay ................... OK"],
-      ["sys", "social graph synced ✓  ·  live feed attached"],
+      ["sys", "social graph synced ✓  ·  live feed attached  ·  NEXUS AI linked"],
       ["out", t("pulse.terminal.welcome")],
       ["sys", t("pulse.terminal.helpHint")],
     ];
@@ -120,7 +91,7 @@ export function NexusTerminal({ className }: { className?: string }) {
             const arr = [...seenEvents.current];
             seenEvents.current = new Set(arr.slice(arr.length / 2));
           }
-          const label = t(`pulse.terminal.eventLabels.${e.type}`);
+          const label = t(`pulse.events.${e.type}`);
           const preview = e.preview ? ` — «${e.preview}»` : "";
           push(
             `ev-${e.type}` as Line["kind"],
@@ -140,7 +111,7 @@ export function NexusTerminal({ className }: { className?: string }) {
     };
 
     tick();
-    const timer = setInterval(tick, 7000);
+    const timer = setInterval(tick, 5000);
     return () => {
       alive = false;
       clearInterval(timer);
@@ -158,21 +129,30 @@ export function NexusTerminal({ className }: { className?: string }) {
   // ── command handlers ──────────────────────────────────────────
   const runCommand = useCallback(
     async (raw: string) => {
-      const cmd = raw.trim().toLowerCase();
-      if (!cmd) return;
+      const trimmed = raw.trim();
+      if (!trimmed) return;
       push("in", `nexus:~$ ${raw}`);
 
-      switch (cmd) {
+      const [cmd, ...rest] = trimmed.split(/\s+/);
+      const arg = rest.join(" ").trim();
+      const lc = cmd.toLowerCase();
+
+      switch (lc) {
         case "help":
           push("out", "commands:");
-          push("out", "  projects   — top community projects");
-          push("out", "  top        — all-time XP leaderboard");
-          push("out", "  challenge  — current weekly challenge");
-          push("out", "  stats      — live community counters");
-          push("out", "  whoami     — who are you?");
-          push("out", "  date       — server date & time");
-          push("out", "  matrix     — ???");
-          push("out", "  clear      — wipe the screen");
+          push("out", "  projects     — top community projects");
+          push("out", "  top          — all-time XP leaderboard");
+          push("out", "  challenge    — current weekly challenge");
+          push("out", "  stats        — live community counters");
+          push("out", "  feed         — latest community events");
+          push("out", "  search <q>   — search projects & people");
+          push("out", "  user <name>  — inspect a member profile");
+          push("out", "  github [r]   — repo intel (default: this platform)");
+          push("out", "  ai <question>— ask NEXUS AI anything");
+          push("out", "  whoami       — who are you?");
+          push("out", "  date         — server date & time");
+          push("out", "  matrix       — ???");
+          push("out", "  clear        — wipe the screen");
           break;
 
         case "clear":
@@ -250,18 +230,122 @@ export function NexusTerminal({ className }: { className?: string }) {
           try {
             const res = await get<PulseResponse>("/api/pulse");
             const s = res.stats;
-            push("out", `users:${s.users}  projects:${s.projects}  likes:${s.likes}  comments:${s.comments}  chat-messages:${s.chats}`);
+            push("out", `users:${s.users}  projects:${s.projects}  likes:${s.likes}  comments:${s.comments}  chat:${s.chats}  follows:${s.follows}`);
           } catch {
             push("err", "stats unavailable");
           }
           break;
         }
 
+        case "feed": {
+          push("sys", "reading the pulse relay…");
+          try {
+            const res = await get<PulseResponse>("/api/pulse");
+            const rows = res.events.slice(0, 10);
+            if (!rows.length) {
+              push("out", "  (empty — the community is asleep)");
+            }
+            for (const e of rows) {
+              push(
+                `ev-${e.type}` as Line["kind"],
+                `[${clock(e.at)}] ${EVENT_GLYPH[e.type]} ${e.actor} ${t(`pulse.events.${e.type}`)} ${e.target}`
+              );
+            }
+          } catch {
+            push("err", "feed unavailable");
+          }
+          break;
+        }
+
+        case "search": {
+          if (!arg) {
+            push("err", "usage: search <query>");
+            break;
+          }
+          push("sys", `searching the nexus for «${arg}»…`);
+          try {
+            const res = await get<{ projects: { name: string; slug: string }[]; users: { displayName: string; username: string }[] }>(
+              `/api/search?q=${encodeURIComponent(arg)}`
+            );
+            res.projects.slice(0, 3).forEach((p) => push("out", `  ▲ ${p.name}  ·  /${p.slug}`));
+            res.users.slice(0, 3).forEach((u) => push("out", `  ✦ ${u.displayName}  ·  @${u.username}`));
+            if (!res.projects.length && !res.users.length) push("out", "  no matches — the nexus is vast but not infinite");
+          } catch {
+            push("err", "search unavailable");
+          }
+          break;
+        }
+
+        case "user": {
+          if (!arg) {
+            push("err", "usage: user <username>");
+            break;
+          }
+          push("sys", `looking up @${arg.replace(/^@/, "")}…`);
+          try {
+            const username = arg.replace(/^@/, "").replace(/[^a-zA-Z0-9_-]/g, "");
+            const res = await get<{
+              profile: { displayName: string; username: string; xp: number; reputation: number; bio: string; followerCount: number; projectCount: number };
+            }>(`/api/users/${encodeURIComponent(username)}`);
+            const u = res.profile;
+            push("out", `  ✦ ${u.displayName} (@${u.username})`);
+            push("out", `  ${u.xp} XP · rep ${u.reputation} · ${u.followerCount} followers · ${u.projectCount} projects`);
+            if (u.bio) push("out", `  «${u.bio.slice(0, 90)}»`);
+          } catch {
+            push("err", "user not found");
+          }
+          break;
+        }
+
+        case "github": {
+          const target = arg || PLATFORM_REPO_URL;
+          push("sys", `contacting github for ${arg ? target : "the platform repo"}…`);
+          try {
+            const res = await get<{
+              ok: boolean;
+              repo?: { fullName: string; htmlUrl: string; stars: number; forks: number; openIssues: number; language: string | null; pushedAt: string };
+              commits?: { sha: string; message: string; author: string; date: string; url: string }[];
+            }>(`/api/github/repo?url=${encodeURIComponent(target)}`);
+            if (!res.ok || !res.repo) {
+              push("err", "repository not found or private");
+              break;
+            }
+            const r = res.repo;
+            push("out", `  ⬢ ${r.fullName}  ·  ★ ${r.stars}  ⑂ ${r.forks}  ● ${r.openIssues}${r.language ? `  ·  ${r.language}` : ""}`);
+            (res.commits ?? []).slice(0, 3).forEach((c) =>
+              push("out", `    ${c.sha} ${c.message.slice(0, 72)} — ${c.author}`)
+            );
+          } catch {
+            push("err", "github unreachable");
+          }
+          break;
+        }
+
+        case "ai": {
+          if (!arg) {
+            push("err", "usage: ai <your question>");
+            break;
+          }
+          push("sys", "NEXUS AI is thinking…");
+          try {
+            const res = await post<{ reply: string; offline?: boolean }>(
+              "/api/ai/nexus",
+              { messages: [{ role: "user", content: arg }], locale }
+            );
+            for (const seg of res.reply.split("\n")) {
+              push(res.offline ? "sys" : "out", seg);
+            }
+          } catch {
+            push("err", "NEXUS AI unreachable (sign in first?)");
+          }
+          break;
+        }
+
         default:
-          push("err", `${cmd}: ${t("pulse.terminal.notFound")}`);
+          push("err", `${lc}: ${t("pulse.terminal.notFound")}`);
       }
     },
-    [push, t]
+    [push, t, locale]
   );
 
   const submit = () => {
@@ -324,7 +408,7 @@ export function NexusTerminal({ className }: { className?: string }) {
           aria-label={t("pulse.terminal.title")}
           className={cn(
             "overflow-y-auto px-3 py-2 text-emerald-100/90",
-            expanded ? "h-[30rem]" : "h-64",
+            expanded ? "h-[34rem]" : "h-72",
             "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-emerald-500/20"
           )}
           style={{ textShadow: "0 0 6px rgba(52, 211, 153, 0.35)" }}
@@ -338,7 +422,7 @@ export function NexusTerminal({ className }: { className?: string }) {
                 l.kind === "in" && "text-white",
                 l.kind === "out" && "text-emerald-100/90",
                 l.kind === "err" && "text-rose-300",
-                l.kind.startsWith("ev-") && EVENT_CLASS[l.kind.slice(3) as PulseEvent["type"]]
+                l.kind.startsWith("ev-") && EVENT_CLASS[l.kind.slice(3) as PulseEventType]
               )}
             >
               {l.text}

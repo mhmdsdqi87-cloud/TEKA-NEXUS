@@ -79,6 +79,9 @@ export type AuthUser = {
   interests: string[];
   xp: number;
   reputation: number;
+  coins: number; // TEKA Coin balance (Task 19)
+  team: string | null; // RED | BLUE (Task 19)
+  title: string | null; // boss title (Task 19)
   onboardingCompleted: boolean;
   createdAt: Date;
 };
@@ -109,6 +112,9 @@ export async function getSessionUser(token: string | undefined): Promise<AuthUse
     interests: safeParseArray(u.interests),
     xp: u.xp,
     reputation: u.reputation,
+    coins: u.coins,
+    team: u.team,
+    title: u.title,
     onboardingCompleted: u.onboardingCompleted,
     createdAt: u.createdAt,
   };

@@ -8,6 +8,9 @@
 // Beginner-level, practical understanding. ids are stable (grading reads by id
 // from the exam record), options are exactly 4, `answer` is the option index.
 
+import { EXTRA_PY_QUESTIONS } from "./exam-extra-python";
+import { EXTRA_HT_QUESTIONS } from "./exam-extra-html";
+
 export type ExamQuestion = {
   /** Stable id, e.g. "py-07" / "ht-12". */
   id: string;
@@ -197,6 +200,8 @@ export const PYTHON_EXAM_BANK: ExamQuestion[] = [
     answer: 2,
     why: "Index -1 always points at the last item of a list.",
   },
+  // Task 15 expansion — modules m6-m8 (Going Deeper / Algorithms / Level Up)
+  ...EXTRA_PY_QUESTIONS,
 ];
 
 // ─── HTML bank (structure / tags / links / lists / css basics / selectors)
@@ -377,6 +382,8 @@ export const HTML_EXAM_BANK: ExamQuestion[] = [
     answer: 1,
     why: "<strong> marks importance (rendered bold); <b> is purely visual, and <important> doesn't exist.",
   },
+  // Task 15 expansion — modules m6-m8 (Layouts / Pro Components / Ship It)
+  ...EXTRA_HT_QUESTIONS,
 ];
 
 const BANKS: Record<string, ExamQuestion[]> = {

@@ -28,6 +28,9 @@ export type HtmlCheck = {
   /** When set: element must carry this attribute with this value. */
   attrName?: string;
   attrValue?: string;
+  /** When set: element's style attribute must contain this declaration
+   *  (whitespace-insensitive, case-insensitive — e.g. "display: grid"). */
+  styleIncludes?: string;
 };
 
 export type Check =
@@ -41,7 +44,7 @@ export type TheoryBlock =
   | { type: "warn"; en: string; fa: string }
   | {
       type: "code";
-      lang: "python" | "html";
+      lang: "python" | "html" | "css" | "js";
       code: string;
       /** true (default): render a Run button + inline output/preview. */
       runnable?: boolean;
@@ -98,14 +101,24 @@ export type Course = {
   language: "python" | "html";
   title: L;
   tagline: L;
-  /** Brand accent key (TEKA palette): "cyan" | "ember". */
-  accent: "cyan" | "ember";
+  /** Brand accent key (TEKA palette). */
+  accent: "cyan" | "ember" | "violet" | "emerald";
   /** Small badge shown on the hub card. */
   emoji: string;
   modules: Module[];
 };
 
 // ─── Helpers ─────────────────────────────────────────────────
+export type AccentKey = Course["accent"];
+
+/** Tailwind classes + glow per course accent. */
+export const ACCENTS: Record<AccentKey, { text: string; ring: string; bar: string; glow: string; grad: string }> = {
+  cyan: { text: "text-cyan-300", ring: "ring-cyan-400/30", bar: "bg-cyan-400", glow: "radial-gradient(circle, #22d3ee, transparent 70%)", grad: "from-cyan-400 via-violet-400 to-emerald-400" },
+  ember: { text: "text-amber-300", ring: "ring-amber-400/30", bar: "bg-amber-400", glow: "radial-gradient(circle, #fbbf24, transparent 70%)", grad: "from-amber-400 via-rose-400 to-violet-400" },
+  violet: { text: "text-violet-300", ring: "ring-violet-400/30", bar: "bg-violet-400", glow: "radial-gradient(circle, #a78bfa, transparent 70%)", grad: "from-violet-400 via-fuchsia-400 to-cyan-400" },
+  emerald: { text: "text-emerald-300", ring: "ring-emerald-400/30", bar: "bg-emerald-400", glow: "radial-gradient(circle, #34d399, transparent 70%)", grad: "from-emerald-400 via-cyan-400 to-violet-400" },
+};
+
 export function pick(text: L, locale: string): string {
   return locale === "fa" && text.fa ? text.fa : text.en;
 }

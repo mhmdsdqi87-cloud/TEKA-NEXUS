@@ -1,0 +1,38 @@
+// TEKA NEXUS — arena dictionary (en): Arena hub + game blurbs (Task 23).
+export const arena = {
+  hub: {
+    section: "ARENA",
+    navLabel: "Arena Hub",
+    eyebrow: "TEKA ARENA",
+    title: "Twelve game worlds. One arena.",
+    subtitle:
+      "Fight bosses, grow your Skill Tree, raise a Code Pet, join the team war and collect cards — every game now lives right in the main navigation.",
+    nightsLive: "TEKA NIGHTS is LIVE — 2× XP",
+    nightsIn: "TEKA NIGHTS in",
+    statCoins: "TEKA Coins",
+    statTeam: "Team",
+    statNoTeam: "No team",
+    statTitle: "Champion title",
+    statNoTitle: "No title yet — fight a boss!",
+    statCards: "Coder Cards",
+    statPet: "Code Pet",
+    statPetNone: "Not hatched",
+    gamesTitle: "Choose your battleground",
+    academyCta: "Every boss is unlocked by lessons — the Academy is where it all starts.",
+    terminalHint: "The terminal still hides secrets…",
+  },
+  blurb: {
+    boss: "Course final bosses with HP bars, champion titles and glory.",
+    tree: "A galaxy-style RPG map of everything you can learn.",
+    pet: "A buddy that hatches, evolves and never lets you study alone.",
+    cards: "Collect ranked coder cards with unique serial numbers.",
+    war: "Red vs Blue — weekly team war with live scoring.",
+    shop: "Spend TEKA Coins on boosts, themes and perks.",
+    crime: "Digital forensics: read logs, trace IPs, crack cases.",
+    speedrun: "Race the clock on modules — set a global record.",
+    timemachine: "Replay your whole learning journey, day by day.",
+    heatmap: "GitHub-style grid of every lesson you've touched.",
+    voice: "Live audio rooms with AI narration.",
+    terminal: "A real shell for the whole platform. Try sudo hack.",
+  },
+};

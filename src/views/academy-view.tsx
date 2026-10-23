@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Award, ChevronDown, Compass, GraduationCap, Lock, PlayCircle, ShieldCheck, Sparkles, Trophy } from "lucide-react";
+import { Award, ChevronDown, Compass, Flame, GraduationCap, Lock, PlayCircle, Rocket, Search, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
@@ -20,12 +20,15 @@ function useLocale(): string {
 }
 import { EASE, FadeIn, HoverLift, PulsingDot, Stagger, StaggerItem, AnimatedNumber } from "@/components/shared/motion";
 import { COURSES, courseLessons, courseMinutes } from "@/lib/academy";
-import { pick, type Course } from "@/lib/academy/types";
+import { pick, ACCENTS, type AccentKey, type Course } from "@/lib/academy/types";
 import { LessonPlayer } from "@/components/academy/lesson-player";
 import { PyPlayground } from "@/components/academy/py-runner";
 import { HtmlPlayground } from "@/components/academy/html-runner";
 import { ExamRunner } from "@/components/academy/exam-runner";
 import { CertificateDialog, type CertInfo } from "@/components/academy/certificate";
+import { LessonExplorer, type ExplorerFilter } from "@/components/academy/lesson-explorer";
+import { AchievementsPanel } from "@/components/academy/achievements";
+import { touchStreak, useBookmarks, useStreak } from "@/lib/academy/local";
 
 export type ExamSummary = { courseId: string; attemptsUsed: number; passed: boolean; bestScore: number };
 
@@ -179,21 +182,30 @@ function CourseCard({ course, done, total, isDone, onStart, t, locale }: {
   t: ReturnType<typeof useT>;
   locale: string;
 }) {
-  const accentText = course.accent === "cyan" ? "text-cyan-300" : "text-amber-300";
-  const accentRing = course.accent === "cyan" ? "ring-cyan-400/30" : "ring-amber-400/30";
+  const accentText = ACCENTS[course.accent].text;
   const pct = total ? done / total : 0;
 
   return (
     <HoverLift className="h-full">
-      <div className={cn("relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6")}>
+      <div className={cn("academy-glass academy-glass-hover group relative flex h-full flex-col overflow-hidden rounded-2xl p-5 sm:p-6")}>
+        {/* accent aurora + top hairline */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -end-10 -top-10 h-40 w-40 rounded-full opacity-20 blur-3xl"
-          style={{ background: course.accent === "cyan" ? "radial-gradient(circle, #22d3ee, transparent 70%)" : "radial-gradient(circle, #fbbf24, transparent 70%)" }}
+          className="pointer-events-none absolute -end-10 -top-10 h-44 w-44 rounded-full opacity-25 blur-3xl transition-opacity duration-300 group-hover:opacity-45"
+          style={{ background: ACCENTS[course.accent].glow }}
+        />
+        <div
+          aria-hidden="true"
+          className={cn("pointer-events-none absolute inset-x-10 top-0 h-px opacity-60", ACCENTS[course.accent].bar)}
         />
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/[0.05] text-2xl ring-1 ring-inset ring-white/10" aria-hidden="true">
+            <span
+              className={cn(
+                "grid h-12 w-12 place-items-center rounded-2xl bg-white/[0.05] text-2xl ring-1 ring-inset ring-white/10 transition-transform duration-300 group-hover:scale-110",
+              )}
+              aria-hidden="true"
+            >
               {course.emoji}
             </span>
             <div>
@@ -203,7 +215,7 @@ function CourseCard({ course, done, total, isDone, onStart, t, locale }: {
               </p>
             </div>
           </div>
-          <span className={cn("inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 ring-1 ring-inset ring-emerald-400/25")}>
+          <span className={cn("inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 ring-1 ring-inset ring-emerald-400/25 backdrop-blur-sm")}>
             <PulsingDot dotClassName="bg-emerald-400" />
             {t("academy.freeBadge")}
           </span>
@@ -212,15 +224,15 @@ function CourseCard({ course, done, total, isDone, onStart, t, locale }: {
         <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted-foreground">{pick(course.tagline, locale)}</p>
 
         <div className="mt-4 flex items-center gap-3">
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.07] ring-1 ring-inset ring-white/[0.04]">
             <motion.div
-              className={cn("h-full rounded-full", course.accent === "cyan" ? "bg-cyan-400" : "bg-amber-400")}
+              className={cn("h-full rounded-full bg-gradient-to-r", ACCENTS[course.accent].grad)}
               initial={{ width: 0 }}
               animate={{ width: `${pct * 100}%` }}
               transition={{ duration: 0.9, ease: EASE }}
             />
           </div>
-          <span className="text-xs tabular-nums text-muted-foreground">
+          <span className={cn("text-xs font-semibold tabular-nums", accentText)}>
             {t("academy.lessonsDone", { done, total })}
           </span>
         </div>
@@ -238,16 +250,16 @@ function CourseCard({ course, done, total, isDone, onStart, t, locale }: {
             <PlayCircle className="h-4 w-4" />
             {done === 0 ? t("academy.startCourse") : isDone ? t("academy.reviewCourse") : t("academy.continueCourse")}
           </button>
-          {isDone && <span className="text-2xl" aria-hidden="true">🏆</span>}
+          {isDone && <span className="text-2xl drop-shadow-[0_0_10px_rgba(251,191,36,0.45)]" aria-hidden="true">🏆</span>}
         </div>
-        <span className={cn("pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent to-transparent", accentRing)} aria-hidden="true" />
       </div>
     </HoverLift>
   );
 }
 
-function Hub({ onOpenCourse, progress, certs, exams, leaders, onShowCert }: {
+function Hub({ onOpenCourse, onOpenLesson, progress, certs, exams, leaders, onShowCert }: {
   onOpenCourse: (courseId: string) => void;
+  onOpenLesson: (courseId: string, lessonId: string) => void;
   progress: ProgressMap;
   certs: CertRow[];
   exams: ExamSummary[];
@@ -258,34 +270,103 @@ function Hub({ onOpenCourse, progress, certs, exams, leaders, onShowCert }: {
   const locale = useLocale();
   const user = useApp((s) => s.user);
   const navigateHub = useApp((s) => s.navigate);
+  const bookmarks = useBookmarks(user?.id);
+  const streak = useStreak(user?.id);
+  const [explorerOpen, setExplorerOpen] = useState(false);
+  const [explorerFilter, setExplorerFilter] = useState<ExplorerFilter>("all");
 
   const totalLessons = COURSES.reduce((acc, c) => acc + courseLessons(c).length, 0);
   const doneLessons = Object.values(progress).reduce((acc, p) => acc + p.done.length, 0);
   const overall = totalLessons ? doneLessons / totalLessons : 0;
 
+  const doneSet = useMemo(() => {
+    const s = new Set<string>();
+    for (const p of Object.values(progress)) for (const id of p.done) s.add(id);
+    return s;
+  }, [progress]);
+
+  // "Continue learning" — for every started course, the next open lesson.
+  const continueRows = useMemo(() => {
+    const rows: { course: Course; lessonId: string; titleEn: string; titleFa: string; done: number; total: number }[] = [];
+    for (const c of COURSES) {
+      const p = progress[c.id];
+      if (!p || p.done.length === 0) continue;
+      const flat = c.modules.flatMap((m) => m.lessons);
+      const next = flat.find((l) => !p.done.includes(l.id));
+      if (next) rows.push({ course: c, lessonId: next.id, titleEn: next.title.en, titleFa: next.title.fa, done: p.done.length, total: flat.length });
+    }
+    return rows;
+  }, [progress]);
+
+  // Ctrl+K opens the lesson explorer; the daily streak rolls once per visit.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setExplorerOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    touchStreak(user.id); // rolls the daily streak; useStreak picks it up
+  }, [user]);
+
+  // Short course labels (python-basics → PY, css-basics → CSS …) — every
+  // course gets its own tidy stat tile in the hero.
+  const courseLabel = (id: string) => id.split("-")[0].toUpperCase();
+
   return (
     <div className="space-y-8">
-      {/* hero */}
+      {/* hero — frosted glass with aurora glows + grid sheen */}
       <FadeIn>
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.05] via-transparent to-white/[0.02] p-6 sm:p-10">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-violet-500/10 blur-3xl" />
+        <div className="academy-glass academy-grid-sheen relative overflow-hidden rounded-3xl p-6 sm:p-10">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full bg-cyan-500/[0.14] blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-violet-500/[0.14] blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute right-[30%] top-1/2 h-40 w-40 rounded-full bg-emerald-500/[0.07] blur-3xl" />
           <div className="relative">
-            <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300 ring-1 ring-inset ring-emerald-400/25">
-              <PulsingDot dotClassName="bg-emerald-400" />
-              {t("academy.freeBadge")} · forever
-            </span>
-            <h1 className="mt-4 flex flex-wrap items-center gap-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
-              <GraduationCap className="h-9 w-9 text-cyan-300 sm:h-12 sm:w-12" aria-hidden="true" />
-              <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-emerald-300 bg-clip-text text-transparent">
-                {t("academy.hubTitle")}
-              </span>
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-              {t("academy.hubSubtitle")}
-            </p>
-            <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0">
+                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300 ring-1 ring-inset ring-emerald-400/25 backdrop-blur-sm">
+                  <PulsingDot dotClassName="bg-emerald-400" />
+                  {t("academy.freeBadge")} · forever
+                </span>
+                <h1 className="mt-4 flex flex-wrap items-center gap-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
+                  <GraduationCap className="h-9 w-9 text-cyan-300 drop-shadow-[0_0_16px_rgba(34,211,238,0.5)] sm:h-12 sm:w-12" aria-hidden="true" />
+                  <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-emerald-300 bg-clip-text text-transparent">
+                    {t("academy.hubTitle")}
+                  </span>
+                </h1>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+                  {t("academy.hubSubtitle")}
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setExplorerOpen(true)}
+                  aria-haspopup="dialog"
+                  className="glass-card inline-flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-cyan-200 transition-colors hover:bg-white/[0.06] focus-glow"
+                >
+                  <Search className="h-4 w-4 text-cyan-300" />
+                  {t("academy.explorer.button")}
+                  <kbd className="hidden rounded-md border border-white/10 bg-white/[0.05] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:block">Ctrl+K</kbd>
+                </button>
+                <button
+                  onClick={() => navigateHub({ name: "academyPortal" })}
+                  className="glass-card inline-flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-cyan-200 transition-colors hover:bg-white/[0.06] focus-glow"
+                >
+                  <Compass className="h-4 w-4 text-cyan-300" />
+                  {t("nav.portal")}
+                </button>
+              </div>
+            </div>
+
+            {/* progress + uniform stat tiles — tidy grid, no loose wrapping */}
+            <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="flex items-center gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-4 backdrop-blur-sm">
                 <ProgressRing value={overall} />
                 <div>
                   <p className="text-xs text-muted-foreground">{t("academy.progressLabel")}</p>
@@ -294,31 +375,84 @@ function Hub({ onOpenCourse, progress, certs, exams, leaders, onShowCert }: {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-6 text-sm">
-                <div>
-                  <p className="text-xs text-muted-foreground">Python</p>
-                  <p className="font-semibold text-amber-300">🐍 {t("academy.lessonsCount", { count: 20 })}</p>
+              {COURSES.map((course) => (
+                <div
+                  key={course.id}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-4 backdrop-blur-sm transition-colors hover:bg-white/[0.05]"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl" aria-hidden="true">{course.emoji}</span>
+                    <p className="text-xs font-medium text-muted-foreground">{courseLabel(course.id)}</p>
+                  </div>
+                  <p className={cn("text-sm font-bold tabular-nums", ACCENTS[course.accent].text)}>
+                    {courseLessons(course).length}
+                  </p>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">HTML</p>
-                  <p className="font-semibold text-cyan-300">⚡ {t("academy.lessonsCount", { count: 20 })}</p>
+              ))}
+              <div className="flex items-center justify-between gap-3 rounded-2xl border border-violet-400/[0.14] bg-violet-500/[0.05] px-5 py-4 backdrop-blur-sm">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl" aria-hidden="true">🏆</span>
+                  <p className="text-xs font-medium text-muted-foreground">Certificate</p>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Certificate</p>
-                  <p className="font-semibold text-violet-300">🏆 ×2</p>
+                <p className="text-sm font-bold tabular-nums text-violet-300">×{COURSES.length}</p>
+              </div>
+              <div className="flex items-center justify-between gap-3 rounded-2xl border border-orange-400/[0.14] bg-orange-500/[0.05] px-5 py-4 backdrop-blur-sm">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl" aria-hidden="true">🔥</span>
+                  <p className="text-xs font-medium text-muted-foreground">{t("academy.streakLabel")}</p>
                 </div>
+                <p className="text-sm font-bold tabular-nums text-orange-300">
+                  {streak > 0 ? t("academy.streakDays", { n: streak }) : "—"}
+                </p>
               </div>
               <button
-                onClick={() => navigateHub({ name: "academyPortal" })}
-                className="glass-card inline-flex min-h-[44px] items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-cyan-200 transition-colors hover:bg-white/[0.06] focus-glow"
+                onClick={() => { setExplorerFilter("starred"); setExplorerOpen(true); }}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-amber-400/[0.14] bg-amber-500/[0.05] px-5 py-4 text-start backdrop-blur-sm transition-colors hover:bg-amber-500/[0.09] focus-glow"
               >
-                <Compass className="h-4 w-4 text-cyan-300" />
-                {t("nav.portal")}
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl" aria-hidden="true">⭐</span>
+                  <p className="text-xs font-medium text-muted-foreground">{t("academy.starredLabel")}</p>
+                </div>
+                <p className="text-sm font-bold tabular-nums text-amber-300">×{bookmarks.length}</p>
               </button>
             </div>
           </div>
         </div>
       </FadeIn>
+
+      {/* continue learning — one-tap jump into the next open lesson */}
+      {continueRows.length > 0 && (
+        <FadeIn>
+          <div className="academy-glass rounded-2xl p-5">
+            <h2 className="flex items-center gap-2 text-base font-semibold text-white">
+              <Rocket className="h-5 w-5 text-cyan-300" aria-hidden="true" />
+              {t("academy.continueTitle")}
+            </h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {continueRows.map((row) => (
+                <div key={row.course.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 transition-colors hover:bg-white/[0.05]">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/[0.05] text-xl ring-1 ring-inset ring-white/10" aria-hidden="true">{row.course.emoji}</span>
+                    <div className="min-w-0">
+                      <p dir="auto" className="truncate text-sm font-semibold text-white">{locale === "fa" ? row.titleFa : row.titleEn}</p>
+                      <p className="truncate text-[11px] text-muted-foreground">
+                        {pick(row.course.title, locale)} · {t("academy.lessonsDone", { done: row.done, total: row.total })}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onOpenLesson(row.course.id, row.lessonId)}
+                    className="btn-hero inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-xl px-4 text-xs font-semibold focus-glow"
+                  >
+                    <PlayCircle className="h-4 w-4" />
+                    {t("academy.continueCourse")}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </FadeIn>
+      )}
 
       {!user && (
         <FadeIn delay={0.1}>
@@ -355,10 +489,72 @@ function Hub({ onOpenCourse, progress, certs, exams, leaders, onShowCert }: {
         })}
       </Stagger>
 
+      {/* achievements — 12 glass badges */}
+      <FadeIn>
+        <AchievementsPanel
+          t={t}
+          stats={{
+            done: doneLessons,
+            total: totalLessons,
+            streak,
+            certs: certs.length,
+            examPassed: exams.some((e) => e.passed),
+            coursesDone: COURSES.filter((c) => {
+              const total = courseLessons(c).length;
+              return total > 0 && (progress[c.id]?.done.length ?? 0) >= total;
+            }).map((c) => c.id),
+            bookmarks: bookmarks.length,
+          }}
+        />
+      </FadeIn>
+
+      {/* Hack & Security — coming soon (Task 15-d) */}
+      <FadeIn>
+        <div className="academy-glass relative overflow-hidden rounded-2xl p-5 sm:p-6">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-rose-500/[0.14] blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 h-52 w-52 rounded-full bg-violet-500/[0.12] blur-3xl" />
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start">
+            <div
+              aria-hidden="true"
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-rose-400/25 bg-rose-500/10"
+            >
+              <ShieldCheck className="h-7 w-7 text-rose-300" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h2 className="text-lg font-bold text-white">{t("academy.hack.title")}</h2>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-rose-300 ring-1 ring-inset ring-rose-400/30">
+                  <motion.span
+                    aria-hidden="true"
+                    className="h-1.5 w-1.5 rounded-full bg-rose-400"
+                    animate={{ opacity: [1, 0.25, 1] }}
+                    transition={{ duration: 1.4, repeat: Infinity }}
+                  />
+                  {t("academy.hack.badge")}
+                </span>
+              </div>
+              <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{t("academy.hack.tagline")}</p>
+              <ul className="mt-3 grid gap-1.5 text-sm text-foreground/85 sm:grid-cols-3">
+                {[t("academy.hack.line1"), t("academy.hack.line2"), t("academy.hack.line3")].map((line) => (
+                  <li key={line} className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] px-2.5 py-1.5">
+                    <Lock className="h-3.5 w-3.5 shrink-0 text-rose-300/80" aria-hidden="true" />
+                    <span className="truncate" title={line}>{line}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 inline-flex items-center gap-2 rounded-lg bg-white/[0.04] px-3 py-1.5 text-xs text-muted-foreground">
+                <Sparkles className="h-3.5 w-3.5 text-amber-300" aria-hidden="true" />
+                {t("academy.hack.teaser")}
+              </p>
+            </div>
+          </div>
+        </div>
+      </FadeIn>
+
       {/* certificates + leaderboard */}
       <div className="grid gap-5 lg:grid-cols-2">
         <FadeIn>
-          <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+          <div className="academy-glass h-full rounded-2xl p-5">
             <h2 className="flex items-center gap-2 text-base font-semibold text-white">
               <Award className="h-5 w-5 text-amber-300" />
               {t("academy.certificatesTitle")}
@@ -411,7 +607,7 @@ function Hub({ onOpenCourse, progress, certs, exams, leaders, onShowCert }: {
         </FadeIn>
 
         <FadeIn delay={0.08}>
-          <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+          <div className="academy-glass h-full rounded-2xl p-5">
             <h2 className="flex items-center gap-2 text-base font-semibold text-white">
               <Trophy className="h-5 w-5 text-cyan-300" />
               {t("academy.leaderboardTitle")}
@@ -463,6 +659,17 @@ function Hub({ onOpenCourse, progress, certs, exams, leaders, onShowCert }: {
           </div>
         </FadeIn>
       </div>
+
+      <LessonExplorer
+        open={explorerOpen}
+        onOpenChange={setExplorerOpen}
+        filter={explorerFilter}
+        onFilterChange={setExplorerFilter}
+        doneSet={doneSet}
+        bookmarks={bookmarks}
+        onOpenLesson={onOpenLesson}
+        t={t}
+      />
     </div>
   );
 }
@@ -470,7 +677,7 @@ function Hub({ onOpenCourse, progress, certs, exams, leaders, onShowCert }: {
 // ─── Course view ─────────────────────────────────────────────
 
 /** Course-level Skill Meter: animated 0-100% fill (render-only). */
-function SkillMeter({ value, accent, label }: { value: number; accent: "cyan" | "ember"; label: string }) {
+function SkillMeter({ value, accent, label }: { value: number; accent: AccentKey; label: string }) {
   return (
     <div
       className="h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]"
@@ -483,7 +690,7 @@ function SkillMeter({ value, accent, label }: { value: number; accent: "cyan" | 
       <motion.div
         className={cn(
           "h-full w-full origin-left rounded-full rtl:origin-right",
-          accent === "cyan" ? "bg-gradient-to-r from-cyan-400 via-violet-400 to-emerald-400" : "bg-gradient-to-r from-amber-400 via-rose-400 to-violet-400",
+          `bg-gradient-to-r ${ACCENTS[accent].grad}`,
         )}
         initial={{ scaleX: 0 }}
         animate={{ scaleX: value }}
@@ -597,7 +804,7 @@ function CourseView({ course, initialLessonId, progress, exam, onBack, onNavigat
     return next ?? flat[0] ?? null;
   })();
 
-  const accent = course.accent === "cyan" ? "text-cyan-300" : "text-amber-300";
+  const accent = ACCENTS[course.accent].text;
   const coursePct = flat.length ? done.length / flat.length : 0;
   const courseComplete = flat.length > 0 && done.length >= flat.length;
   const examUnlocked = courseComplete && !exam?.passed;
@@ -675,7 +882,7 @@ function CourseView({ course, initialLessonId, progress, exam, onBack, onNavigat
             transition={{ duration: 0.3, ease: EASE }}
           >
             <FadeIn>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-6">
+              <div className="academy-glass rounded-2xl p-4 sm:p-6">
                 <h2 className="flex items-center gap-2 text-base font-semibold text-white">
                   <Sparkles className="h-4 w-4 text-cyan-300" />
                   {t("academy.playgroundTitle")}
@@ -706,13 +913,13 @@ function CourseView({ course, initialLessonId, progress, exam, onBack, onNavigat
             <div className="grid gap-5 lg:grid-cols-[290px_minmax(0,1fr)]">
               {/* sidebar (desktop) */}
               <aside className="hidden lg:block">
-                <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-white/10 bg-white/[0.02] p-3 academy-scroll">
+                <div className="academy-glass sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl p-3 academy-scroll">
                   <ModuleList course={course} doneSet={doneSet} currentId={current?.lesson.id} onNavigateLesson={onNavigateLesson} t={t} />
                 </div>
               </aside>
 
               {/* mobile lesson picker */}
-              <details className="lg:hidden rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+              <details className="academy-glass lg:hidden rounded-2xl p-3">
                 <summary className="flex min-h-[44px] cursor-pointer items-center justify-between rounded-xl px-3 text-sm font-semibold text-white focus-glow">
                   <span>{current ? pick(current.lesson.title, locale) : "Lessons"}</span>
                   <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
@@ -923,6 +1130,7 @@ export function AcademyView({ courseSlug, lessonId }: { courseSlug?: string; les
       ) : (
         <Hub
           onOpenCourse={(cid) => navigate({ name: "academy", course: cid })}
+          onOpenLesson={(cid, lid) => navigate({ name: "academy", course: cid, lesson: lid })}
           progress={progress}
           certs={certs}
           exams={exams}

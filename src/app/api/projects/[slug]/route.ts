@@ -61,6 +61,7 @@ type ProjectDetailRow = {
   status: string;
   visibility: string;
   coverImage: string;
+  bgImage: string;
   repositoryUrl: string;
   demoUrl: string;
   websiteUrl: string;
@@ -102,6 +103,7 @@ function toProjectDetail(p: ProjectDetailRow): ProjectDetail {
     status: p.status,
     visibility: p.visibility,
     coverImage: p.coverImage,
+    bgImage: p.bgImage,
     repositoryUrl: p.repositoryUrl,
     demoUrl: p.demoUrl,
     websiteUrl: p.websiteUrl,
@@ -231,6 +233,12 @@ const patchSchema = z.object({
   demoUrl: urlField.optional(),
   websiteUrl: urlField.optional(),
   coverImage: z.string().trim().max(500).optional(),
+  bgImage: z
+    .string()
+    .trim()
+    .max(500)
+    .refine((v) => v === "" || v.startsWith("/") || /^https?:\/\//i.test(v), "Invalid background path or URL.")
+    .optional(),
 });
 
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
@@ -272,6 +280,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ slug: str
           ...(body.demoUrl !== undefined ? { demoUrl: body.demoUrl } : {}),
           ...(body.websiteUrl !== undefined ? { websiteUrl: body.websiteUrl } : {}),
           ...(body.coverImage !== undefined ? { coverImage: body.coverImage } : {}),
+          ...(body.bgImage !== undefined ? { bgImage: body.bgImage } : {}),
         },
       });
       if (tags) {

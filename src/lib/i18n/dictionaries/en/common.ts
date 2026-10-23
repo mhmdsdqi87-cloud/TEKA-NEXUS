@@ -29,6 +29,7 @@ export const common = {
   comingSoon: "Coming soon",
   saved: "Saved",
   explore: "Explore",
+  live: "Live",
   home: "Home",
   notifications: "Notifications",
   profile: "Profile",

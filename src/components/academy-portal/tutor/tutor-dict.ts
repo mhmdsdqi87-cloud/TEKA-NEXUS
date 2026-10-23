@@ -1,5 +1,5 @@
 // TEKA NEXUS — AI Tutor panel dictionary (self-contained).
-// Six locales; Persian uses the app's informal tone. English is the source of
+// Seven locales; Persian uses the app's informal tone. English is the source of
 // truth — every other locale implements TutorDict exactly.
 
 import type { Locale } from "@/lib/i18n/locales";
@@ -170,5 +170,28 @@ export const TUTOR_DICT: Record<Locale, TutorDict> = {
     errRate: "Tu as atteint la limite de chat — fais une pause et reviens.",
     offlineBadge: "Mode hors ligne — répondu depuis les notes du cours",
     disclaimer: "L'IA peut se tromper — vérifie ce qui est important.",
+  },
+
+  ru: {
+    title: "ИИ-репетитор",
+    tagline: "Я учу — а не просто раздаю ответы.",
+    discussing: "Обсуждаем",
+    clearChat: "Очистить чат",
+    placeholder: "Спроси о чём угодно по этому уроку…",
+    send: "Отправить",
+    typing: "Репетитор печатает…",
+    greeting:
+      "Привет! Я твой репетитор. Я не раздаю готовые ответы — я помогу тебе разобраться самому. С чего начнём?",
+    quickPrompts: [
+      "Объясни этот урок простыми словами",
+      "Дай подсказку, не раскрывай ответ",
+      "Проверь меня по этой теме",
+      "Покажи пример из реальной жизни",
+    ],
+    retry: "Ещё раз",
+    errGeneric: "Репетитор сейчас недоступен. Попробуй ещё раз.",
+    errRate: "Ты достиг лимита сообщений — сделай короткий перерыв и возвращайся.",
+    offlineBadge: "Автономный режим — ответ из конспекта урока",
+    disclaimer: "ИИ может ошибаться — проверяй важное.",
   },
 };

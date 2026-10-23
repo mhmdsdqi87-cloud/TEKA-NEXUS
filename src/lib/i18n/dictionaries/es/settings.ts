@@ -42,7 +42,7 @@ export const settings: SettingsDict = {
   accountTab: {
     language: "Idioma",
     languageDescription:
-      "Elige el idioma de la interfaz — English, Español, 中文, العربية, فارسی or Français.",
+      "Elige el idioma de la interfaz — English, Español, 中文, العربية, فارسی, Français or Русский.",
     email: "Correo electrónico",
     emailHint: "Tu correo de inicio de sesión — de solo lectura durante la beta.",
     changePassword: "Cambiar contraseña",

@@ -170,7 +170,16 @@ export function GithubPanel({ repositoryUrl, className }: { repositoryUrl: strin
                       className="focus-glow flex items-start gap-2 rounded-lg p-1.5 transition hover:bg-white/[0.04]"
                       dir="ltr"
                     >
-                      <GitCommitHorizontal className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                      {c.avatar ? (
+                        <img
+                          src={c.avatar}
+                          alt=""
+                          className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded-full border border-white/10"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <GitCommitHorizontal className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                      )}
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-xs font-medium text-foreground/90">{c.message}</span>
                         <span className="text-[10px] text-muted-foreground">

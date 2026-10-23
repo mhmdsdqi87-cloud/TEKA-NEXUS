@@ -2,9 +2,11 @@
 
 import { pythonCourse } from "./course-python";
 import { htmlCourse } from "./course-html";
+import { cssCourse } from "./course-css";
+import { jsCourse } from "./course-js";
 import type { Course } from "./types";
 
-export const COURSES: Course[] = [pythonCourse, htmlCourse];
+export const COURSES: Course[] = [pythonCourse, htmlCourse, cssCourse, jsCourse];
 
 export function getCourse(id: string): Course | undefined {
   return COURSES.find((c) => c.id === id);

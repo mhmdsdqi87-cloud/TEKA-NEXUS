@@ -29,6 +29,7 @@ export const academy = {
   back: "Back",
   finishLesson: "Finish lesson",
   goalLabel: "After this lesson you can:",
+  ttsListen: "Listen to this lesson",
 
   // Quiz
   quizTitle: "Quick check",
@@ -120,6 +121,55 @@ export const academy = {
     verifyHint: "Verify this code on TEKA NEXUS · Academy",
     voidAction: "Void exam",
   },
+  hack: {
+    title: 'Hack & Security',
+    badge: 'Coming soon',
+    tagline: 'A full track on ethical hacking, web security and defensive coding is being forged in the TEKA forge — same interactive style, real labs, zero fluff.',
+    line1: 'White-hat fundamentals',
+    line2: 'Web attacks & defense (XSS · CSRF · SQLi)',
+    line3: 'Secure coding & password hygiene',
+    teaser: '12+ hands-on lessons planned — releasing soon, free as always.',
+  },
+  explorer: {
+    button: "Search in 300 lessons",
+    placeholder: "Search a lesson, module or course…",
+    all: "All",
+    todo: "Not done",
+    done: "Done",
+    starred: "Starred",
+    empty: "Nothing found — try another word.",
+    more: "+{n} more…",
+  },
+  continueTitle: "Continue learning",
+  streakLabel: "Daily streak",
+  streakDays: "{n}-day streak",
+  starredLabel: "Starred",
+  bookmark: {
+    add: "Starred — find it under ⭐ Starred",
+    remove: "Removed from starred",
+  },
+  notes: {
+    title: "My notes",
+    placeholder: "Write your notes about this lesson — saved automatically on this device.",
+    saved: "Saved ✓",
+  },
+  ach: {
+    title: "Achievements",
+    subtitle: "Learn, finish lessons and make the badges glow.",
+    b1t: "First Step", b1h: "Finish your first lesson",
+    b2t: "Ten Club", b2h: "Finish 10 lessons",
+    b3t: "Fifty Force", b3h: "Finish 50 lessons",
+    b4t: "Halfway Hero", b4h: "Finish 150 lessons",
+    b5t: "Legend of 300", b5h: "Finish every lesson in the Academy",
+    b6t: "Snake Charmer", b6h: "Complete the Python course",
+    b7t: "Web Weaver", b7h: "Complete the HTML course",
+    b8t: "Style Wizard", b8h: "Complete the CSS course",
+    b9t: "JS Operator", b9h: "Complete the JavaScript course",
+    b10t: "On Fire", b10h: "Keep a 3-day streak",
+    b11t: "Certified", b11h: "Earn your first certificate",
+    b12t: "Licensed Pro", b12h: "Pass a final exam",
+  },
+
 };
 
 export type AcademyDict = typeof academy;

@@ -44,6 +44,24 @@ export const auth: AuthDict = {
   haveAccount: "Vous avez déjà un compte ?",
   newToTeka: "Nouveau sur TEKA NEXUS ?",
   createAccountLink: "Créer un compte",
+  google: {
+    setupWhy: "Pourquoi n'est-il pas encore actif ?",
+    setupTitle: "Connexion Google — guide d'activation",
+    setupBody: "Tout est déjà prêt côté serveur. La connexion Google s'active dès que les deux variables d'environnement OAuth sont ajoutées au déploiement — sans toucher au code.",
+    setupStep1: "Ouvre console.cloud.google.com et crée un projet (gratuit).",
+    setupStep2: "APIs & Services → OAuth consent screen → choisis External et enregistre le nom de l'app.",
+    setupStep3: "Credentials → Create credentials → OAuth client ID → Web application.",
+    setupStep4: "Ajoute l'URI de redirection ci-dessous, puis définis GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET dans Vercel et redéploie.",
+    setupRedirect: "URI de redirection autorisée",
+    button: 'Continuer avec Google',
+    divider: 'ou continuer avec un e-mail',
+    redirecting: 'Connexion à Google…',
+  },
+  portal: {
+    welcome: 'Bon retour parmi nous,',
+    entering: 'Entrée dans le Nexus…',
+    secured: 'Session sécurisée',
+  },
   err: {
     username:
       "Le nom d’utilisateur doit comporter 3 à 24 caractères : lettres minuscules, chiffres et tirets bas.",
@@ -53,5 +71,9 @@ export const auth: AuthDict = {
     emailTaken: "Cet e-mail est déjà inscrit. Essaie de te connecter.",
     usernameTaken: "Ce pseudo est déjà pris. Choisis-en un autre.",
     invalidCredentials: "E-mail ou mot de passe incorrect.",
+    googleFailed: 'La connexion Google a échoué. Réessaie.',
+    googleCancelled: 'Connexion Google annulée.',
+    googleNotConfigured: "La connexion Google n'est pas encore activée — GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET sont requis (voir docs/GOOGLE_OAUTH.md).",
+    googleState: 'Cette tentative de connexion Google a expiré. Réessaie.',
   },
 };

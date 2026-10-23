@@ -105,6 +105,42 @@ function tokenizePython(code: string): Tok[] {
 
 const HTML_VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
 
+function tokenizeCss(code: string): Tok[] {
+  const toks: Tok[] = [];
+  const push = (text: string, cls?: string) => text && toks.push({ text, cls });
+  const re = /([{};])|([-=\w]+)(\s*:\s*)|([^{};:]+)(?=[{;])|(\/\*[\s\S]*?\*\/)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(code))) {
+    if (m.index > last) push(code.slice(last, m.index));
+    if (m[1]) push(m[1], "text-slate-400");
+    else if (m[2]) { push(m[2], "text-teal-200"); push(m[3], "text-slate-400"); }
+    else if (m[5]) push(m[5], "text-slate-500 italic");
+    else if (m[4]) push(m[4], "text-amber-200/80");
+    last = re.lastIndex;
+  }
+  if (last < code.length) push(code.slice(last));
+  return toks;
+}
+
+function tokenizeJs(code: string): Tok[] {
+  const toks: Tok[] = [];
+  const push = (text: string, cls?: string) => text && toks.push({ text, cls });
+  const re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)|\b(function|return|if|else|for|while|break|continue|var|let|const|new|typeof|true|false|null|undefined|this|document|window|querySelector|querySelectorAll|getElementById|createElement|appendChild|textContent|innerHTML|classList|toggle|add|remove|value|length|push|forEach|map|filter|Math|JSON|localStorage|addEventListener|alert|confirm)\b|(\b\d+(?:\.\d+)?\b)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(code))) {
+    if (m.index > last) push(code.slice(last, m.index));
+    if (m[1]) push(m[1], "text-slate-500 italic");
+    else if (m[2]) push(m[2], "text-emerald-300");
+    else if (m[3]) push(m[3], "text-violet-300");
+    else push(m[4], "text-amber-200/80");
+    last = re.lastIndex;
+  }
+  if (last < code.length) push(code.slice(last));
+  return toks;
+}
+
 function tokenizeHtml(code: string): Tok[] {
   const toks: Tok[] = [];
   let i = 0;
@@ -218,8 +254,13 @@ function tokenizeHtml(code: string): Tok[] {
   return toks;
 }
 
-export function highlightCode(code: string, lang: "python" | "html"): Tok[] {
-  return lang === "python" ? tokenizePython(code) : tokenizeHtml(code);
+export type CodeLang = "python" | "html" | "css" | "js";
+
+export function highlightCode(code: string, lang: CodeLang): Tok[] {
+  if (lang === "python") return tokenizePython(code);
+  if (lang === "css") return tokenizeCss(code);
+  if (lang === "js") return tokenizeJs(code);
+  return tokenizeHtml(code);
 }
 
 // ─── Editor ──────────────────────────────────────────────────
@@ -234,7 +275,7 @@ export function CodeEditor({
 }: {
   value: string;
   onChange: (v: string) => void;
-  lang: "python" | "html";
+  lang: CodeLang;
   className?: string;
   ariaLabel?: string;
   minRows?: number;
@@ -375,7 +416,7 @@ export function CodeBlock({
   className,
 }: {
   code: string;
-  lang: "python" | "html";
+  lang: CodeLang;
   className?: string;
 }) {
   const toks = useMemo(() => highlightCode(code, lang), [code, lang]);

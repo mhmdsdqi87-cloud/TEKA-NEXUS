@@ -61,7 +61,7 @@ single seamless experience — not a course site with a forum bolted on, but a
 | 🤝 **Build** | Project workspaces: kanban tasks, milestones, threaded comments, collaboration requests, **real-time team chat** (socket.io) |
 | 🎓 **Learn** | A free-forever academy: 300 hands-on lessons, in-browser Python, live HTML/CSS preview, auto-graded challenges, proctored certification |
 | 🏆 **Arena** | 12 game modules promoted to first-class views in the main navigation — Boss Fights, Skill Tree, Code Pet, Cards, Red-vs-Blue War, and more |
-| 🎮 **Play** | XP economy, collectible cards, speedruns, monthly TEKA Nights — gamification with real stakes |
+| 🎮 **Play** | XP economy, collectible cards, speedruns, monthly TEKA Nights — a small game economy to keep you coming back |
 
 <div align="center">
   <img src="docs/screenshots/boss-arena.png" alt="TEKA Arena — Boss Fight" width="820">
@@ -70,7 +70,7 @@ single seamless experience — not a course site with a forum bolted on, but a
 
 ---
 
-## 🏆 TEKA Arena — the crown jewel
+## 🏆 TEKA Arena — the game layer
 
 The old desktop shell is gone — every module now lives **directly in the main
 navigation bar**, one click away at all times. No windows, no metafloor: each
@@ -97,7 +97,7 @@ battle @user            # challenge someone (for glory)
 |---|---|
 | 🗺️ **Skill Tree** | Galaxy-map progression — nodes unlock as you complete prerequisites |
 | ⚔️ **Boss Fight** | A boss at the end of every course: correct answers deal damage, mistakes hurt you. Beat the final boss → earn a title like *“Python Slayer”* |
-| 🐣 **Code Pet** | An egg that hatches and evolves as you learn. Skip 3 days and it gets hungry — the cruelest streak system ever shipped |
+| 🐣 **Code Pet** | An egg that hatches and evolves as you learn. Skip 3 days and it gets hungry — a streak system that holds a gentle grudge |
 | 🔴🔵 **Red vs Blue War** | Pick a side at signup; weekly war events with live team scoring |
 | 🃏 **Coder Cards** | Collectible profile cards with unique serial numbers and rarities (Legendary cards for boss slayers & 100-day streaks) |
 | 🪙 **Shop** | Spend TEKA Coins on profile frames, boosts and card packs |

@@ -524,8 +524,20 @@ async function seedGhostCommunity() {
     select: { id: true },
   });
   const followRows = ghostIds.map((g) => ({ followerId: g.id, followingId: founder.id }));
-  for (let i = 0; i < followRows.length; i += 500) {
-    await db.follow.createMany({ data: followRows.slice(i, i + 500), skipDuplicates: true });
+  // `skipDuplicates` is unsupported by the local SQLite mirror (type error +
+  // runtime "Unknown argument"), so drop already-existing rows instead —
+  // keeps re-runs idempotent on both SQLite and Postgres.
+  const following = new Set(
+    (
+      await db.follow.findMany({
+        where: { followingId: founder.id, followerId: { in: ghostIds.map((g) => g.id) } },
+        select: { followerId: true },
+      })
+    ).map((f) => f.followerId),
+  );
+  const newFollowRows = followRows.filter((r) => !following.has(r.followerId));
+  for (let i = 0; i < newFollowRows.length; i += 500) {
+    await db.follow.createMany({ data: newFollowRows.slice(i, i + 500) });
   }
   console.log(`  + follows ensured for ${ghostIds.length} ghosts`);
 
@@ -542,10 +554,19 @@ async function seedGhostCommunity() {
     const projectId = idBySlug.get(slug);
     if (projectId) likeRows.push({ userId: g.id, projectId });
   }
-  for (let i = 0; i < likeRows.length; i += 500) {
-    await db.projectLike.createMany({ data: likeRows.slice(i, i + 500), skipDuplicates: true });
+  const liked = new Set(
+    (
+      await db.projectLike.findMany({
+        where: { userId: { in: ghostIds.map((g) => g.id) } },
+        select: { userId: true, projectId: true },
+      })
+    ).map((l) => `${l.userId}:${l.projectId}`),
+  );
+  const newLikeRows = likeRows.filter((r) => !liked.has(`${r.userId}:${r.projectId}`));
+  for (let i = 0; i < newLikeRows.length; i += 500) {
+    await db.projectLike.createMany({ data: newLikeRows.slice(i, i + 500) });
   }
-  console.log(`  + ${likeRows.length} ghost likes distributed`);
+  console.log(`  + ${newLikeRows.length} ghost likes distributed`);
 }
 
 async function ensureUser(p: Persona) {

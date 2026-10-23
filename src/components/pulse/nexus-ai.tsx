@@ -52,13 +52,13 @@ export function NexusAI({ className }: { className?: string }) {
     if (!trimmed || pending) return;
     setDraft("");
     setError(null);
-    const history: ChatMsg[] = [...messages, { role: "user", content: trimmed }].slice(-MAX_HISTORY);
+    const history: ChatMsg[] = [...messages, { role: "user" as const, content: trimmed }].slice(-MAX_HISTORY);
     setMessages(history);
     setPending(true);
     try {
       const { reply, offline } = await call(history);
       if (reply.trim()) {
-        setMessages((prev) => [...prev, { role: "assistant", content: reply.trim(), offline }].slice(-MAX_HISTORY));
+        setMessages((prev) => [...prev, { role: "assistant" as const, content: reply.trim(), offline }].slice(-MAX_HISTORY));
       } else {
         setError(t("pulse.ai.errGeneric"));
       }
@@ -78,7 +78,7 @@ export function NexusAI({ className }: { className?: string }) {
     try {
       const { reply, offline } = await call(messages.slice(-MAX_HISTORY));
       if (reply.trim()) {
-        setMessages((prev) => [...prev, { role: "assistant", content: reply.trim(), offline }].slice(-MAX_HISTORY));
+        setMessages((prev) => [...prev, { role: "assistant" as const, content: reply.trim(), offline }].slice(-MAX_HISTORY));
       } else setError(t("pulse.ai.errGeneric"));
     } catch (e) {
       setError(e instanceof ApiError && e.message ? e.message : t("pulse.ai.errGeneric"));

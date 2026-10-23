@@ -8,6 +8,7 @@ export const nav = {
   academy: "Academy",
   portal: "Learning Portal",
   founder: "Founder Console",
+  workspaceHub: "Workspace",
   primaryNavAria: "Primary navigation",
   mainAria: "Main",
   mobileNavAria: "Mobile navigation",

@@ -7,6 +7,7 @@ export const nav: NavDict = {
   academy: "آکادمی",
   portal: "پرتال یادگیری",
   founder: "کنسول بنیان‌گذار",
+  workspaceHub: "ورک‌اسپیس",
   primaryNavAria: "ناوبری اصلی",
   mainAria: "اصلی",
   mobileNavAria: "ناوبری موبایل",

@@ -18,6 +18,9 @@ import { academy } from "./academy";
 import { founder } from "./founder";
 import { dm } from "./dm";
 import { pulse } from "./pulse";
+import { workspace } from "./workspace";
+import { os } from "./os";
+import { arena } from "./arena";
 
 export const fa = {
   common,
@@ -39,4 +42,7 @@ export const fa = {
   settings,
   dm,
   pulse,
+  workspace,
+  os,
+  arena,
 };

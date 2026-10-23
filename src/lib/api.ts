@@ -129,6 +129,12 @@ export const post = <T>(path: string, body?: unknown, timeoutMs?: number) =>
     { method: "POST", body: body === undefined ? "{}" : JSON.stringify(body) },
     timeoutMs,
   );
+export const put = <T>(path: string, body?: unknown, timeoutMs?: number) =>
+  request<T>(
+    path,
+    { method: "PUT", body: body === undefined ? "{}" : JSON.stringify(body) },
+    timeoutMs,
+  );
 export const patch = <T>(path: string, body?: unknown, timeoutMs?: number) =>
   request<T>(
     path,

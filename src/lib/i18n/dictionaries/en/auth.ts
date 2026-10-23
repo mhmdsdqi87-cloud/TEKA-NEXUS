@@ -42,6 +42,24 @@ export const auth = {
   haveAccount: "Already have an account?",
   newToTeka: "New to TEKA NEXUS?",
   createAccountLink: "Create an account",
+  google: {
+    setupWhy: "Why is it not active yet?",
+    setupTitle: "Google login — activation guide",
+    setupBody: "Everything is already built server-side. Google login turns on the moment the two OAuth env vars are added to the deployment — no code needed.",
+    setupStep1: "Open console.cloud.google.com → create a project (free).",
+    setupStep2: "APIs & Services → OAuth consent screen → External → fill the app name and save.",
+    setupStep3: "Credentials → Create credentials → OAuth client ID → Web application.",
+    setupStep4: "Add the redirect URI below, then set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Vercel → Settings → Environment Variables and redeploy.",
+    setupRedirect: "Authorized redirect URI",
+    button: 'Continue with Google',
+    divider: 'or continue with email',
+    redirecting: 'Connecting to Google…',
+  },
+  portal: {
+    welcome: 'Welcome back,',
+    entering: 'Entering the Nexus…',
+    secured: 'Session secured',
+  },
   err: {
     username: "Username must be 3–24 characters: lowercase letters, numbers, underscores.",
     passwordShort: "Password must be at least 8 characters.",
@@ -50,6 +68,10 @@ export const auth = {
     emailTaken: "This email is already registered. Try signing in instead.",
     usernameTaken: "That username is already taken. Pick another one.",
     invalidCredentials: "Invalid email or password.",
+    googleFailed: 'Google sign-in failed. Please try again.',
+    googleCancelled: 'Google sign-in was cancelled.',
+    googleNotConfigured: "Google sign-in isn't enabled yet — GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are required (see docs/GOOGLE_OAUTH.md).",
+    googleState: 'This Google sign-in attempt expired. Please try again.',
   },
 };
 

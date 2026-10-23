@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import {
   Bell,
   Bookmark,
+  ChevronDown,
   CircleUserRound,
   Compass,
   Crown,
@@ -22,9 +23,12 @@ import {
   LogOut,
   MessagesSquare,
   Plus,
+  Radio,
   Search,
   Settings,
+  SquareTerminal,
   TrendingUp,
+  Trophy,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -42,6 +46,7 @@ import {
 import { useT } from "@/lib/i18n";
 
 import { Logo, LogoMark, Wordmark } from "@/components/brand/logo";
+import { ARENA_GAMES } from "@/components/os/app-registry";
 import { ReputationChip, UserAvatar } from "@/components/shared/atoms";
 import { ProjectCardView } from "@/components/shared/project-card";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
@@ -63,6 +68,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 // ─── Unread badge ────────────────────────────────────────────
 function UnreadBadge({ count, className }: { count: number; className?: string }) {
@@ -98,12 +104,14 @@ function NavItem({
   active,
   onClick,
   badge,
+  liveDot,
 }: {
   icon: LucideIcon;
   label: string;
   active: boolean;
   onClick: () => void;
   badge?: number;
+  liveDot?: boolean;
 }) {
   return (
     <button
@@ -129,8 +137,51 @@ function NavItem({
       )}
       <Icon className={cn("relative h-[18px] w-[18px] shrink-0", active ? "text-cyan-300" : "text-muted-foreground")} />
       <span className="relative truncate">{label}</span>
-      {typeof badge === "number" && badge > 0 && <UnreadBadge count={badge} className="relative ml-auto" />}
+      {liveDot && (
+        <span className="relative ms-auto flex h-2 w-2" aria-hidden="true">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-70" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500" />
+        </span>
+      )}
+      {typeof badge === "number" && badge > 0 && <UnreadBadge count={badge} className={cn("relative", !liveDot && "ml-auto")} />}
     </button>
+  );
+}
+
+// ─── "More games" collapsible (non-featured Arena games) ─────
+function MoreGamesNav({ activeView }: { activeView: string }) {
+  const navigate = useApp((s) => s.navigate);
+  const t = useT();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger asChild>
+        <button
+          className="relative flex items-center gap-3 w-full rounded-lg px-3 py-2.5 min-h-[44px] text-sm font-medium text-muted-foreground transition-colors outline-none hover:text-foreground hover:bg-white/[0.04] focus-glow"
+          aria-expanded={open}
+        >
+          <ChevronDown
+            className={cn("h-[18px] w-[18px] shrink-0 transition-transform duration-200", open && "rotate-180")}
+            aria-hidden="true"
+          />
+          <span className="truncate">{t("arena.hub.more")}</span>
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-1 flex flex-col gap-0.5 ps-3">
+          {ARENA_GAMES.filter((g) => !g.featured).map((g) => (
+            <NavItem
+              key={g.id}
+              icon={g.icon}
+              label={t(g.titleKey)}
+              active={activeView === g.id}
+              onClick={() => navigate({ name: g.id } as View)}
+            />
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
@@ -157,10 +208,23 @@ function LeftNav() {
         <NavItem icon={House} label={t("common.home")} active={view.name === "home"} onClick={go({ name: "home" })} />
         <NavItem icon={Compass} label={t("common.explore")} active={view.name === "explore"} onClick={go({ name: "explore" })} />
         <NavItem
+          icon={Radio}
+          label={t("common.live")}
+          active={view.name === "live"}
+          onClick={go({ name: "live" })}
+          liveDot
+        />
+        <NavItem
           icon={FolderGit2}
           label={t("common.projects")}
           active={view.name === "project"}
           onClick={go({ name: "explore" })}
+        />
+        <NavItem
+          icon={SquareTerminal}
+          label={t("nav.workspaceHub")}
+          active={view.name === "workspaceHub"}
+          onClick={go({ name: "workspaceHub" })}
         />
         <NavItem
           icon={GraduationCap}
@@ -168,6 +232,31 @@ function LeftNav() {
           active={view.name === "academy" || view.name === "academyPortal"}
           onClick={go({ name: "academyPortal" })}
         />
+
+        {/* ── ARENA — games promoted from the old TEKA OS (Task 23) ── */}
+        <div className="mt-4 mb-1 flex items-center gap-2 px-3" aria-hidden="true">
+          <span className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-400/30 to-amber-400/10" />
+          <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-amber-300/80">
+            {t("arena.hub.section")}
+          </span>
+          <span className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-400/30 to-amber-400/10" />
+        </div>
+        <NavItem
+          icon={Trophy}
+          label={t("arena.hub.navLabel")}
+          active={view.name === "arena"}
+          onClick={go({ name: "arena" })}
+        />
+        {ARENA_GAMES.filter((g) => g.featured).map((g) => (
+          <NavItem
+            key={g.id}
+            icon={g.icon}
+            label={t(g.titleKey)}
+            active={view.name === g.id}
+            onClick={go({ name: g.id } as View)}
+          />
+        ))}
+        <MoreGamesNav activeView={view.name} />
 
         <motion.button
           onClick={go({ name: "projectNew" })}
@@ -226,6 +315,7 @@ function LeftNav() {
 // ─── Top bar ─────────────────────────────────────────────────
 function TopBar() {
   const user = useApp((s) => s.user);
+  const view = useApp((s) => s.view);
   const unreadCount = useApp((s) => s.unreadCount);
   const navigate = useApp((s) => s.navigate);
   const setSearchOpen = useApp((s) => s.setSearchOpen);
@@ -281,11 +371,47 @@ function TopBar() {
         </button>
       </TapScale>
 
+      {/* Task 23: TEKA Arena launcher (games promoted from the old TEKA OS) */}
+      <button
+        onClick={() => navigate({ name: "arena" })}
+        className={cn(
+          "flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-amber-400/20 bg-amber-400/[0.07] px-2.5 text-[11px] font-semibold text-amber-200 transition-colors outline-none hover:bg-amber-400/[0.14] focus-glow",
+        )}
+        aria-label={t("arena.hub.navLabel")}
+      >
+        <Trophy className="h-4 w-4" />
+        <span className="hidden lg:inline">{t("arena.hub.navLabel")}</span>
+      </button>
+
       <div className="flex-1" />
 
-      {/* Mobile actions: language + search + bell */}
+      {/* Mobile actions: language + live + search + bell */}
       <div className="flex md:hidden items-center gap-1">
         <LanguageSwitcher />
+        <button
+          onClick={() => navigate({ name: "workspaceHub" })}
+          className={cn(
+            "flex items-center justify-center h-11 w-11 rounded-lg transition-colors outline-none focus-glow",
+            view.name === "workspaceHub" ? "text-cyan-300" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.05]",
+          )}
+          aria-label={t("nav.workspaceHub")}
+        >
+          <SquareTerminal className="h-5 w-5" />
+        </button>
+        <button
+          onClick={() => navigate({ name: "live" })}
+          className={cn(
+            "relative flex items-center justify-center h-11 w-11 rounded-lg transition-colors outline-none focus-glow",
+            view.name === "live" ? "text-cyan-300" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.05]",
+          )}
+          aria-label={t("common.live")}
+        >
+          <Radio className="h-5 w-5" />
+          <span className="absolute top-1.5 right-1.5 flex h-2 w-2" aria-hidden="true">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-70" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500" />
+          </span>
+        </button>
         <TapScale>
           <button
             onClick={() => setSearchOpen(true)}
@@ -420,7 +546,7 @@ function MobileNav() {
       className="md:hidden fixed bottom-0 inset-x-0 z-40 glass pb-safe"
       aria-label={t("nav.mobileNavAria")}
     >
-      <div className="grid grid-cols-7 items-stretch h-16">
+      <div className="grid grid-cols-8 items-stretch h-16">
         <MobileTab icon={House} label={t("common.home")} active={view.name === "home"} onClick={() => navigate({ name: "home" })} />
         <MobileTab icon={Compass} label={t("common.explore")} active={view.name === "explore"} onClick={() => navigate({ name: "explore" })} />
         <MobileTab
@@ -441,6 +567,12 @@ function MobileNav() {
             <Plus className="h-6 w-6" />
           </motion.button>
         </div>
+        <MobileTab
+          icon={SquareTerminal}
+          label={t("nav.workspaceHub")}
+          active={view.name === "workspaceHub"}
+          onClick={() => navigate({ name: "workspaceHub" })}
+        />
         <MobileTab
           icon={MessagesSquare}
           label={t("dm.title")}

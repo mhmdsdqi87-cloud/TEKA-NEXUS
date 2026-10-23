@@ -31,6 +31,7 @@ export const common: CommonDict = {
   comingSoon: "به‌زودی",
   saved: "ذخیره‌شده‌ها",
   explore: "کاوش",
+  live: "زنده",
   home: "خانه",
   notifications: "اعلان‌ها",
   profile: "پروفایل",

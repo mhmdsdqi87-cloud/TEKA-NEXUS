@@ -1,0 +1,38 @@
+// TEKA NEXUS — arena dictionary (zh): Arena hub + game blurbs (Task 23).
+export const arena = {
+  hub: {
+    section: "竞技场",
+    navLabel: "竞技场中心",
+    eyebrow: "TEKA 竞技场",
+    title: "十二个游戏世界，一座竞技场。",
+    subtitle:
+      "挑战 Boss、点亮技能树、养大你的代码宠物、加入团队大战、收集卡牌 — 一切都在主导航里。",
+    nightsLive: "TEKA NIGHTS 进行中 — 经验双倍",
+    nightsIn: "TEKA NIGHTS 还有",
+    statCoins: "TEKA 金币",
+    statTeam: "战队",
+    statNoTeam: "未加入战队",
+    statTitle: "冠军头衔",
+    statNoTitle: "还没有头衔 — 去挑战一个 Boss！",
+    statCards: "程序员卡牌",
+    statPet: "代码宠物",
+    statPetNone: "尚未孵化",
+    gamesTitle: "选择你的战场",
+    academyCta: "每个 Boss 都由课程解锁 — 学院是一切的起点。",
+    terminalHint: "终端里依然藏着秘密……",
+  },
+  blurb: {
+    boss: "各课程最终 Boss：血条、冠军头衔与荣耀。",
+    tree: "银河 RPG 风格的学习进度全景地图。",
+    pet: "会孵化、会进化的伙伴，让你学习永不孤单。",
+    cards: "收集带唯一序列号的程序员排位卡牌。",
+    war: "红蓝大战 — 每周团队战，实时计分。",
+    shop: "用 TEKA 金币购买增益、主题与特权。",
+    crime: "数字取证：读日志、追 IP、破奇案。",
+    speedrun: "模块限时挑战 — 冲击全球纪录。",
+    timemachine: "逐日回放你的整个学习旅程。",
+    heatmap: "GitHub 风格的活动网格，记录你碰过的每节课。",
+    voice: "AI 朗读的实时语音房间。",
+    terminal: "整个平台的真正 Shell。试试 sudo hack。",
+  },
+};

@@ -127,6 +127,12 @@ export type PortalDict = {
     errorBody: string;
     retry: string;
   };
+  hack: {
+    title: string;
+    badge: string;
+    teaser: string;
+  };
+
 };
 
 const en: PortalDict = {
@@ -148,7 +154,7 @@ const en: PortalDict = {
     title: "From your first line of code to building software that really works.",
     sub: "A university-quality curriculum taught like an engineering workshop.",
     free: "100% free, forever",
-    desc: "Two hands-on courses, a secure final exam, real certificates and an AI tutor — all inside TEKA NEXUS.",
+    desc: "Four hands-on courses, a secure final exam, real certificates and an AI tutor — all inside TEKA NEXUS.",
   },
   stats: {
     heading: "Your live progress",
@@ -251,6 +257,12 @@ const en: PortalDict = {
     errorBody: "Check your connection and try again.",
     retry: "Retry",
   },
+  hack: {
+    title: "Hack & Security",
+    badge: "Coming soon",
+    teaser: "12+ hands-on lessons are being forged — same labs, same interactivity, zero fluff.",
+  },
+
 };
 
 const fa: PortalDict = {
@@ -272,7 +284,7 @@ const fa: PortalDict = {
     title: "از اولین خط کدت تا ساختنِ نرم‌افزاری که واقعاً کار می‌کنه.",
     sub: "درسی با کیفیت دانشگاه، آموزشی مثل کارگاه مهندسی.",
     free: "صددرصد رایگان، برای همیشه",
-    desc: "دو دوره‌ی کاملاً عملی، یک آزمون پایانی امن، گواهی واقعی و یه معلم هوش مصنوعی — همه‌ش داخل TEKA NEXUS.",
+    desc: "چهار دوره‌ی کاملاً عملی، یک آزمون پایانی امن، گواهی واقعی و یه معلم هوش مصنوعی — همه‌ش داخل TEKA NEXUS.",
   },
   stats: {
     heading: "پیشرفت زنده‌ی تو",
@@ -375,6 +387,12 @@ const fa: PortalDict = {
     errorBody: "اتصالت رو چک کن و دوباره امتحان کن.",
     retry: "تلاش دوباره",
   },
+  hack: {
+    title: "هک و امنیت",
+    badge: "به زودی",
+    teaser: "بیش از ۱۲ درس عملی داره آبدیده می‌شه — همون آزمایشگاه، همون تعامل، بدون حاشیه.",
+  },
+
 };
 
 const es: PortalDict = {
@@ -499,6 +517,12 @@ const es: PortalDict = {
     errorBody: "Revisa tu conexión e inténtalo de nuevo.",
     retry: "Reintentar",
   },
+  hack: {
+    title: "Hackeo y Seguridad",
+    badge: "Próximamente",
+    teaser: "Más de 12 lecciones prácticas se están forjando — mismos laboratorios, cero relleno.",
+  },
+
 };
 
 const zh: PortalDict = {
@@ -623,6 +647,12 @@ const zh: PortalDict = {
     errorBody: "请检查网络后重试。",
     retry: "重试",
   },
+  hack: {
+    title: "黑客与安全",
+    badge: "即将上线",
+    teaser: "12+ 节实操课程正在锻造 —— 同样的实验、同样的互动、绝无注水。",
+  },
+
 };
 
 const ar: PortalDict = {
@@ -747,6 +777,12 @@ const ar: PortalDict = {
     errorBody: "تحقق من اتصالك وحاول مرة أخرى.",
     retry: "إعادة المحاولة",
   },
+  hack: {
+    title: "الاختراق والأمان",
+    badge: "قريبًا",
+    teaser: "أكثر من ١٢ درسًا عمليًا قيد الإعداد — نفس المختبرات، بلا حشو.",
+  },
+
 };
 
 const fr: PortalDict = {
@@ -870,6 +906,11 @@ const fr: PortalDict = {
     errorTitle: "Impossible de charger votre progression",
     errorBody: "Vérifiez votre connexion puis réessayez.",
     retry: "Réessayer",
+  },
+  hack: {
+    title: "Hack & Sécurité",
+    badge: "Bientôt",
+    teaser: "Plus de 12 leçons pratiques en forge — mêmes labos, zéro remplissage.",
   },
 };
 

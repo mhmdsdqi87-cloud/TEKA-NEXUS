@@ -12,6 +12,7 @@ export const project: ProjectDict = {
     team: "成员",
     chat: "实时聊天",
     activity: "活动",
+    workspace: "工作区",
   },
   kanban: {
     BACKLOG: "待处理",
@@ -340,6 +341,11 @@ export const project: ProjectDict = {
     tagPlaceholder: "输入标签并按回车",
     addSkill: "添加技能...",
     allSkillsAdded: "已添加全部技能",
+    background: "个性化背景",
+    bgHint: "项目标题背后的个性化主视觉图 — 选择预设或粘贴任意图片链接。",
+    bgNone: "无背景",
+    bgCustom: "或粘贴图片链接",
+    bgCustomPlaceholder: "https://example.com/image.jpg",
   },
   join: {
     desc: "做个自我介绍，并选择你希望的贡献方式。",

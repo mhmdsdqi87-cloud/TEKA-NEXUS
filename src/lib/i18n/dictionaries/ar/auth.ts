@@ -44,6 +44,24 @@ export const auth: AuthDict = {
   haveAccount: "لديك حساب بالفعل؟",
   newToTeka: "جديد على TEKA NEXUS؟",
   createAccountLink: "أنشئ حسابًا",
+  google: {
+    setupWhy: "لماذا لم يُفعَّل بعد؟",
+    setupTitle: "الدخول بجوجل — دليل التفعيل",
+    setupBody: "كل شيء جاهز في الخادم. يتفعّل الدخول بجوجل فور إضافة متغيّري بيئة OAuth في لوحة النشر — دون أي تعديل في الكود.",
+    setupStep1: "افتح console.cloud.google.com وأنشئ مشروعًا جديدًا (مجانًا).",
+    setupStep2: "من APIs & Services → OAuth consent screen → اختر External وسجّل اسم التطبيق.",
+    setupStep3: "من Credentials → Create credentials → OAuth client ID → Web application.",
+    setupStep4: "أضِف رابط إعادة التوجيه أدناه، ثم سجّل GOOGLE_CLIENT_ID و GOOGLE_CLIENT_SECRET في Vercel وأعد النشر.",
+    setupRedirect: "رابط إعادة التوجيه المصرّح",
+    button: 'المتابعة بحساب Google',
+    divider: 'أو تابع بالبريد الإلكتروني',
+    redirecting: 'جارٍ الاتصال بـ Google…',
+  },
+  portal: {
+    welcome: 'أهلاً بعودتك،',
+    entering: 'جارٍ الدخول إلى النكسوس…',
+    secured: 'تم تأمين الجلسة',
+  },
   err: {
     username:
       "يجب أن يتكون اسم المستخدم من 3–24 حرفًا: أحرف لاتينية صغيرة وأرقام وشرطات سفلية.",
@@ -53,5 +71,9 @@ export const auth: AuthDict = {
     emailTaken: "هذا البريد مسجّل بالفعل. جرّب تسجيل الدخول.",
     usernameTaken: "اسم المستخدم محجوز. اختر اسمًا آخر.",
     invalidCredentials: "البريد أو كلمة المرور غير صحيحة.",
+    googleFailed: 'فشل تسجيل الدخول عبر Google. حاول مرة أخرى.',
+    googleCancelled: 'تم إلغاء تسجيل الدخول عبر Google.',
+    googleNotConfigured: 'تسجيل الدخول عبر Google غير مفعّل بعد — يلزم GOOGLE_CLIENT_ID و GOOGLE_CLIENT_SECRET (راجع docs/GOOGLE_OAUTH.md).',
+    googleState: 'انتهت صلاحية محاولة الدخول عبر Google. حاول مجددًا.',
   },
 };

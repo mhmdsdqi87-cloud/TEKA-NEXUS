@@ -10,6 +10,7 @@ import { db } from "@/lib/db";
 import { handle, HttpError, ok, requireUser } from "@/lib/server";
 import { XP_RULES } from "@/lib/constants";
 import { courseLessons, getCourse } from "@/lib/academy";
+import { awardCoins, logActivity } from "@/lib/os/economy"; // Task 19: TEKA OS hooks
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,8 @@ const Body = z.object({
 const CERT_PREFIX: Record<string, string> = {
   "python-basics": "PY",
   "html-basics": "WEB",
+  "css-basics": "CSS",
+  "js-basics": "JS",
 };
 
 function parseLessonIds(raw: string): string[] {
@@ -103,6 +106,17 @@ export async function POST(req: Request) {
     let xpAwarded = awarded ? lessonRule.xp : 0;
     let repAwarded = awarded ? lessonRule.reputation : 0;
 
+    // ── Task 19: TEKA OS economy hooks (first completion only) ──
+    let coinsEarned = 0;
+    if (awarded) {
+      try {
+        coinsEarned += await awardCoins(user.id, 5, `lesson:${course.id}:${body.lessonId}`);
+        await logActivity(user.id, "lesson", { courseId: course.id, lessonId: body.lessonId });
+      } catch {
+        // The OS economy must never break the core academy flow.
+      }
+    }
+
     // Course completion → bonus + certificate
     let certificate: { code: string; createdAt: Date } | null = null;
     const courseCompleted = completed.length >= allLessons.length;
@@ -126,6 +140,13 @@ export async function POST(req: Request) {
           xpAwarded += courseRule.xp;
           repAwarded += courseRule.reputation;
         }
+        try {
+          // Task 19: OS hooks for course completion.
+          coinsEarned += await awardCoins(user.id, 50, `course-complete:${course.id}`);
+          await logActivity(user.id, "lesson", { courseId: course.id, completed: true });
+        } catch {
+          /* non-fatal */
+        }
       } else {
         certificate = { code: existing.code, createdAt: existing.createdAt };
       }
@@ -133,7 +154,7 @@ export async function POST(req: Request) {
 
     const fresh = await db.user.findUniqueOrThrow({
       where: { id: user.id },
-      select: { xp: true, reputation: true },
+      select: { xp: true, reputation: true, coins: true },
     });
 
     return ok({
@@ -144,6 +165,7 @@ export async function POST(req: Request) {
       courseCompleted,
       certificate,
       user: fresh,
+      coinsEarned, // Task 19
     });
   });
 }

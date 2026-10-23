@@ -4,11 +4,12 @@
 // Walks a lesson's steps (theory → quiz → challenge) with animated
 // transitions. The challenge is the gate: passing it completes the lesson.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Flag, GraduationCap, HelpCircle, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Bookmark, BookmarkCheck, CheckCircle2, ChevronDown, Flag, GraduationCap, HelpCircle, Loader2, NotebookPen, Sparkles, Volume2, VolumeX } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { XP_RULES } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/store";
 import { EASE, Stagger, StaggerItem } from "@/components/shared/motion";
@@ -16,6 +17,8 @@ import { Confetti } from "@/components/academy/confetti";
 import { PyInline, PyChallenge } from "@/components/academy/py-runner";
 import { HtmlInline, HtmlChallenge } from "@/components/academy/html-runner";
 import { pick, type Course, type Lesson, type QuizQuestion, type TheoryBlock, type Step } from "@/lib/academy/types";
+import { readNote, saveNote, toggleBookmark, useBookmarks } from "@/lib/academy/local";
+import { useApp } from "@/lib/store";
 import { TUTOR_DICT } from "@/components/academy-portal/tutor/tutor-dict";
 import { TutorPanel } from "@/components/academy-portal/tutor/tutor-panel";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -53,6 +56,10 @@ function TheoryBlocks({ blocks, locale }: { blocks: TheoryBlock[]; locale: strin
             <div>
               {b.lang === "python" ? (
                 b.runnable === false ? <InlineStatic code={b.code} /> : <PyInline code={b.code} caption={b.caption} />
+              ) : b.lang === "css" ? (
+                b.runnable === false ? <InlineStatic code={b.code} /> : <HtmlInline code={b.code} caption={b.caption} />
+              ) : b.lang === "js" ? (
+                <InlineStatic code={b.code} />
               ) : (
                 b.runnable === false ? <InlineStatic code={b.code} /> : <HtmlInline code={b.code} caption={b.caption} />
               )}
@@ -185,6 +192,18 @@ function Quiz({ questions, locale, t }: { questions: QuizQuestion[]; locale: str
   );
 }
 
+// ─── AI Voice Mentor (read-aloud narration) ─────────────────
+// Speaks the lesson's goal + theory through POST /api/tts (backend z-ai SDK).
+// Blob URLs are cached per lesson for instant replay; the cache is capped.
+
+const TTS_URL_CACHE_MAX = 20;
+const ttsUrlCache = new Map<string, string>(); // lessonId → blob URL
+
+const TTS_ERROR_TEXT: Record<"fa" | "en", string> = {
+  fa: "پخش صدا الان در دسترس نیست — یه بار دیگه امتحان کن.",
+  en: "Voice playback is unavailable right now — please try again.",
+};
+
 // ─── Player ──────────────────────────────────────────────────
 
 export function LessonPlayer({
@@ -209,10 +228,37 @@ export function LessonPlayer({
   t: TFunc;
 }) {
   const locale = useLocaleSafe();
+  const user = useApp((s) => s.user);
+  const bookmarks = useBookmarks(user?.id);
+  const isStarred = bookmarks.includes(lesson.id);
   const tutor = TUTOR_DICT[locale as keyof typeof TUTOR_DICT] ?? TUTOR_DICT.en;
   const [tutorOpen, setTutorOpen] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const [justPassed, setJustPassed] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [note, setNote] = useState(() => readNote(lesson.id));
+  const [noteSaved, setNoteSaved] = useState(false);
+  const [noteLessonId, setNoteLessonId] = useState(lesson.id);
+  // Reset notes when the lesson changes (render-time state reset pattern).
+  if (noteLessonId !== lesson.id) {
+    setNoteLessonId(lesson.id);
+    setNote(readNote(lesson.id));
+    setNoteSaved(false);
+  }
+
+  // AI Voice Mentor: idle → loading → playing.
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [ttsState, setTtsState] = useState<"idle" | "loading" | "playing">("idle");
+
+  // Stop narration when the lesson changes or the player unmounts.
+  // (The audio's own "pause" listener resets the button state — no setState
+  // needed here, which keeps the react-hooks rules happy.)
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, [lesson.id]);
   const steps = lesson.steps;
   const step = steps[stepIdx];
   const total = steps.length;
@@ -220,20 +266,139 @@ export function LessonPlayer({
   const canAdvance = !isChallenge || completed || justPassed;
   const isLast = stepIdx === total - 1;
 
+  // Autosave notes (debounced).
+  useEffect(() => {
+    if (!notesOpen) return;
+    const id = window.setTimeout(() => {
+      saveNote(lesson.id, note);
+      setNoteSaved(true);
+    }, 600);
+    return () => window.clearTimeout(id);
+  }, [note, notesOpen, lesson.id]);
+
+  const go = (dir: 1 | -1) => {
+    setStepIdx((s) => Math.min(total - 1, Math.max(0, s + dir)));
+  };
+
+  // Keyboard shortcuts: ← / → move between steps (skips form fields;
+  // direction follows the reading direction of the active locale).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const el = document.activeElement as HTMLElement | null;
+      const tag = el?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el?.isContentEditable) return;
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      const rtl = locale === "fa" || locale === "ar";
+      const fwd = rtl ? e.key === "ArrowLeft" : e.key === "ArrowRight";
+      if (fwd) {
+        if (canAdvance && stepIdx < total - 1) {
+          e.preventDefault();
+          go(1);
+        }
+      } else if (stepIdx > 0) {
+        e.preventDefault();
+        go(-1);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [canAdvance, stepIdx, total, locale, go]);
+
   const nextLesson = useMemo(() => {
     const flat = course.modules.flatMap((m, mi) => m.lessons.map((l, li) => ({ l, mi, li })));
     const i = flat.findIndex((x) => x.l.id === lesson.id);
     return i >= 0 && i + 1 < flat.length ? flat[i + 1] : null;
   }, [course, lesson.id]);
 
-  const go = (dir: 1 | -1) => {
-    setStepIdx((s) => Math.min(total - 1, Math.max(0, s + dir)));
-  };
-
   const handlePassed = () => {
     if (!completed && !justPassed) {
       setJustPassed(true);
       onChallengePassed();
+    }
+  };
+
+  // ── AI Voice Mentor helpers ────────────────────────────────
+  const ttsLang: "fa" | "en" = locale === "fa" ? "fa" : "en";
+
+  // Narration script: lesson goal + all theory text, markdown stripped,
+  // capped at 800 chars (the API accepts at most 900).
+  const buildNarrationText = () => {
+    const parts: string[] = [pick(lesson.goal, locale)];
+    for (const s of lesson.steps) {
+      if (s.kind !== "theory") continue;
+      if (s.title) parts.push(pick(s.title, locale));
+      for (const b of s.blocks) {
+        if (b.type === "code") continue;
+        parts.push(pick(b, locale));
+      }
+    }
+    return parts
+      .join(". ")
+      .replace(/\*\*([^*]+)\*\*/g, "$1")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/\[\[([^\]]+)\]\]/g, "$1")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 800);
+  };
+
+  const playNarrationUrl = (url: string) => {
+    audioRef.current?.pause();
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.addEventListener("ended", () => setTtsState("idle"));
+    audio.addEventListener("pause", () => setTtsState("idle"));
+    audio.addEventListener("error", () => {
+      setTtsState("idle");
+      toast.error(TTS_ERROR_TEXT[ttsLang]);
+    });
+    setTtsState("playing");
+    audio.play().catch(() => setTtsState("idle"));
+  };
+
+  const handleTtsClick = async () => {
+    // Playing → this click stops the narration.
+    if (ttsState === "playing") {
+      audioRef.current?.pause();
+      return;
+    }
+    if (ttsState === "loading") return;
+
+    // Instant replay from the per-lesson blob cache.
+    const cachedUrl = ttsUrlCache.get(lesson.id);
+    if (cachedUrl) {
+      playNarrationUrl(cachedUrl);
+      return;
+    }
+
+    setTtsState("loading");
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "audio/wav" },
+        body: JSON.stringify({ text: buildNarrationText(), lang: ttsLang }),
+      });
+      if (!res.ok) {
+        setTtsState("idle");
+        toast.error(TTS_ERROR_TEXT[ttsLang]);
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      ttsUrlCache.set(lesson.id, url);
+      if (ttsUrlCache.size > TTS_URL_CACHE_MAX) {
+        const oldest = ttsUrlCache.keys().next().value;
+        if (oldest !== undefined) {
+          const evicted = ttsUrlCache.get(oldest);
+          ttsUrlCache.delete(oldest);
+          if (evicted && audioRef.current?.src !== evicted) URL.revokeObjectURL(evicted);
+        }
+      }
+      playNarrationUrl(url);
+    } catch {
+      setTtsState("idle");
+      toast.error(TTS_ERROR_TEXT[ttsLang]);
     }
   };
 
@@ -282,6 +447,49 @@ export function LessonPlayer({
               ✓
             </span>
           )}
+          <button
+            type="button"
+            onClick={() => {
+              if (!user) {
+                toast.info(t("academy.loginPrompt"));
+                return;
+              }
+              const now = toggleBookmark(user.id, lesson.id);
+              toast(now ? t("academy.bookmark.add") : t("academy.bookmark.remove"));
+            }}
+            aria-pressed={isStarred}
+            aria-label={isStarred ? t("academy.bookmark.remove") : t("academy.bookmark.add")}
+            title={isStarred ? t("academy.bookmark.remove") : t("academy.bookmark.add")}
+            className={cn(
+              "inline-flex h-11 w-11 items-center justify-center rounded-full transition focus-glow",
+              isStarred
+                ? "bg-amber-400/15 text-amber-300 ring-1 ring-inset ring-amber-300/35"
+                : "bg-white/[0.05] text-muted-foreground hover:text-amber-200",
+            )}
+          >
+            {isStarred ? <BookmarkCheck className="h-4.5 w-4.5" /> : <Bookmark className="h-4.5 w-4.5" />}
+          </button>
+          <button
+            type="button"
+            onClick={handleTtsClick}
+            disabled={ttsState === "loading"}
+            aria-label={t("academy.ttsListen")}
+            title={t("academy.ttsListen")}
+            className={cn(
+              "inline-flex h-11 w-11 items-center justify-center rounded-full transition focus-glow",
+              ttsState === "playing"
+                ? "bg-cyan-500/15 text-cyan-300 ring-1 ring-inset ring-cyan-400/35"
+                : "bg-white/[0.05] text-muted-foreground hover:text-cyan-200",
+            )}
+          >
+            {ttsState === "loading" ? (
+              <Loader2 className="h-4.5 w-4.5 animate-spin" aria-hidden="true" />
+            ) : ttsState === "playing" ? (
+              <VolumeX className="h-4.5 w-4.5" aria-hidden="true" />
+            ) : (
+              <Volume2 className="h-4.5 w-4.5" aria-hidden="true" />
+            )}
+          </button>
         </div>
         <h1 dir="auto" className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
           {pick(lesson.title, locale)}
@@ -379,6 +587,54 @@ export function LessonPlayer({
           )}
         </motion.section>
       </AnimatePresence>
+
+      {/* personal notes — autosaved on this device */}
+      <div className="mt-6">
+        <button
+          type="button"
+          onClick={() => setNotesOpen((v) => !v)}
+          aria-expanded={notesOpen}
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 text-sm font-medium text-muted-foreground transition hover:text-foreground focus-glow"
+        >
+          <NotebookPen className="h-4 w-4 text-violet-300" aria-hidden="true" />
+          {t("academy.notes.title")}
+          {noteSaved && notesOpen && (
+            <motion.span
+              key="saved"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-[11px] font-semibold text-emerald-300"
+            >
+              {t("academy.notes.saved")}
+            </motion.span>
+          )}
+          <ChevronDown className={cn("h-4 w-4 transition-transform", notesOpen && "rotate-180")} aria-hidden="true" />
+        </button>
+        <AnimatePresence>
+          {notesOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: EASE }}
+              className="overflow-hidden"
+            >
+              <textarea
+                value={note}
+                onChange={(e) => {
+                  setNote(e.target.value);
+                  setNoteSaved(false);
+                }}
+                dir="auto"
+                rows={4}
+                placeholder={t("academy.notes.placeholder")}
+                aria-label={t("academy.notes.title")}
+                className="mt-2 w-full resize-y rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-3 text-sm leading-6 text-foreground outline-none transition placeholder:text-muted-foreground/50 focus:border-violet-400/40 focus-glow"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* footer nav */}
       <div className="mt-8 pb-4">

@@ -142,6 +142,46 @@ body {
   box-shadow: 0 8px 32px -12px rgba(34, 211, 238, 0.15), 0 8px 40px -18px rgba(167, 139, 250, 0.2);
 }
 
+/* ── Academy glassmorphism (Task 17) ─────────────────────────── */
+/* Frosted panel: translucent layers + backdrop blur + top light seam. */
+.academy-glass {
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.014) 42%, rgba(34, 211, 238, 0.024)),
+    rgba(10, 10, 16, 0.55);
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 60px -32px rgba(0, 0, 0, 0.65);
+}
+
+.academy-glass-hover {
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+.academy-glass-hover:hover {
+  border-color: rgba(34, 211, 238, 0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 14px 46px -14px rgba(34, 211, 238, 0.22),
+    0 14px 54px -20px rgba(167, 139, 250, 0.26);
+}
+
+/* Fine grid sheen inside a glass panel (decorative, masked to top). */
+.academy-grid-sheen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(ellipse 85% 95% at 50% 0%, black 25%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 95% at 50% 0%, black 25%, transparent 78%);
+  pointer-events: none;
+}
+
 /* Ambient background: fine grid + aurora glows */
 .nexus-bg {
   position: fixed;
@@ -319,4 +359,33 @@ html[lang="ar"] body {
 }
 [dir="rtl"] .text-right {
   text-align: left;
+}
+
+/* ── Task 16 — landing aurora drift ── */
+@keyframes aurora-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(6%, -4%, 0) scale(1.12); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+.aurora-drift { animation: aurora-drift 18s ease-in-out infinite; }
+.aurora-drift-slow { animation: aurora-drift 26s ease-in-out infinite reverse; }
+
+/* ── Task 19 — TEKA OS scrollbars ── */
+.teka-os-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34, 211, 238, 0.25) transparent;
+}
+.teka-os-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.teka-os-scroll::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.22);
+  border-radius: 8px;
+}
+.teka-os-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.4);
+}
+.teka-os-scroll::-webkit-scrollbar-track {
+  background: transparent;
 }

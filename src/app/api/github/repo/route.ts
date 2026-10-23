@@ -6,6 +6,7 @@
 
 import type { NextRequest } from "next/server";
 import { ok, handle, HttpError } from "@/lib/server";
+import { displayCommitAuthor, avatarForAuthor } from "@/lib/github-authors";
 
 export const dynamic = "force-dynamic";
 
@@ -132,14 +133,19 @@ export async function GET(req: NextRequest) {
           ownerAvatar: r.owner?.avatar_url ?? "",
           ownerLogin: r.owner?.login ?? owner,
         },
-        commits: commits.map((c) => ({
-          sha: c.sha.slice(0, 7),
-          url: c.html_url,
-          message: (c.commit.message || "").split("\n")[0].slice(0, 110),
-          author: c.commit.author?.name ?? c.author?.login ?? "unknown",
-          avatar: c.author?.avatar_url ?? "",
-          date: c.commit.author?.date ?? new Date().toISOString(),
-        })),
+        commits: commits.map((c) => {
+          const rawAuthor = c.commit.author?.name ?? c.author?.login ?? "unknown";
+          return {
+            sha: c.sha.slice(0, 7),
+            url: c.html_url,
+            message: (c.commit.message || "").split("\n")[0].slice(0, 110),
+            // Legacy "Z User" CI commits belong to mohammad — normalize here so
+            // every surface (Live hub, project panels) shows the real builder.
+            author: displayCommitAuthor(rawAuthor),
+            avatar: avatarForAuthor(rawAuthor, c.author?.avatar_url ?? ""),
+            date: c.commit.author?.date ?? new Date().toISOString(),
+          };
+        }),
         fetchedAt: new Date().toISOString(),
       };
       cache.set(key, { at: Date.now(), payload });

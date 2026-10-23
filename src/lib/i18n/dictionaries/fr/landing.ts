@@ -7,8 +7,13 @@ export const landing: LandingDict = {
   topbar: {
     navAria: "Navigation principale",
     startBuilding: "Commencer à créer",
+    about: "À propos",
   },
   hero: {
+    startFree: "Commencer Gratuitement",
+    statLessons: "leçons interactives",
+    statPaths: "parcours d'apprentissage",
+    statFree: "gratuit pour toujours",
     badge: "TEKA NEXUS — désormais en bêta ouverte",
     title1: "Là où les idées deviennent ",
     title2: "de la vraie technologie",
@@ -83,6 +88,23 @@ export const landing: LandingDict = {
     done: "Terminé",
     taskCard: "Carte de tâche",
     assignee: "Assigné",
+  },
+  arena: {
+    eyebrow: "TEKA ARENA",
+    title: "Douze mondes de jeu. Une seule navigation principale.",
+    subtitle:
+      "TEKA Arena est la couche jeu de TEKA NEXUS — combats de boss, arbre de compétences galactique, Code Pet, guerres des Rouges contre les Bleus, cartes à collectionner, un vrai terminal et plus encore. Chaque jeu est désormais une page à part entière dans la barre latérale, pas un bureau caché.",
+    appsBadge: "12 jeux à l'intérieur",
+    cardTitle: "Choisissez votre champ de bataille",
+    cardBody:
+      "Affrontez les boss de chaque cours pour décrocher des titres de champion, élevez un Code Pet qui évolue avec vous, collectionnez les Coder Cards numérotées, rejoignez la guerre hebdomadaire des Rouges contre les Bleus et dépensez vos pièces TEKA à la boutique. Tout vit dans la navigation principale.",
+    f1: "12 jeux pleine page — Boss Arena, Arbre de compétences, Code Pet, Coder Cards…",
+    f2: "Un terminal qui marche vraiment : open boss, teka learn python-basics",
+    f3: "TEKA Nights — événement mensuel avec XP×2 et compte à rebours en direct",
+    f4: "Couche jeu partout : boss, animal, cartes, pièces et guerres",
+    f5: "À un clic de n'importe quelle page — toute l'arena est dans la barre latérale",
+    cta: "Créez un compte et entrez dans l'arena",
+    note: "Gratuit pour toujours — sans carte bancaire, sans piège.",
   },
   academy: {
     eyebrow: "Académie TEKA",

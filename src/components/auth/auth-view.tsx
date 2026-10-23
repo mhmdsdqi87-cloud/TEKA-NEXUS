@@ -4,14 +4,22 @@
 // Login / signup split view: brand panel (desktop) + form card.
 // Submit flows hit the real /api/auth endpoints and update the session store.
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { toast } from "sonner";
-import { ArrowLeft, Compass, Eye, EyeOff, Loader2, ShieldCheck, Users } from "lucide-react";
+import { ArrowLeft, Chrome, Compass, Eye, EyeOff, Loader2, ShieldCheck, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogoMark, Wordmark } from "@/components/brand/logo";
 import {
@@ -24,12 +32,14 @@ import {
   staggerParent,
 } from "@/components/shared/motion";
 import { useApp, type SessionUser } from "@/lib/store";
-import { post, setSessionToken } from "@/lib/api";
+import { get, post, setSessionToken } from "@/lib/api";
 import { useT } from "@/lib/i18n";
+import { triggerEnterPortal } from "@/components/auth/enter-portal";
 import { cn } from "@/lib/utils";
 
 const USERNAME_RE = /^[a-z0-9_]{3,24}$/;
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
+
 
 // Brand bullet icon boxes settle with a tiny spring after each bullet rises.
 const bulletIconVariants: Variants = {
@@ -70,6 +80,26 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Google sign-in: probe deployment config, fall back to the activation guide.
+  const [googleEnabled, setGoogleEnabled] = useState<boolean | null>(null);
+  const [googleOpen, setGoogleOpen] = useState(false);
+  const [redirectUri, setRedirectUri] = useState("");
+
+  useEffect(() => {
+    setRedirectUri(`${window.location.origin}/api/auth/google/callback`);
+    get<{ enabled: boolean }>("/api/auth/google/status")
+      .then((r) => setGoogleEnabled(Boolean(r.enabled)))
+      .catch(() => setGoogleEnabled(false));
+  }, []);
+
+  function handleGoogle() {
+    if (googleEnabled) {
+      window.location.href = "/api/auth/google/start";
+    } else {
+      setGoogleOpen(true);
+    }
+  }
+
   const usernameValid = USERNAME_RE.test(username);
   const isSignup = mode === "signup";
 
@@ -106,6 +136,7 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
         });
         setSessionToken(res.token);
         setUser(res.user);
+        triggerEnterPortal(res.user.displayName);
         navigate({ name: "onboarding" });
       } else {
         const res = await post<{ user: SessionUser; token: string }>("/api/auth/login", {
@@ -114,6 +145,7 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
         });
         setSessionToken(res.token);
         setUser(res.user);
+        triggerEnterPortal(res.user.displayName);
         navigate(res.user.onboardingCompleted ? { name: "home" } : { name: "onboarding" });
       }
     } catch (err) {
@@ -321,6 +353,37 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
                       </Button>
                     </TapScale>
                   </StaggerItem>
+
+                  <StaggerItem>
+                    <div className="flex items-center gap-3 py-1">
+                      <span className="h-px flex-1 bg-white/[0.08]" />
+                      <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                        {t("auth.google.divider")}
+                      </span>
+                      <span className="h-px flex-1 bg-white/[0.08]" />
+                    </div>
+                    <TapScale className="w-full">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={googleEnabled === null}
+                        onClick={handleGoogle}
+                        className="h-11 w-full border-white/[0.12] bg-white font-medium text-slate-900 hover:bg-slate-100 hover:text-slate-900"
+                      >
+                        {googleEnabled === null ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4">
+                            <path fill="#4285F4" d="M23.5 12.3c0-.9-.1-1.5-.3-2.2H12v4.1h6.5c-.1 1.1-.8 2.7-2.4 3.8l3.7 2.9c2.3-2.1 3.7-5.2 3.7-8.6z" />
+                            <path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.7-2.9c-1 .7-2.4 1.2-4.2 1.2-3.2 0-5.9-2.1-6.8-5.1L1.3 17.2C3.3 21.2 7.3 24 12 24z" />
+                            <path fill="#FBBC05" d="M5.2 14.3c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.3 6.8C.5 8.4 0 10.1 0 12s.5 3.6 1.3 5.2l3.9-2.9z" />
+                            <path fill="#EA4335" d="M12 4.7c2.3 0 3.8 1 4.7 1.8l3.4-3.3C17.9 1.2 15.2 0 12 0 7.3 0 3.3 2.8 1.3 6.8l3.9 3c.9-3 3.6-5.1 6.8-5.1z" />
+                          </svg>
+                        )}
+                        {t("auth.google.button")}
+                      </Button>
+                    </TapScale>
+                  </StaggerItem>
                 </Stagger>
               </form>
 
@@ -337,6 +400,50 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
             </CardContent>
             </Card>
           </FadeIn>
+
+          {/* Google activation guide — shown when OAuth env vars are missing */}
+          <Dialog open={googleOpen} onOpenChange={setGoogleOpen}>
+            <DialogContent className="max-h-[85vh] max-w-md overflow-y-auto rounded-2xl border-white/[0.08] glass-card">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 font-display">
+                  <Chrome className="h-5 w-5 text-cyan-300" />
+                  {t("auth.google.setupTitle")}
+                </DialogTitle>
+                <DialogDescription>{t("auth.google.setupBody")}</DialogDescription>
+              </DialogHeader>
+              <p className="text-xs font-medium text-amber-300/90">{t("auth.google.setupWhy")}</p>
+              <ol className="space-y-2.5">
+                {[t("auth.google.setupStep1"), t("auth.google.setupStep2"), t("auth.google.setupStep3"), t("auth.google.setupStep4")].map(
+                  (step, i) => (
+                    <li key={i} className="flex gap-2.5 text-sm text-muted-foreground">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-[10px] font-bold text-cyan-300">
+                        {i + 1}
+                      </span>
+                      <span className="leading-relaxed">{step}</span>
+                    </li>
+                  ),
+                )}
+              </ol>
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground">{t("auth.google.setupRedirect")}</p>
+                <code
+                  dir="ltr"
+                  className="block select-all rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-[11px] text-cyan-200"
+                >
+                  {redirectUri}
+                </code>
+              </div>
+              <p className="text-[11px] leading-relaxed text-muted-foreground">
+                GOOGLE_CLIENT_ID · GOOGLE_CLIENT_SECRET · NEXT_PUBLIC_APP_URL — Vercel → Settings →
+                Environment Variables → Redeploy. docs/GOOGLE_OAUTH.md
+              </p>
+              <DialogFooter>
+                <Button variant="outline" className="h-9" onClick={() => setGoogleOpen(false)}>
+                  OK
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </main>
     </div>

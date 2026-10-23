@@ -1,0 +1,38 @@
+// TEKA NEXUS — arena dictionary (fr): Arena hub + game blurbs (Task 23).
+export const arena = {
+  hub: {
+    section: "ARÈNE",
+    navLabel: "Hub de l'Arène",
+    eyebrow: "TEKA ARENA",
+    title: "Douze mondes de jeu. Une seule arène.",
+    subtitle:
+      "Affrontez des boss, progressez dans l'arbre de compétences, élevez votre compagnon de code, rejoignez la guerre d'équipes et collectionnez des cartes — tout vit désormais dans la navigation principale.",
+    nightsLive: "TEKA NIGHTS en cours — XP ×2",
+    nightsIn: "TEKA NIGHTS dans",
+    statCoins: "Pièces TEKA",
+    statTeam: "Équipe",
+    statNoTeam: "Sans équipe",
+    statTitle: "Titre de champion",
+    statNoTitle: "Pas encore de titre — affrontez un boss !",
+    statCards: "Cartes de codeur",
+    statPet: "Compagnon de code",
+    statPetNone: "Pas encore éclos",
+    gamesTitle: "Choisissez votre champ de bataille",
+    academyCta: "Chaque boss se débloque avec des leçons — l'Académie est le point de départ.",
+    terminalHint: "Le terminal cache toujours des secrets…",
+  },
+  blurb: {
+    boss: "Boss finaux de chaque cours avec barres de vie, titres et gloire.",
+    tree: "Une carte RPG galactique de tout ce que vous pouvez apprendre.",
+    pet: "Un compagnon qui éclot, évolue et ne vous laisse jamais seul.",
+    cards: "Collectionnez des cartes de codeur classées aux numéros de série uniques.",
+    war: "Rouges contre Bleus — guerre d'équipes hebdomadaire avec score en direct.",
+    shop: "Dépensez vos pièces TEKA en boosts, thèmes et avantages.",
+    crime: "Criminalistique numérique : lisez les logs, tracez les IP, résolvez des affaires.",
+    speedrun: "Course contre la montre par module — battez un record mondial.",
+    timemachine: "Rejouez tout votre parcours d'apprentissage, jour après jour.",
+    heatmap: "Grille d'activité façon GitHub de chaque leçon touchée.",
+    voice: "Salons audio en direct avec narration par IA.",
+    terminal: "Un vrai shell pour toute la plateforme. Essayez sudo hack.",
+  },
+};

@@ -36,6 +36,7 @@ export type ProjectDetail = ProjectCard & {
   repositoryUrl: string;
   demoUrl: string;
   websiteUrl: string;
+  bgImage: string;
 };
 
 export type ProjectMemberDTO = {
@@ -205,4 +206,67 @@ export type ProjectDetailResponse = {
 export type MembersResponse = {
   members: ProjectMemberDTO[];
   canManage: boolean;
+};
+
+// ─── Workspace (Task ws-1) ───────────────────────────────────
+
+export type WsActor = {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarColor: string;
+  avatarUrl: string | null;
+} | null;
+
+export type WsFileMeta = {
+  id: string;
+  name: string;
+  folder: string;
+  isFolder: boolean;
+  language: string;
+  size: number;
+  starred: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: WsActor;
+  updatedBy: WsActor;
+};
+
+export type WsFileFull = WsFileMeta & {
+  content: string;
+};
+
+export type WsRevisionMeta = {
+  id: string;
+  size: number;
+  editorName: string | null;
+  createdAt: string;
+};
+
+export type WsDebugLog = {
+  id: string;
+  level: string;
+  source: string;
+  message: string;
+  user: WsActor;
+  createdAt: string;
+};
+
+export type WsStats = {
+  files: number;
+  folders: number;
+  totalSize: number;
+  starred: number;
+  languages: { id: string; count: number }[];
+};
+
+export type WorkspaceResponse = {
+  files: WsFileMeta[];
+  logs: WsDebugLog[];
+  stats: WsStats;
+};
+
+export type WorkspaceFileResponse = {
+  file: WsFileFull;
+  revisions: WsRevisionMeta[];
 };

@@ -43,6 +43,7 @@ import {
   EyeOff,
   FileQuestion,
   Flag,
+  FolderGit2,
   Gamepad2,
   GitBranch,
   Github,
@@ -105,6 +106,9 @@ import {
   UserAvatar,
 } from "@/components/shared/atoms";
 import { ShareMenu } from "@/components/shared/share-menu";
+import { BackgroundPicker } from "@/components/shared/background-picker";
+import { TekaWatermark } from "@/components/shared/teka-watermark";
+import { WorkspaceView } from "@/components/workspace/workspace-view";
 import { GithubPanel } from "@/components/project/github-panel";
 import { ProjectChat } from "@/components/project/project-chat";
 import {
@@ -380,6 +384,7 @@ const LIKE_BURST: ReadonlyArray<{ x: number; y: number }> = [
 const TAB_ITEMS = [
   { value: "overview", icon: LayoutDashboard },
   { value: "updates", icon: Megaphone },
+  { value: "workspace", icon: FolderGit2 },
   { value: "tasks", icon: ListChecks },
   { value: "milestones", icon: Flag },
   { value: "team", icon: Users },
@@ -387,7 +392,7 @@ const TAB_ITEMS = [
   { value: "activity", icon: Activity },
 ] as const;
 
-export function ProjectView({ slug }: { slug: string }) {
+export function ProjectView({ slug, fileId, initialTab }: { slug: string; fileId?: string; initialTab?: string }) {
   const user = useApp((s) => s.user);
   const navigate = useApp((s) => s.navigate);
   const back = useApp((s) => s.back);
@@ -398,7 +403,7 @@ export function ProjectView({ slug }: { slug: string }) {
   const [detail, setDetail] = useState<ProjectDetailResponse | null>(null);
   const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
   const [errorMsg, setErrorMsg] = useState("");
-  const [tab, setTab] = useState("overview");
+  const [tab, setTab] = useState(initialTab ?? "overview");
 
   const [tasks, setTasks] = useState<TaskDTO[] | null>(null);
   const [milestones, setMilestones] = useState<MilestoneDTO[] | null>(null);
@@ -479,7 +484,7 @@ export function ProjectView({ slug }: { slug: string }) {
     setMembersResp(null);
     setComments(null);
     setRequests(null);
-    setTab("overview");
+    setTab(initialTab ?? "overview");
     loadDetail();
   }, [loadDetail, slug]);
 
@@ -627,15 +632,26 @@ export function ProjectView({ slug }: { slug: string }) {
         <ArrowLeft className="h-3.5 w-3.5" /> {t("project.back")}
       </button>
 
-      {/* Cover banner */}
+      {/* Cover banner — personalized bgImage wins over the cover when set */}
       <FadeIn y={10} className="relative h-40 overflow-hidden rounded-2xl border border-white/[0.07] md:h-56">
         <motion.div
-          className="h-full w-full"
+          className="relative h-full w-full"
           initial={{ scale: 1.04 }}
           animate={{ scale: 1 }}
           transition={{ duration: 1.4, ease: EASE }}
         >
           <ProjectCover cover={project.coverImage} name={project.name} seed={project.slug.length} />
+          {project.bgImage && (
+            <img
+              src={project.bgImage}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          )}
+          {project.bgImage && <TekaWatermark label="TEKA NEXUS" className="bottom-2 end-3 text-[11px] text-white/35" />}
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-[#08080d] via-[#08080d]/20 to-transparent" />
       </FadeIn>
@@ -873,6 +889,8 @@ export function ProjectView({ slug }: { slug: string }) {
                 onCreated={(u) => setUpdates((prev) => [u, ...(prev ?? [])])}
               />
             )}
+
+            {tab === "workspace" && <WorkspaceView slug={slug} canEdit={canContribute} initialFileId={fileId} />}
 
             {tab === "tasks" && (
               <TasksTab
@@ -3575,6 +3593,7 @@ function EditProjectDialog({
   const [repoUrl, setRepoUrl] = useState(project.repositoryUrl);
   const [demoUrl, setDemoUrl] = useState(project.demoUrl);
   const [websiteUrl, setWebsiteUrl] = useState(project.websiteUrl);
+  const [bgImage, setBgImage] = useState(project.bgImage);
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
@@ -3589,6 +3608,7 @@ function EditProjectDialog({
       setRepoUrl(project.repositoryUrl);
       setDemoUrl(project.demoUrl);
       setWebsiteUrl(project.websiteUrl);
+      setBgImage(project.bgImage);
       setTagInput("");
     }
   }, [open, project]);
@@ -3626,6 +3646,7 @@ function EditProjectDialog({
         repositoryUrl: repoUrl.trim(),
         demoUrl: demoUrl.trim(),
         websiteUrl: websiteUrl.trim(),
+        bgImage,
       });
       onSaved(r.project);
       if (willRelease) toast.success(t("project.toasts.releasePublished"));
@@ -3853,6 +3874,9 @@ function EditProjectDialog({
               />
             </div>
           </div>
+          </StaggerItem>
+          <StaggerItem>
+          <BackgroundPicker value={bgImage} onChange={setBgImage} name={project.name} seed={project.slug.length} />
           </StaggerItem>
         </Stagger>
 

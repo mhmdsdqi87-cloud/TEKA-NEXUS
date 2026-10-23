@@ -11,6 +11,7 @@ export const project = {
     team: "Team",
     chat: "Live chat",
     activity: "Activity",
+    workspace: "Workspace",
   },
   kanban: {
     BACKLOG: "Backlog",
@@ -339,6 +340,11 @@ export const project = {
     tagPlaceholder: "Type a tag and press Enter",
     addSkill: "Add a skill...",
     allSkillsAdded: "All skills added",
+    background: "Personal background",
+    bgHint: "A personalized hero image behind your project header — pick a preset or paste any image URL.",
+    bgNone: "No background",
+    bgCustom: "Or paste an image URL",
+    bgCustomPlaceholder: "https://example.com/image.jpg",
   },
   join: {
     desc: "Introduce yourself and pick how you would like to contribute.",

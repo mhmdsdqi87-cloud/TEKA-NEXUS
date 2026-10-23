@@ -276,6 +276,12 @@ const createSchema = z.object({
   demoUrl: urlField.optional(),
   websiteUrl: urlField.optional(),
   coverImage: z.string().trim().max(500).optional(),
+  bgImage: z
+    .string()
+    .trim()
+    .max(500)
+    .refine((v) => v === "" || v.startsWith("/") || /^https?:\/\//i.test(v), "Invalid background path or URL.")
+    .optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -304,6 +310,7 @@ export async function POST(req: NextRequest) {
           status,
           visibility,
           coverImage: body.coverImage ?? "",
+          bgImage: body.bgImage ?? "",
           repositoryUrl: body.repositoryUrl ?? "",
           demoUrl: body.demoUrl ?? "",
           websiteUrl: body.websiteUrl ?? "",

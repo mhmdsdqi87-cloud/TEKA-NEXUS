@@ -10,10 +10,26 @@ export type View =
   | { name: "login" }
   | { name: "signup" }
   | { name: "onboarding" }
+  | { name: "about" }
+  | { name: "arena" }
+  | { name: "boss" }
+  | { name: "skilltree" }
+  | { name: "pet" }
+  | { name: "cards" }
+  | { name: "war" }
+  | { name: "shop" }
+  | { name: "crime" }
+  | { name: "speedrun" }
+  | { name: "timemachine" }
+  | { name: "heatmap" }
+  | { name: "voice" }
+  | { name: "terminal" }
   | { name: "home" }
   | { name: "explore"; query?: string }
+  | { name: "live" }
+  | { name: "workspaceHub" }
   | { name: "projectNew" }
-  | { name: "project"; slug: string; tab?: string }
+  | { name: "project"; slug: string; tab?: string; fileId?: string }
   | { name: "teams" }
   | { name: "notifications" }
   | { name: "dm"; conversationId?: string }
@@ -38,6 +54,9 @@ export type SessionUser = {
   interests: string[];
   xp: number;
   reputation: number;
+  coins?: number; // TEKA Coin balance (Task 19)
+  team?: string | null; // RED | BLUE (Task 19)
+  title?: string | null; // boss title (Task 19)
   onboardingCompleted: boolean;
   createdAt: string;
 };

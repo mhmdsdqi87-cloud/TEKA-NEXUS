@@ -5,8 +5,13 @@ export const landing = {
   topbar: {
     navAria: "Primary",
     startBuilding: "Start Building",
+    about: "About",
   },
   hero: {
+    startFree: "Start Free",
+    statLessons: "interactive lessons",
+    statPaths: "learning paths",
+    statFree: "free forever",
     badge: "TEKA NEXUS — now in open beta",
     title1: "Where Ideas Become ",
     title2: "Real Technology",
@@ -81,6 +86,23 @@ export const landing = {
     done: "Done",
     taskCard: "Task card",
     assignee: "Assignee",
+  },
+  arena: {
+    eyebrow: "TEKA ARENA",
+    title: "Twelve game worlds. One main navigation.",
+    subtitle:
+      "TEKA Arena is the game layer of TEKA NEXUS — Boss Fights, a galaxy Skill Tree, Code Pet, Red-vs-Blue wars, collectible cards, a real terminal and more. Every game is now a first-class page in the sidebar, not a hidden desktop.",
+    appsBadge: "12 games inside",
+    cardTitle: "Pick your battleground",
+    cardBody:
+      "Fight course bosses for champion titles, raise a Code Pet that evolves as you learn, collect serial-numbered Coder Cards, join the weekly Red vs Blue war and spend TEKA Coins in the shop. Every game lives right in the main navigation.",
+    f1: "12 full-page games — Boss Arena, Skill Tree, Code Pet, Coder Cards…",
+    f2: "A terminal that actually works: open boss, teka learn python-basics",
+    f3: "TEKA Nights — monthly event with 2× XP & live countdown",
+    f4: "Game layer everywhere: bosses, pet, cards, coins & wars",
+    f5: "One click from any page — the whole arena lives in the sidebar",
+    cta: "Create account & enter the arena",
+    note: "Free forever — no credit card, no catch.",
   },
   academy: {
     eyebrow: "TEKA Academy",

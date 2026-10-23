@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/store";
 import { EASE, AnimatedNumber, FadeIn, HoverLift, PulsingDot, Reveal, Stagger, StaggerItem, TapScale } from "@/components/shared/motion";
 import { COURSES, courseLessons } from "@/lib/academy";
-import { pick } from "@/lib/academy/types";
+import { ACCENTS, pick } from "@/lib/academy/types";
 import { EmptyState } from "@/components/shared/atoms";
 
 import type { PortalDict } from "./portal-dict";
@@ -112,7 +112,7 @@ function StatTile({ icon: Icon, label, value, className, iconClass }: {
   iconClass?: string;
 }) {
   return (
-    <div className={cn("rounded-2xl border border-white/10 bg-white/[0.02] p-4", className)}>
+    <div className={cn("academy-glass rounded-2xl p-4", className)}>
       <span className={cn("mb-2.5 grid h-9 w-9 place-items-center rounded-xl bg-white/[0.05] ring-1 ring-inset ring-white/10", iconClass)} aria-hidden="true">
         <Icon className="h-4.5 w-4.5" />
       </span>
@@ -124,7 +124,7 @@ function StatTile({ icon: Icon, label, value, className, iconClass }: {
 
 function SkeletonTile() {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4" aria-hidden="true">
+    <div className="academy-glass rounded-2xl p-4" aria-hidden="true">
       <div className="mb-2.5 h-9 w-9 animate-pulse rounded-xl bg-white/[0.05]" />
       <div className="h-7 w-16 animate-pulse rounded-md bg-white/[0.06]" />
       <div className="mt-2 h-3 w-20 animate-pulse rounded bg-white/[0.04]" />
@@ -215,7 +215,7 @@ function Dashboard({ data, dict, onNavigate }: { data: PortalDataFull; dict: Por
       {/* course bars + overall ring + continue */}
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <FadeIn delay={0.08}>
-          <div className="h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+          <div className="academy-glass h-full rounded-2xl p-5">
             <div className="flex items-center gap-3">
               <ProgressRing value={overall} />
               <div className="min-w-0">
@@ -231,7 +231,6 @@ function Dashboard({ data, dict, onNavigate }: { data: PortalDataFull; dict: Por
             <div className="mt-3 space-y-4">
               {COURSES.map((course) => {
                 const stat = courseStat(course.id, data.progress);
-                const accentBar = course.accent === "cyan" ? "bg-cyan-400" : "bg-amber-400";
                 return (
                   <button
                     key={course.id}
@@ -247,9 +246,9 @@ function Dashboard({ data, dict, onNavigate }: { data: PortalDataFull; dict: Por
                         {fill(dict.stats.lessonsDone, { done: stat.done, total: stat.total })}
                       </span>
                     </span>
-                    <span className="mt-1.5 block h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]">
+                    <span className="mt-1.5 block h-1.5 w-full overflow-hidden rounded-full bg-white/[0.07] ring-1 ring-inset ring-white/[0.04]">
                       <motion.span
-                        className={cn("block h-full w-full origin-left rounded-full rtl:origin-right", accentBar)}
+                        className={cn("block h-full w-full origin-left rounded-full bg-gradient-to-r rtl:origin-right", ACCENTS[course.accent].grad)}
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: stat.pct }}
                         transition={{ duration: 0.9, ease: EASE, delay: 0.2 }}
@@ -259,6 +258,30 @@ function Dashboard({ data, dict, onNavigate }: { data: PortalDataFull; dict: Por
                   </button>
                 );
               })}
+
+              {/* Hack & Security — locked teaser (Task 15-d) */}
+              <div
+                aria-disabled="true"
+                className="relative overflow-hidden rounded-xl border border-rose-400/20 bg-gradient-to-l rtl:bg-gradient-to-r from-rose-500/[0.08] via-transparent to-violet-500/[0.07] px-3.5 py-3"
+              >
+                <span className="flex items-center justify-between gap-2">
+                  <span className="flex min-w-0 items-center gap-2 text-sm">
+                    <ShieldCheck className="h-4 w-4 shrink-0 text-rose-300" aria-hidden="true" />
+                    <span className="truncate font-medium text-slate-300">{dict.hack.title}</span>
+                    <span className="hidden items-center gap-1 rounded-full bg-rose-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rose-300 ring-1 ring-inset ring-rose-400/25 sm:inline-flex">
+                      <motion.span
+                        aria-hidden="true"
+                        className="h-1 w-1 rounded-full bg-rose-400"
+                        animate={{ opacity: [1, 0.25, 1] }}
+                        transition={{ duration: 1.4, repeat: Infinity }}
+                      />
+                      {dict.hack.badge}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-xs text-rose-300/80">🔒</span>
+                </span>
+                <p className="mt-1 truncate text-[11px] text-muted-foreground">{dict.hack.teaser}</p>
+              </div>
             </div>
             <p className="mt-4 flex items-center gap-1.5 text-[11px] text-muted-foreground/70">
               <InfinityIcon className="h-3.5 w-3.5 text-emerald-300" aria-hidden="true" />
@@ -371,8 +394,9 @@ function CommunityDoor({ dict, hasUser }: { dict: PortalDict; hasUser: boolean }
   return (
     <Reveal>
       <HoverLift>
-        <div className="relative overflow-hidden rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-500/[0.08] via-transparent to-cyan-500/[0.06] p-5 sm:p-7">
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -start-16 h-48 w-48 rounded-full bg-violet-500/10 blur-3xl" />
+        <div className="academy-glass relative overflow-hidden rounded-2xl p-5 sm:p-7">
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -start-16 h-48 w-48 rounded-full bg-violet-500/[0.14] blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -top-16 -end-10 h-40 w-40 rounded-full bg-cyan-500/[0.1] blur-3xl" />
           <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
             <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-violet-500/15 ring-1 ring-inset ring-violet-400/30" aria-hidden="true">
               <DoorOpen className="h-7 w-7 text-violet-300" />
@@ -450,9 +474,9 @@ export function HubSection({
     <div className="space-y-8">
       {/* hero */}
       <FadeIn>
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.05] via-transparent to-white/[0.02] p-6 sm:p-10">
-          <div aria-hidden="true" className="pointer-events-none absolute -end-20 -top-24 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -start-20 h-72 w-72 rounded-full bg-violet-500/10 blur-3xl" />
+        <div className="academy-glass academy-grid-sheen relative overflow-hidden rounded-3xl p-6 sm:p-10">
+          <div aria-hidden="true" className="pointer-events-none absolute -end-20 -top-24 h-72 w-72 rounded-full bg-cyan-500/[0.14] blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -start-20 h-72 w-72 rounded-full bg-violet-500/[0.14] blur-3xl" />
           <div className="relative flex flex-col-reverse items-start gap-8 sm:flex-row sm:items-center">
             <div className="min-w-0 flex-1">
               <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300 ring-1 ring-inset ring-emerald-400/25">

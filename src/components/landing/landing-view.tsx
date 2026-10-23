@@ -12,8 +12,10 @@ import {
   ArrowRight,
   Award,
   Compass,
+  Gamepad2,
   GitBranch,
   GraduationCap,
+  Info,
   Infinity as InfinityIcon,
   LayoutDashboard,
   MonitorSmartphone,
@@ -24,6 +26,7 @@ import {
   Trophy,
   Users,
   Zap,
+  ChevronDown,
   type LucideIcon,
 } from "lucide-react";
 
@@ -41,6 +44,8 @@ import { useApp } from "@/lib/store";
 import { get } from "@/lib/api";
 import type { FeedEvent } from "@/lib/dto";
 import { useT, useRelativeTime } from "@/lib/i18n";
+import { COURSES, courseLessons } from "@/lib/academy";
+import { HeroCanvas } from "@/components/landing/hero-cinema";
 import { cn } from "@/lib/utils";
 import {
   AnimatedNumber,
@@ -203,6 +208,43 @@ function LivePulse() {
           <p className="text-sm text-muted-foreground">{t("landing.live.empty")}</p>
         )}
       </div>
+    </section>
+  );
+}
+
+
+// ─── Tech marquee — infinite scrolling word strip ────────────
+
+const MARQUEE_WORDS = [
+  "Python", "HTML", "CSS", "JavaScript", "Git", "API", "TypeScript",
+  "React", "Node", "SQL", "Security", "Deploy", "Open Source", "AI",
+];
+
+function TechMarquee() {
+  const row = (key: string) => (
+    <div key={key} aria-hidden={key === "b"} className="flex shrink-0 items-center gap-8 pe-8">
+      {MARQUEE_WORDS.map((w, i) => (
+        <span key={w + i} className="flex items-center gap-8">
+          <span className="font-mono text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
+            {w}
+          </span>
+          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400/60" />
+        </span>
+      ))}
+    </div>
+  );
+  return (
+    <section aria-hidden className="relative mt-14 overflow-hidden border-y border-white/[0.06] bg-white/[0.015] py-4">
+      <motion.div
+        className="flex w-max"
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ duration: 30, ease: "linear", repeat: Infinity }}
+      >
+        {row("a")}
+        {row("b")}
+      </motion.div>
+      <div className="pointer-events-none absolute inset-y-0 start-0 w-24 bg-gradient-to-r from-[#0a0e1a] to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 end-0 w-24 bg-gradient-to-l from-[#0a0e1a] to-transparent" />
     </section>
   );
 }
@@ -390,6 +432,40 @@ function Footer() {
 
 // ─── Academy mini visuals ──────────────────────────────────
 
+function ArenaMini() {
+  return (
+    <div aria-hidden className="mt-5 overflow-hidden rounded-lg border border-white/[0.07] bg-black/40">
+      <div className="flex items-center gap-1.5 border-b border-white/[0.06] px-3 py-1.5">
+        <span className="h-2 w-2 rounded-full bg-emerald-400/70" />
+        <span className="h-2 w-2 rounded-full bg-cyan-400/70" />
+        <span className="h-2 w-2 rounded-full bg-violet-400/70" />
+        <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">
+          teka-arena
+        </span>
+        <span className="ml-auto flex gap-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-white/15" />
+          <span className="h-1.5 w-1.5 rounded-full bg-white/15" />
+          <span className="h-1.5 w-1.5 rounded-full bg-white/15" />
+        </span>
+      </div>
+      <div className="space-y-1 p-3 font-mono text-[11px] leading-relaxed">
+        <p>
+          <span className="text-emerald-300">$</span> <span className="text-cyan-300">open boss</span>
+        </p>
+        <p className="text-muted-foreground">→ Boss Arena — fight course bosses, earn titles</p>
+        <p>
+          <span className="text-emerald-300">$</span> <span className="text-violet-300">open pet</span>
+        </p>
+        <p className="text-muted-foreground">→ Code Pet — hatches after your first lesson</p>
+        <p>
+          <span className="text-emerald-300">$</span> <span className="text-cyan-300">teka learn python-basics</span>
+        </p>
+        <p className="text-emerald-400/90">loading python-basics… 76 lessons ready</p>
+      </div>
+    </div>
+  );
+}
+
 function PythonMini() {
   return (
     <div aria-hidden className="mt-5 overflow-hidden rounded-lg border border-white/[0.07] bg-black/40">
@@ -495,6 +571,13 @@ export function LandingView() {
     { q: t("landing.faq.q5"), a: t("landing.faq.a5") },
   ];
 
+  // Hero stats — real numbers from the course registry (never fabricated).
+  const HERO_STATS = [
+    { value: COURSES.reduce((a, c) => a + courseLessons(c).length, 0), label: t("landing.hero.statLessons") },
+    { value: COURSES.length, label: t("landing.hero.statPaths") },
+    { value: 100, label: t("landing.hero.statFree") },
+  ];
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* ── Sticky glass top bar ── */}
@@ -504,6 +587,13 @@ export function LandingView() {
           <Logo size={28} onClick={scrollTop} />
           <nav aria-label={t("landing.topbar.navAria")} className="flex items-center gap-2">
             <LanguageSwitcher />
+            <Button
+              variant="ghost"
+              className="h-10 px-3 text-muted-foreground hover:text-foreground"
+              onClick={() => navigate({ name: "about" })}
+            >
+              <Info size={16} className="me-1" />{t("landing.topbar.about")}
+            </Button>
             <Button
               variant="ghost"
               className="h-10 px-3 text-muted-foreground hover:text-foreground"
@@ -521,22 +611,66 @@ export function LandingView() {
       </FadeIn>
       </header>
 
-      <main className="flex-1">
-        {/* ── HERO ── */}
-        <section className="mx-auto max-w-6xl px-4 pb-4 pt-14 sm:px-6 sm:pt-20">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            {/* Choreographed hero entrance: badge → headline → subcopy → CTAs */}
-            <Stagger gap={0.12} delayChildren={0.05}>
+      <main className="relative flex-1">
+        {/* ── Aurora field — slow drifting color clouds behind the whole page ── */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-32 start-[8%] h-96 w-96 rounded-full bg-cyan-500/[0.07] blur-[130px] aurora-drift" />
+          <div className="absolute top-[30%] end-[4%] h-[28rem] w-[28rem] rounded-full bg-violet-600/[0.08] blur-[140px] aurora-drift-slow" />
+          <div className="absolute bottom-[12%] start-[30%] h-80 w-80 rounded-full bg-emerald-500/[0.05] blur-[120px] aurora-drift" />
+        </div>
+        {/* ── HERO — cinematic first screen ── */}
+        <section className="relative mx-auto max-w-6xl overflow-hidden px-4 pb-10 pt-14 sm:px-6 sm:pt-20">
+          {/* cinema layers: warp starfield + nebulas + grid */}
+          <HeroCanvas />
+          <div aria-hidden className="pointer-events-none absolute -top-24 left-1/4 h-72 w-72 rounded-full bg-cyan-500/[0.13] blur-[110px]" />
+          <div aria-hidden className="pointer-events-none absolute right-0 top-1/3 h-80 w-80 rounded-full bg-violet-600/[0.14] blur-[120px]" />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-[0.14]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(148,163,184,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.35) 1px, transparent 1px)",
+              backgroundSize: "56px 56px",
+              maskImage: "radial-gradient(ellipse 90% 70% at 50% 40%, black, transparent 75%)",
+              WebkitMaskImage: "radial-gradient(ellipse 90% 70% at 50% 40%, black, transparent 75%)",
+            }}
+          />
+
+          <div className="relative grid items-center gap-12 lg:grid-cols-2">
+            {/* Choreographed hero entrance: badge → wordmark → headline → subcopy → CTAs → stats */}
+            <Stagger gap={0.11} delayChildren={0.05}>
               <StaggerItem>
-                <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3.5 py-1.5 text-xs font-medium text-cyan-300">
+                <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3.5 py-1.5 text-xs font-medium text-cyan-300 backdrop-blur">
                   <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-cyan-400" />
                   {t("landing.hero.badge")}
                 </span>
               </StaggerItem>
               <StaggerItem>
-                <h1 className="mt-6 font-display text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
+                <div className="mt-5 flex items-center gap-2.5">
+                  <motion.span
+                    className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/[0.04] shadow-[0_0_34px_-6px_rgba(34,211,238,0.55)]"
+                    initial={{ rotate: -10, scale: 0.7, opacity: 0 }}
+                    animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 240, damping: 15, delay: 0.15 }}
+                  >
+                    <LogoMark size={22} />
+                  </motion.span>
+                  <span className="font-mono text-sm font-semibold uppercase tracking-[0.42em] text-gradient">
+                    TEKA&nbsp;NEXUS
+                  </span>
+                </div>
+              </StaggerItem>
+              <StaggerItem>
+                <h1 className="relative mt-4 font-display text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
                   {t("landing.hero.title1")}
-                  <span className="text-gradient">{t("landing.hero.title2")}</span>
+                  <span className="relative inline-block text-gradient">
+                    {t("landing.hero.title2")}
+                    <span
+                      aria-hidden
+                      className="absolute inset-0 -z-10 blur-2xl"
+                      style={{ background: "linear-gradient(90deg, rgba(34,211,238,0.35), rgba(167,139,250,0.35))" }}
+                    />
+                  </span>
                   {t("landing.hero.title3")}
                 </h1>
               </StaggerItem>
@@ -549,30 +683,46 @@ export function LandingView() {
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <TapScale>
                     <Button
-                      className="btn-hero h-11 px-6"
+                      className="btn-hero h-12 px-7 text-base"
+                      onClick={() => navigate({ name: "academyPortal" })}
+                    >
+                      <GraduationCap className="h-5 w-5" />
+                      {t("landing.hero.startFree")}
+                    </Button>
+                  </TapScale>
+                  <TapScale>
+                    <Button
+                      variant="outline"
+                      className="h-12 border-white/15 bg-white/[0.03] px-6 backdrop-blur"
                       onClick={() => navigate({ name: "explore" })}
                     >
                       <Compass className="h-4 w-4" />
                       {t("landing.hero.exploreProjects")}
                     </Button>
                   </TapScale>
-                  <TapScale>
-                    <Button
-                      variant="outline"
-                      className="h-11 px-6"
-                      onClick={() => navigate({ name: "signup" })}
-                    >
-                      {t("landing.topbar.startBuilding")}
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </TapScale>
+                </div>
+              </StaggerItem>
+              <StaggerItem>
+                {/* real numbers — straight from the course registry */}
+                <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-3">
+                  {HERO_STATS.map((s) => (
+                    <div key={s.label} className="flex items-baseline gap-1.5">
+                      <AnimatedNumber
+                        value={s.value}
+                        duration={1.4}
+                        delay={0.7}
+                        className="font-display text-2xl font-bold text-gradient sm:text-3xl"
+                      />
+                      <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                    </div>
+                  ))}
                 </div>
               </StaggerItem>
             </Stagger>
 
             {/* Orbit visual settles in last, with a gentle scale-down */}
             <motion.div
-              className="mx-auto w-full max-w-md lg:max-w-none"
+              className="relative mx-auto w-full max-w-md lg:max-w-none"
               initial={{ opacity: 0, y: 24, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.65, delay: 0.45, ease: EASE }}
@@ -580,10 +730,24 @@ export function LandingView() {
               <HeroOrbit />
             </motion.div>
           </div>
+
+          {/* scroll cue */}
+          <motion.div
+            aria-hidden
+            className="relative mt-8 flex justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.9, 0.35, 0.9] }}
+            transition={{ delay: 1.6, duration: 2.6, repeat: Infinity }}
+          >
+            <ChevronDown className="h-5 w-5 text-cyan-300/80" />
+          </motion.div>
         </section>
 
         {/* ── LIVE PULSE (real feed data) ── */}
         <LivePulse />
+
+        {/* ── TECH MARQUEE ── */}
+        <TechMarquee />
 
         {/* ── WORKFLOW ── */}
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
@@ -670,6 +834,68 @@ export function LandingView() {
           <Reveal delay={0.1} className="mt-10">
             <ProductPreview />
           </Reveal>
+        </section>
+
+        {/* ── TEKA ARENA ── */}
+        <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
+          <Reveal>
+            <SectionHeading
+              eyebrow={t("landing.arena.eyebrow")}
+              title={t("landing.arena.title")}
+              subtitle={t("landing.arena.subtitle")}
+            />
+          </Reveal>
+          <div className="mt-10 grid gap-4 md:grid-cols-5 md:gap-6">
+            <Reveal delay={0.05} className="h-full md:col-span-3">
+              <HoverLift className="h-full">
+                <article className="glass-card relative flex h-full flex-col overflow-hidden rounded-2xl p-6">
+                  <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-300">
+                      <Trophy className="h-6 w-6" />
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/25 bg-amber-500/10 px-3 py-1 text-[11px] font-medium text-amber-300">
+                      <LayoutDashboard className="h-3 w-3" />
+                      {t("landing.arena.appsBadge")}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 font-display text-xl font-bold">{t("landing.arena.cardTitle")}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("landing.arena.cardBody")}</p>
+                  <ArenaMini />
+                </article>
+              </HoverLift>
+            </Reveal>
+            <Reveal delay={0.12} className="h-full md:col-span-2">
+              <HoverLift className="h-full">
+                <article className="glass-card flex h-full flex-col rounded-2xl p-6">
+                  <ul className="space-y-3 text-sm">
+                    {([
+                      { icon: LayoutDashboard, text: t("landing.arena.f1") },
+                      { icon: Terminal, text: t("landing.arena.f2") },
+                      { icon: Zap, text: t("landing.arena.f3") },
+                      { icon: Trophy, text: t("landing.arena.f4") },
+                      { icon: Rocket, text: t("landing.arena.f5") },
+                    ] as const).map((f) => (
+                      <li key={f.text} className="flex items-start gap-2.5">
+                        <f.icon className="mt-0.5 h-4 w-4 shrink-0 text-amber-300/80" aria-hidden />
+                        <span className="leading-relaxed text-muted-foreground">{f.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-auto pt-6">
+                    <TapScale>
+                      <Button className="btn-hero h-11 w-full" onClick={() => navigate({ name: "signup" })}>
+                        <Gamepad2 className="h-4 w-4" />
+                        {t("landing.arena.cta")}
+                        <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                      </Button>
+                    </TapScale>
+                    <p className="mt-3 text-center text-xs text-muted-foreground/80">{t("landing.arena.note")}</p>
+                  </div>
+                </article>
+              </HoverLift>
+            </Reveal>
+          </div>
         </section>
 
         {/* ── TEKA ACADEMY ── */}

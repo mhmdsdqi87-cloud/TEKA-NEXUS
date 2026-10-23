@@ -41,6 +41,9 @@ type DbUser = {
   interests: string;
   xp: number;
   reputation: number;
+  coins: number;
+  team: string | null;
+  title: string | null;
   onboardingCompleted: boolean;
   createdAt: Date;
 };
@@ -61,6 +64,9 @@ function toSessionUser(u: DbUser): AuthUser {
     interests: safeParseArray(u.interests),
     xp: u.xp,
     reputation: u.reputation,
+    coins: u.coins,
+    team: u.team,
+    title: u.title,
     onboardingCompleted: u.onboardingCompleted,
     createdAt: u.createdAt,
   };

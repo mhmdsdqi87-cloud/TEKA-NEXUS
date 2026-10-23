@@ -41,7 +41,7 @@ export const settings = {
   accountTab: {
     language: "Language",
     languageDescription:
-      "Choose your interface language — English, Español, 中文, العربية, فارسی or Français.",
+      "Choose your interface language — English, Español, 中文, العربية, فارسی, Français or Русский.",
     email: "Email",
     emailHint: "Your sign-in email — read-only during the beta.",
     changePassword: "Change password",

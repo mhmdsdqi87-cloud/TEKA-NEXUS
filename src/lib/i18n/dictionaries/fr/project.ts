@@ -12,6 +12,7 @@ export const project: ProjectDict = {
     team: "Équipe",
     chat: "Chat en direct",
     activity: "Activité",
+    workspace: "Espace",
   },
   kanban: {
     BACKLOG: "Backlog",
@@ -343,6 +344,11 @@ export const project: ProjectDict = {
     tagPlaceholder: "Saisissez un tag et appuyez sur Entrée",
     addSkill: "Ajouter une compétence...",
     allSkillsAdded: "Toutes les compétences ajoutées",
+    background: "Arrière-plan personnalisé",
+    bgHint: "Une image d'en-tête personnalisée derrière le titre de votre projet — choisissez un preset ou collez une URL.",
+    bgNone: "Pas d'arrière-plan",
+    bgCustom: "Ou collez l'URL d'une image",
+    bgCustomPlaceholder: "https://example.com/image.jpg",
   },
   join: {
     desc: "Présentez-vous et choisissez comment vous souhaitez contribuer.",

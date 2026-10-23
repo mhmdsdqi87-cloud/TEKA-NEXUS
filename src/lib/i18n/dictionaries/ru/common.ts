@@ -8,6 +8,7 @@ export const common = {
   saveChanges: "Сохранить изменения",
   delete: "Удалить",
   close: "Закрыть",
+  skip: "Пропустить",
   back: "Назад",
   retry: "Попробовать снова",
   optional: "Необязательно",

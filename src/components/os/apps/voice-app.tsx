@@ -347,15 +347,16 @@ export function VoiceApp() {
   // ── lobby bootstrap via REST (socket rooms:state keeps it live) ──
   useEffect(() => {
     let cancelled = false;
-    // Gateway path first (Caddy deployments); server proxy as a resilient
-    // fallback for environments that bypass the gateway (sandbox preview).
+    // Next API proxy first (graceful {online:false} JSON even when the
+    // voice-service is absent — no 404 console noise); direct gateway path
+    // (Caddy → :3021) as the second source.
     const load = async (): Promise<RoomsAck | null> => {
       try {
-        const res = await fetch(ROOMS_REST_URL, { cache: "no-store" });
+        const res = await fetch("/api/voice/rooms", { cache: "no-store" });
         if (res.ok) return (await res.json()) as RoomsAck;
       } catch { /* fall through */ }
       try {
-        const res = await fetch("/api/voice/rooms", { cache: "no-store" });
+        const res = await fetch(ROOMS_REST_URL, { cache: "no-store" });
         if (res.ok) return (await res.json()) as RoomsAck;
       } catch { /* offline */ }
       return null;

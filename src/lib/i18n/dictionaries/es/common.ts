@@ -11,6 +11,7 @@ export const common: CommonDict = {
   saveChanges: "Guardar cambios",
   delete: "Eliminar",
   close: "Cerrar",
+  skip: "Saltar",
   back: "Volver",
   retry: "Intentar de nuevo",
   optional: "Opcional",

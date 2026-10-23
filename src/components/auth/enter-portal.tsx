@@ -50,13 +50,15 @@ export function takePendingEnterPortal(): boolean {
 
 type Particle = { a: number; d: number; v: number; hue: number; w: number };
 
-const DURATION_MS = 8000;
+// Short and honest: enough to feel like a warp, short enough to never
+// feel like fake loading. Click anywhere (or the skip button) to dismiss.
+const DURATION_MS = 3200;
 const WORD = "TEKA NEXUS";
 
 // Mono status phases cycled while the portal warms up (LTR, terminal-style —
 // matches the boot screen aesthetic). The last phase is the localized line.
-const PHASE_MS = 1400;
-const PHASE_START_DELAY_MS = 1500;
+const PHASE_MS = 700;
+const PHASE_START_DELAY_MS = 350;
 const PHASES = [
   "SYNCING SKILL ENGINE…",
   "MAPPING ACADEMY GRID — 300 LESSONS…",
@@ -81,6 +83,8 @@ export function EnterPortal() {
       return true;
     });
   }, []);
+
+  const skip = useCallback(() => setRun(false), []);
 
   // ── listen for triggers ──────────────────────────────────────
   useEffect(() => {
@@ -197,6 +201,7 @@ export function EnterPortal() {
           transition={{ duration: 0.55, ease: "easeInOut" }}
           role="status"
           aria-live="polite"
+          onClick={skip}
         >
           <canvas ref={canvasRef} className="absolute inset-0" aria-hidden="true" />
 
@@ -307,14 +312,14 @@ export function EnterPortal() {
               className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-violet-500"
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
-              transition={{ delay: 1.6, duration: 5.6, ease: "easeInOut" }}
+              transition={{ delay: 0.4, duration: 2.6, ease: "easeInOut" }}
             />
           </motion.div>
           <motion.div
             className="relative z-10 mt-3 flex h-4 items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.55 }}
+            transition={{ delay: 0.8 }}
           >
             {phase < PHASES.length ? (
               <motion.p
@@ -338,6 +343,18 @@ export function EnterPortal() {
               </motion.p>
             )}
           </motion.div>
+
+          {/* honest skip — the warp is 3s, but nobody should be trapped in it */}
+          <motion.button
+            type="button"
+            onClick={skip}
+            className="absolute bottom-8 z-10 rounded-full border border-white/15 bg-white/[0.03] px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.25em] text-white/60 transition-colors hover:border-white/40 hover:text-white"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+          >
+            {t("common.skip")}
+          </motion.button>
         </motion.div>
       )}
     </AnimatePresence>

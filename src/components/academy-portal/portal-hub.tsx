@@ -51,10 +51,10 @@ function HeroOrbit() {
       {/* orbiting dashed ring + satellite */}
       <div className="orbit-slow absolute inset-2 rounded-full border border-dashed border-cyan-400/30">
         <span className="absolute -top-1 start-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)]" />
-      </div>
+            </div>
       <div className="orbit-rev absolute inset-7 rounded-full border border-violet-400/25">
         <span className="absolute -bottom-1 start-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-violet-400 shadow-[0_0_10px_rgba(167,139,250,0.8)]" />
-      </div>
+            </div>
       {/* center motif */}
       <div className="absolute inset-0 grid place-items-center">
         <motion.div
@@ -65,8 +65,8 @@ function HeroOrbit() {
         >
           <GraduationCap className="h-8 w-8 text-cyan-200 sm:h-10 sm:w-10" />
         </motion.div>
-      </div>
-    </div>
+            </div>
+            </div>
   );
 }
 
@@ -118,7 +118,7 @@ function StatTile({ icon: Icon, label, value, className, iconClass }: {
       </span>
       <p className="font-display text-xl font-bold tabular-nums text-white sm:text-2xl">{value}</p>
       <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
-    </div>
+            </div>
   );
 }
 
@@ -128,7 +128,7 @@ function SkeletonTile() {
       <div className="mb-2.5 h-9 w-9 animate-pulse rounded-xl bg-white/[0.05]" />
       <div className="h-7 w-16 animate-pulse rounded-md bg-white/[0.06]" />
       <div className="mt-2 h-3 w-20 animate-pulse rounded bg-white/[0.04]" />
-    </div>
+            </div>
   );
 }
 
@@ -152,7 +152,7 @@ function Dashboard({ data, dict, onNavigate }: { data: PortalDataFull; dict: Por
         <SkeletonTile />
         <SkeletonTile />
         <SkeletonTile />
-      </div>
+            </div>
     );
   }
 
@@ -224,7 +224,7 @@ function Dashboard({ data, dict, onNavigate }: { data: PortalDataFull; dict: Por
                   <AnimatedNumber value={Math.round(overall * 100)} />%
                 </p>
                 <p className="text-xs text-muted-foreground">{fill(dict.stats.lessonsDone, { done: doneLessons, total: totalLessons })}</p>
-              </div>
+            </div>
             </div>
 
             <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{dict.stats.coursesHeading}</p>
@@ -259,35 +259,12 @@ function Dashboard({ data, dict, onNavigate }: { data: PortalDataFull; dict: Por
                 );
               })}
 
-              {/* Hack & Security — locked teaser (Task 15-d) */}
-              <div
-                aria-disabled="true"
-                className="relative overflow-hidden rounded-xl border border-rose-400/20 bg-gradient-to-l rtl:bg-gradient-to-r from-rose-500/[0.08] via-transparent to-violet-500/[0.07] px-3.5 py-3"
-              >
-                <span className="flex items-center justify-between gap-2">
-                  <span className="flex min-w-0 items-center gap-2 text-sm">
-                    <ShieldCheck className="h-4 w-4 shrink-0 text-rose-300" aria-hidden="true" />
-                    <span className="truncate font-medium text-slate-300">{dict.hack.title}</span>
-                    <span className="hidden items-center gap-1 rounded-full bg-rose-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rose-300 ring-1 ring-inset ring-rose-400/25 sm:inline-flex">
-                      <motion.span
-                        aria-hidden="true"
-                        className="h-1 w-1 rounded-full bg-rose-400"
-                        animate={{ opacity: [1, 0.25, 1] }}
-                        transition={{ duration: 1.4, repeat: Infinity }}
-                      />
-                      {dict.hack.badge}
-                    </span>
-                  </span>
-                  <span className="shrink-0 text-xs text-rose-300/80">🔒</span>
-                </span>
-                <p className="mt-1 truncate text-[11px] text-muted-foreground">{dict.hack.teaser}</p>
-              </div>
             </div>
             <p className="mt-4 flex items-center gap-1.5 text-[11px] text-muted-foreground/70">
               <InfinityIcon className="h-3.5 w-3.5 text-emerald-300" aria-hidden="true" />
               {dict.hero.free}
             </p>
-          </div>
+            </div>
         </FadeIn>
 
         {/* continue learning / all done */}
@@ -313,8 +290,8 @@ function Dashboard({ data, dict, onNavigate }: { data: PortalDataFull; dict: Por
                       {dict.continue.cta}
                     </button>
                   </TapScale>
-                </div>
-              </div>
+            </div>
+            </div>
             </HoverLift>
           ) : (
             <div className="flex h-full flex-col rounded-2xl border border-emerald-400/25 bg-emerald-500/[0.05] p-5">
@@ -331,12 +308,12 @@ function Dashboard({ data, dict, onNavigate }: { data: PortalDataFull; dict: Por
                     {dict.continue.exploreCta}
                   </button>
                 </TapScale>
-              </div>
+            </div>
             </div>
           )}
         </FadeIn>
-      </div>
-    </div>
+            </div>
+            </div>
   );
 }
 
@@ -360,7 +337,7 @@ function GuestCard({ dict }: { dict: PortalDict }) {
                 </li>
               ))}
             </ul>
-          </div>
+            </div>
           <div className="flex shrink-0 flex-col gap-2.5 sm:w-56">
             <TapScale>
               <button
@@ -380,9 +357,9 @@ function GuestCard({ dict }: { dict: PortalDict }) {
                 {dict.guest.signIn}
               </button>
             </TapScale>
-          </div>
-        </div>
-      </div>
+            </div>
+            </div>
+            </div>
     </FadeIn>
   );
 }
@@ -417,8 +394,8 @@ function CommunityDoor({ dict, hasUser }: { dict: PortalDict; hasUser: boolean }
                 </button>
               </TapScale>
             </div>
-          </div>
-        </div>
+            </div>
+            </div>
       </HoverLift>
     </Reveal>
   );
@@ -453,7 +430,7 @@ function QuickLinks({ dict, onNavigate }: { dict: PortalDict; onNavigate: (s: Po
           </StaggerItem>
         ))}
       </Stagger>
-    </div>
+            </div>
   );
 }
 
@@ -491,8 +468,8 @@ export function HubSection({
               <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">{dict.hero.desc}</p>
             </div>
             <HeroOrbit />
-          </div>
-        </div>
+            </div>
+            </div>
       </FadeIn>
 
       {/* dashboard or guest card */}
@@ -503,6 +480,6 @@ export function HubSection({
 
       {/* quick links */}
       <QuickLinks dict={dict} onNavigate={onNavigate} />
-    </div>
+            </div>
   );
 }

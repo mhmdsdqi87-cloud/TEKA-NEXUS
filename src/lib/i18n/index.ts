@@ -17,10 +17,11 @@ import { zh } from "./dictionaries/zh";
 import { ar } from "./dictionaries/ar";
 import { fa } from "./dictionaries/fa";
 import { fr } from "./dictionaries/fr";
+import { ru } from "./dictionaries/ru";
 
 import { format, formatDistanceToNow, parseISO } from "date-fns";
 
-const DICTS: Record<Locale, any> = { en, es, zh, ar, fa, fr };
+const DICTS: Record<Locale, any> = { en, es, zh, ar, fa, fr, ru };
 const BASE: any = en;
 
 /** Resolve a dot path ("landing.hero.title") inside a nested dictionary. */
@@ -87,6 +88,32 @@ function toDate(input: Date | string | number): Date {
   if (input instanceof Date) return input;
   if (typeof input === "string") return parseISO(input);
   return new Date(input);
+}
+
+/**
+ * React hook: read a string-array dictionary value (e.g. quick prompts) in
+ * the active locale with en fallback. t() only handles strings — lists need
+ * this accessor.
+ */
+export function useTList(): (path: string) => string[] {
+  const locale = useI18n((s) => s.locale);
+  return useMemo(() => {
+    const resolve = (dict: unknown, path: string): unknown => {
+      let cur: unknown = dict;
+      for (const part of path.split(".")) {
+        if (cur && typeof cur === "object" && part in (cur as Record<string, unknown>)) {
+          cur = (cur as Record<string, unknown>)[part];
+        } else {
+          return undefined;
+        }
+      }
+      return cur;
+    };
+    return (path: string): string[] => {
+      const raw = resolve(DICTS[locale], path) ?? resolve(DICTS.en, path);
+      return Array.isArray(raw) ? raw.map(String) : [];
+    };
+  }, [locale]);
 }
 
 /** React hook: locale-aware "3 days ago" style relative time. */

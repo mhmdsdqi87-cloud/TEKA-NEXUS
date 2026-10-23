@@ -1,10 +1,10 @@
 // TEKA NEXUS — i18n locale configuration.
-// 6 locales: English (base), Spanish, Chinese, Arabic, Persian, French.
+// 7 locales: English (base), Spanish, Chinese, Arabic, Persian, French, Russian.
 // Arabic + Persian are RTL.
 
-import { ar, enUS, es, faIR, fr, zhCN, type Locale as DateLocale } from "date-fns/locale";
+import { ar, enUS, es, faIR, fr, ru as ruDate, zhCN, type Locale as DateLocale } from "date-fns/locale";
 
-export type Locale = "en" | "es" | "zh" | "ar" | "fa" | "fr";
+export type Locale = "en" | "es" | "zh" | "ar" | "fa" | "fr" | "ru";
 
 export const RTL_LOCALES: ReadonlySet<Locale> = new Set(["ar", "fa"]);
 
@@ -26,6 +26,7 @@ export const LOCALES: readonly LocaleMeta[] = [
   { code: "ar", native: "العربية", english: "Arabic", flag: "🇸🇦", dir: "rtl", dateLocale: ar },
   { code: "fa", native: "فارسی", english: "Persian", flag: "🇮🇷", dir: "rtl", dateLocale: faIR },
   { code: "fr", native: "Français", english: "French", flag: "🇫🇷", dir: "ltr", dateLocale: fr },
+  { code: "ru", native: "Русский", english: "Russian", flag: "🇷🇺", dir: "ltr", dateLocale: ruDate },
 ];
 
 export const DEFAULT_LOCALE: Locale = "en";

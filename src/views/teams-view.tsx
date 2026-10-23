@@ -16,9 +16,9 @@ import {
   LogOut,
   MessageCircle,
   MessageSquare,
+  RefreshCw,
   Send,
   Smile,
-  Trash2,
   Users,
   XCircle,
   X,
@@ -27,7 +27,7 @@ import { io } from "socket.io-client";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
-import { get, del, patch } from "@/lib/api";
+import { get, del, patch, post, ApiError } from "@/lib/api";
 import { useApp } from "@/lib/store";
 import { MEMBER_ROLES } from "@/lib/constants";
 import type { CollabRequestDTO, ProjectCard } from "@/lib/dto";
@@ -101,27 +101,37 @@ const TAB_ITEMS = [
   { value: "discover", labelKey: "discover", icon: Compass },
 ] as const;
 
-// ─── Real-time team chat (Task 4-d) ──────────────────────────────────────────
-// Socket.io mini service behind the Caddy gateway — RELATIVE URL only, the
-// target port travels via the XTransformPort query param. NEVER hardcode a
-// host/port here; Caddy forwards "/...?XTransformPort=3030" → chat-service.
+// ─── Team chat (durable DB transport + optional live garnish) ────────────────
+// The transcript flows EXCLUSIVELY through the DB-backed REST API
+// (/api/projects/[slug]/chat — GET with an ?after= cursor + POST to send), so
+// the chat works in EVERY environment, including serverless production.
+// The socket.io mini service behind the Caddy gateway (RELATIVE URL only —
+// the target port travels via the XTransformPort query param; NEVER hardcode
+// a host/port) is an optional garnish used ONLY for presence + typing. When
+// it is absent the panel stays fully functional and honestly shows a
+// "synced" state instead of a fake perpetual "reconnecting…".
 const CHAT_SOCKET_URL = "/?XTransformPort=3030";
 const CHAT_EMOJIS = ["👍", "❤️", "🔥", "😂", "🎉", "🤔"];
-const CHAT_MAX_TEXT = 1000;
+const CHAT_MAX_TEXT = 500; // matches the API's BODY_MAX
+const CHAT_POLL_MS = 3000; // cursor-delta poll interval
+const CHAT_KEEP = 300; // messages kept in memory (matches the API page size)
 
-type ChatMessageDTO = {
+type ChatMessageUser = {
   id: string;
-  projectId: string;
-  userId: string;
   username: string;
   displayName: string;
   avatarColor: string;
   avatarUrl: string | null;
-  text: string;
+  xp: number;
+};
+
+type ChatMessageDTO = {
+  id: string;
+  body: string;
   createdAt: string;
-  clientTag: string | null;
-  reactions?: Record<string, number>;
-  mine?: string[];
+  user: ChatMessageUser;
+  /** local-only marker that reconciles the optimistic bubble with the POST response */
+  clientTag?: string;
 };
 
 type ChatPresenceUser = {
@@ -135,10 +145,10 @@ type ChatPresenceUser = {
 type ChatJoinAck = {
   ok: boolean;
   error?: string;
-  serverTime?: string;
-  messages?: ChatMessageDTO[];
   presence?: ChatPresenceUser[];
 };
+
+type ChatHttpResponse = { messages: ChatMessageDTO[]; viewerId: string | null };
 
 export function TeamsView() {
   const user = useApp((s) => s.user);
@@ -312,7 +322,7 @@ function MyCrews() {
   );
 }
 
-// ─── Team chat panel (real-time, socket.io mini service) ─────────────────────
+// ─── Team chat panel (durable DB transport + optional live garnish) ──────────
 
 function TeamChatPanel({
   project,
@@ -329,14 +339,17 @@ function TeamChatPanel({
 
   const open = !!project;
   const projectId = project?.id ?? "";
+  const projectSlug = project?.slug ?? "";
   const projectName = project?.name ?? "";
 
-  const [connected, setConnected] = useState(false);
-  const [loginRequired, setLoginRequired] = useState(false);
+  // HTTP transport (source of truth for the transcript)
+  const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
   const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
+  const [sending, setSending] = useState(false);
+  const [loginRequired, setLoginRequired] = useState(false);
+  // Ephemeral socket garnish (presence + typing only)
+  const [socketLive, setSocketLive] = useState(false);
   const [presence, setPresence] = useState<ChatPresenceUser[]>([]);
-  const [tallies, setTallies] = useState<Record<string, Record<string, number>>>({});
-  const [mine, setMine] = useState<Record<string, Set<string>>>({});
   const [typingUsers, setTypingUsers] = useState<{ userId: string; username: string }[]>([]);
   const [mutedUntil, setMutedUntil] = useState(0);
   const [text, setText] = useState("");
@@ -349,73 +362,111 @@ function TeamChatPanel({
   const typingTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const lastTypingEmit = useRef(0);
   const mutedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cursorRef = useRef<string | null>(null); // createdAt of the newest known message
+  const busyRef = useRef(false); // a poll is in flight — skip overlapping ticks
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     const el = scrollRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior });
   }, []);
 
-  // socket lifecycle — one connection per open panel
+  /** Merge server messages into the transcript: dedupe by id, keep the tail. */
+  const absorb = useCallback((incoming: ChatMessageDTO[]) => {
+    if (incoming.length === 0) return;
+    for (const m of incoming) animatedIds.current.add(m.id);
+    setMessages((prev) => {
+      const known = new Set(prev.map((m) => m.id));
+      const fresh = incoming.filter((m) => !known.has(m.id));
+      if (fresh.length === 0) return prev;
+      const next = [...prev, ...fresh];
+      return next.length > CHAT_KEEP ? next.slice(next.length - CHAT_KEEP) : next;
+    });
+    // Only server timestamps advance the poll cursor.
+    const newest = incoming[incoming.length - 1].createdAt;
+    if (!cursorRef.current || newest > cursorRef.current) cursorRef.current = newest;
+  }, []);
+
+  // HTTP transport: initial full load + 3s cursor-delta polling against the
+  // DB-backed API. Paused while the tab is hidden; overlapping ticks skipped.
+  const load = useCallback(
+    async (full: boolean) => {
+      if (!projectSlug || document.hidden || busyRef.current) return;
+      busyRef.current = true;
+      try {
+        const after = full ? null : cursorRef.current;
+        const res = await get<ChatHttpResponse>(
+          `/api/projects/${encodeURIComponent(projectSlug)}/chat${after ? `?after=${encodeURIComponent(after)}` : ""}`
+        );
+        setPhase("ready");
+        if (full) {
+          setMessages(res.messages);
+          cursorRef.current = res.messages.length > 0 ? res.messages[res.messages.length - 1].createdAt : null;
+          animatedIds.current.clear();
+          nearBottomRef.current = true;
+          requestAnimationFrame(() => scrollToBottom("auto"));
+        } else {
+          absorb(res.messages);
+        }
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 401) setLoginRequired(true);
+        else if (full) setPhase("error"); // honest "unavailable" state with retry
+        // delta-poll hiccups are soft-failed: keep the transcript, keep polling
+      } finally {
+        busyRef.current = false;
+      }
+    },
+    [projectSlug, absorb, scrollToBottom]
+  );
+
+  useEffect(() => {
+    if (!projectSlug) return;
+    setMessages([]);
+    setPhase("loading");
+    setLoginRequired(false);
+    cursorRef.current = null;
+    busyRef.current = false;
+    void load(true);
+    const timer = setInterval(() => void load(false), CHAT_POLL_MS);
+    const wake = () => {
+      if (!document.hidden) void load(false);
+    };
+    document.addEventListener("visibilitychange", wake);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", wake);
+      if (mutedTimer.current) clearTimeout(mutedTimer.current);
+    };
+  }, [projectSlug, load]);
+
+  // Socket lifecycle — ONE honest connection attempt per open panel, used ONLY
+  // for presence + typing. Never for the transcript (the mini service keeps a
+  // divergent ephemeral store). No reconnect loop: when the socket is absent
+  // (e.g. serverless production) the UI silently shows the "synced" state.
   useEffect(() => {
     if (!projectId) return;
     const socket = io(CHAT_SOCKET_URL, {
       transports: ["websocket", "polling"],
       withCredentials: true, // sends the httpOnly teka_session cookie on the handshake
-      reconnection: true,
-      reconnectionDelay: 1200,
-      reconnectionDelayMax: 5000,
-      timeout: 10000,
+      reconnection: false,
+      timeout: 6000,
       forceNew: true,
     });
     socketRef.current = socket;
 
-    socket.on("connect", () => {
-      setConnected(true);
-      setLoginRequired(false);
-      socket.emit("chat:join", { projectId }, (ack: ChatJoinAck) => {
-        if (!ack?.ok) {
-          if (ack?.error === "notMember") toast.error(t("teams.errors.generic"));
-          return;
-        }
-        animatedIds.current.clear();
-        setMessages(ack.messages ?? []);
-        setPresence(ack.presence ?? []);
-        const nextTallies: Record<string, Record<string, number>> = {};
-        const nextMine: Record<string, Set<string>> = {};
-        for (const m of ack.messages ?? []) {
-          nextTallies[m.id] = m.reactions ?? {};
-          nextMine[m.id] = new Set(m.mine ?? []);
-        }
-        setTallies(nextTallies);
-        setMine(nextMine);
-        nearBottomRef.current = true;
-        requestAnimationFrame(() => scrollToBottom("auto"));
-      });
-    });
-    socket.on("disconnect", () => setConnected(false));
-    socket.on("connect_error", (err: Error) => {
-      setConnected(false);
-      if (String(err?.message ?? "").includes("unauthorized")) setLoginRequired(true);
-    });
+    const clearEphemeral = () => {
+      setSocketLive(false);
+      setPresence([]);
+      setTypingUsers([]);
+    };
 
-    socket.on("chat:message", (m: ChatMessageDTO) => {
-      if (!m || m.projectId !== projectId) return;
-      animatedIds.current.add(m.id);
-      setMessages((prev) => {
-        // replace optimistic copy by clientTag, or drop duplicates by id
-        if (m.clientTag) {
-          const idx = prev.findIndex((x) => x.clientTag === m.clientTag || x.id === m.id);
-          if (idx !== -1) {
-            const next = [...prev];
-            next[idx] = m;
-            return next;
-          }
-        } else if (prev.some((x) => x.id === m.id)) {
-          return prev;
-        }
-        return [...prev, m];
+    socket.on("connect", () => {
+      setSocketLive(true);
+      socket.emit("chat:join", { projectId }, (ack: ChatJoinAck) => {
+        if (ack?.ok) setPresence(ack.presence ?? []);
       });
     });
+    socket.on("disconnect", clearEphemeral);
+    socket.on("connect_error", clearEphemeral);
 
     socket.on("presence:update", (p: { projectId: string; users: ChatPresenceUser[]; online: number }) => {
       if (p.projectId === projectId) setPresence(p.users ?? []);
@@ -442,45 +493,15 @@ function TeamChatPanel({
       }
     });
 
-    socket.on(
-      "chat:react:update",
-      (p: { projectId: string; messageId: string; emoji: string; userId: string; op: "add" | "remove"; tally: Record<string, number> }) => {
-        if (p.projectId !== projectId) return;
-        setTallies((prev) => ({ ...prev, [p.messageId]: p.tally }));
-        if (me && p.userId === me.id) {
-          setMine((prev) => {
-            const set = new Set(prev[p.messageId] ?? []);
-            if (p.op === "add") set.add(p.emoji);
-            else set.delete(p.emoji);
-            return { ...prev, [p.messageId]: set };
-          });
-        }
-      }
-    );
-
-    socket.on("chat:deleted", (p: { projectId: string; messageId: string }) => {
-      if (p.projectId !== projectId) return;
-      setMessages((prev) => prev.filter((m) => m.id !== p.messageId));
-    });
-
-    socket.on("chat:muted", (p: { projectId: string; retryAfterMs: number }) => {
-      if (p.projectId !== projectId) return;
-      const until = Date.now() + Math.max(0, p.retryAfterMs ?? 0);
-      setMutedUntil(until);
-      if (mutedTimer.current) clearTimeout(mutedTimer.current);
-      mutedTimer.current = setTimeout(() => setMutedUntil(0), Math.max(0, p.retryAfterMs ?? 0));
-      toast.error(t("teams.chat.rateLimited"));
-    });
-
     return () => {
       socket.removeAllListeners();
       socket.disconnect();
       socketRef.current = null;
       for (const timer of typingTimers.current.values()) clearTimeout(timer);
       typingTimers.current.clear();
-      if (mutedTimer.current) clearTimeout(mutedTimer.current);
+      clearEphemeral();
     };
-  }, [projectId, me?.id, t, scrollToBottom]);
+  }, [projectId, me?.id]);
 
   // Escape closes the panel
   useEffect(() => {
@@ -499,35 +520,74 @@ function TeamChatPanel({
 
   const muted = Date.now() < mutedUntil;
 
-  function send() {
-    const socket = socketRef.current;
+  async function send() {
     const body = text.trim();
-    if (!socket || !connected || !body || muted || !projectId) return;
+    if (!projectSlug || !body || sending || muted) return;
     const clientTag = `t${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+    // Optimistic bubble — reconciled with the POST response via clientTag.
     if (me) {
       animatedIds.current.add(`local-${clientTag}`);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `local-${clientTag}`,
-          projectId,
-          userId: me.id,
+      const optimistic: ChatMessageDTO = {
+        id: `local-${clientTag}`,
+        body,
+        createdAt: new Date().toISOString(),
+        user: {
+          id: me.id,
           username: me.username,
           displayName: me.displayName,
           avatarColor: me.avatarColor,
           avatarUrl: me.avatarUrl,
-          text: body,
-          createdAt: new Date().toISOString(),
-          clientTag,
+          xp: me.xp,
         },
-      ]);
+        clientTag,
+      };
+      setMessages((prev) => {
+        const next = [...prev, optimistic];
+        return next.length > CHAT_KEEP ? next.slice(next.length - CHAT_KEEP) : next;
+      });
     }
-    socket.emit("chat:message", { projectId, text: body, clientTag });
     setText("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
     if (lastTypingEmit.current) {
       lastTypingEmit.current = 0;
-      socket.emit("chat:typing", { projectId, isTyping: false });
+      socketRef.current?.emit("chat:typing", { projectId, isTyping: false });
+    }
+    setSending(true);
+    try {
+      const res = await post<{ message?: ChatMessageDTO }>(
+        `/api/projects/${encodeURIComponent(projectSlug)}/chat`,
+        { body }
+      );
+      const sent = res.message;
+      if (sent) {
+        animatedIds.current.delete(`local-${clientTag}`);
+        animatedIds.current.add(sent.id);
+        setMessages((prev) => {
+          // Drop both the optimistic twin and any copy already absorbed by a
+          // concurrent poll, then append the canonical server message.
+          const tail = [...prev.filter((m) => m.clientTag !== clientTag && m.id !== sent.id), sent];
+          return tail.length > CHAT_KEEP ? tail.slice(tail.length - CHAT_KEEP) : tail;
+        });
+        if (!cursorRef.current || sent.createdAt > cursorRef.current) cursorRef.current = sent.createdAt;
+      }
+    } catch (e) {
+      // Roll back the optimistic bubble and hand the text back to the composer
+      // (unless the user already typed something new in the meantime).
+      setMessages((prev) => prev.filter((m) => m.clientTag !== clientTag));
+      setText((prev) => (prev ? prev : body));
+      if (e instanceof ApiError && e.status === 429) {
+        // The API enforces 10 msg/min — surface it like the project chat does.
+        setMutedUntil(Date.now() + 10_000);
+        if (mutedTimer.current) clearTimeout(mutedTimer.current);
+        mutedTimer.current = setTimeout(() => setMutedUntil(0), 10_000);
+        toast.error(t("teams.chat.rateLimited"));
+      } else if (e instanceof ApiError && e.status === 401) {
+        setLoginRequired(true);
+      } else {
+        toast.error(e instanceof ApiError && e.status !== 0 ? e.message : t("teams.chat.sendError"));
+      }
+    } finally {
+      setSending(false);
     }
   }
 
@@ -539,7 +599,7 @@ function TeamChatPanel({
       el.style.height = `${Math.min(el.scrollHeight, 96)}px`;
     }
     const socket = socketRef.current;
-    if (!socket || !connected) return;
+    if (!socket || !socketLive) return;
     const now = Date.now();
     if (value && now - lastTypingEmit.current > 2000) {
       lastTypingEmit.current = now;
@@ -548,16 +608,6 @@ function TeamChatPanel({
       lastTypingEmit.current = 0;
       socket.emit("chat:typing", { projectId, isTyping: false });
     }
-  }
-
-  function react(messageId: string, emoji: string) {
-    const socket = socketRef.current;
-    if (socket && connected) socket.emit("chat:react", { projectId, messageId, emoji });
-  }
-
-  function removeMessage(messageId: string) {
-    const socket = socketRef.current;
-    if (socket && connected) socket.emit("chat:delete", { projectId, messageId });
   }
 
   const panel = (
@@ -597,15 +647,17 @@ function TeamChatPanel({
                   <span
                     className={cn(
                       "h-1.5 w-1.5 shrink-0 rounded-full",
-                      connected ? "bg-emerald-400" : "bg-amber-400",
-                      connected && "animate-pulse"
+                      socketLive ? "bg-emerald-400 animate-pulse" : "bg-emerald-400/70"
                     )}
                   />
-                  {!connected
-                    ? t("teams.chat.reconnecting")
-                    : presence.length === 0
-                      ? t("teams.chat.onlineOne")
-                      : t("teams.chat.online", { n: presence.length })}
+                  {/* Honest transport state: socket → live, HTTP polling → synced */}
+                  <span>{socketLive ? t("common.live") : t("teams.chat.synced")}</span>
+                  {socketLive && presence.length > 0 && (
+                    <>
+                      <span className="text-muted-foreground/50">·</span>
+                      <span>{t("teams.chat.online", { n: presence.length })}</span>
+                    </>
+                  )}
                 </p>
               </div>
               <div className="flex items-center -space-x-2" aria-hidden="true">
@@ -631,16 +683,6 @@ function TeamChatPanel({
                 <X className="h-4 w-4" />
               </Button>
             </header>
-
-            {!connected && !loginRequired && (
-              <div
-                role="status"
-                className="flex items-center gap-2 border-b border-amber-400/20 bg-amber-400/10 px-4 py-1.5 text-xs text-amber-200"
-              >
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                {t("teams.chat.reconnecting")}
-              </div>
-            )}
 
             {loginRequired ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
@@ -672,7 +714,29 @@ function TeamChatPanel({
                   aria-live="polite"
                   className="flex-1 space-y-3 overflow-y-auto px-4 py-4"
                 >
-                  {messages.length === 0 ? (
+                  {phase === "loading" ? (
+                    <div className="space-y-3" aria-busy="true">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="flex items-end gap-2">
+                          <div className="h-[30px] w-[30px] shrink-0 animate-pulse rounded-full bg-white/[0.06]" />
+                          <div className="flex-1 space-y-1.5">
+                            <div className="h-3 w-24 animate-pulse rounded bg-white/[0.05]" />
+                            <div className="h-9 max-w-[78%] animate-pulse rounded-2xl bg-white/[0.04]" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : phase === "error" ? (
+                    <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
+                        <MessageCircle className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">{t("teams.chat.unavailable")}</p>
+                      <Button variant="outline" size="sm" onClick={() => void load(true)}>
+                        <RefreshCw className="h-3.5 w-3.5" /> {t("common.retry")}
+                      </Button>
+                    </div>
+                  ) : messages.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
                         <MessageCircle className="h-5 w-5 text-muted-foreground" />
@@ -685,16 +749,9 @@ function TeamChatPanel({
                       <ChatMessageRow
                         key={m.id}
                         m={m}
-                        own={!!me && m.userId === me.id}
-                        tally={tallies[m.id] ?? {}}
-                        mineEmoji={mine[m.id] ?? new Set()}
-                        canDelete={!!me && m.userId === me.id && connected}
+                        own={!!me && m.user.id === me.id}
                         animated={animatedIds.current.has(m.id)}
                         rel={rel}
-                        deleteLabel={t("teams.chat.a11y.deleteMessage")}
-                        reactAddLabel={t("teams.chat.reactAdd")}
-                        onReact={react}
-                        onDelete={removeMessage}
                       />
                     ))
                   )}
@@ -710,8 +767,8 @@ function TeamChatPanel({
                           variant="outline"
                           size="icon"
                           className="h-11 w-10 shrink-0 rounded-xl"
-                          disabled={!connected}
-                          aria-label={t("teams.chat.reactAdd")}
+                          disabled={muted}
+                          aria-label={t("teams.chat.emoji")}
                         >
                           <Smile className="h-4 w-4" />
                         </Button>
@@ -744,14 +801,14 @@ function TeamChatPanel({
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                             e.preventDefault();
-                            send();
+                            void send();
                           }
                         }}
-                        placeholder={connected ? t("teams.chat.placeholder") : t("teams.chat.reconnecting")}
-                        disabled={!connected || muted}
+                        placeholder={t("teams.chat.placeholder")}
+                        disabled={muted}
                         className="max-h-24 min-h-[44px] resize-none pe-16 text-sm"
                       />
-                      {text.length >= 900 && (
+                      {text.length >= 420 && (
                         <span className="pointer-events-none absolute bottom-1.5 end-3 text-[10px] tabular-nums text-amber-300/80">
                           {t("teams.chat.charsLeft", { n: CHAT_MAX_TEXT - text.length })}
                         </span>
@@ -761,11 +818,11 @@ function TeamChatPanel({
                       <Button
                         size="icon"
                         className="btn-hero h-11 w-11 shrink-0 rounded-xl"
-                        onClick={send}
-                        disabled={!connected || muted || !text.trim()}
+                        onClick={() => void send()}
+                        disabled={sending || muted || !text.trim()}
                         aria-label={t("teams.chat.send")}
                       >
-                        <Send className="h-4 w-4 rtl:rotate-180" />
+                        {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 rtl:rotate-180" />}
                       </Button>
                     </TapScale>
                   </div>
@@ -786,49 +843,26 @@ function TeamChatPanel({
 function ChatMessageRow({
   m,
   own,
-  tally,
-  mineEmoji,
-  canDelete,
   animated,
   rel,
-  deleteLabel,
-  reactAddLabel,
-  onReact,
-  onDelete,
 }: {
   m: ChatMessageDTO;
   own: boolean;
-  tally: Record<string, number>;
-  mineEmoji: Set<string>;
-  canDelete: boolean;
   animated: boolean;
   rel: (date: Date | string | number) => string;
-  deleteLabel: string;
-  reactAddLabel: string;
-  onReact: (messageId: string, emoji: string) => void;
-  onDelete: (messageId: string) => void;
 }) {
   return (
     <motion.div
       initial={animated ? { opacity: 0, y: 10, scale: 0.98 } : false}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.22, ease: "easeOut" }}
-      className={cn("group flex w-full items-end gap-2", own && "flex-row-reverse")}
+      className={cn("flex w-full items-end gap-2", own && "flex-row-reverse")}
     >
-      <UserAvatar user={m} size={30} className="mb-1 shrink-0" />
+      <UserAvatar user={m.user} size={30} className="mb-1 shrink-0" />
       <div className={cn("flex min-w-0 max-w-[78%] flex-col gap-1", own ? "items-end" : "items-start")}>
         <div className="flex items-center gap-2 px-1 text-[11px] text-muted-foreground">
-          <span className={cn("truncate font-semibold", own && "text-cyan-300")}>{m.displayName}</span>
+          <span className={cn("truncate font-semibold", own && "text-cyan-300")}>{m.user.displayName}</span>
           <span className="shrink-0">{rel(m.createdAt)}</span>
-          {own && canDelete && (
-            <button
-              onClick={() => onDelete(m.id)}
-              aria-label={deleteLabel}
-              className="shrink-0 rounded opacity-0 transition-opacity hover:text-rose-300 focus-visible:opacity-100 group-hover:opacity-100"
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
-          )}
         </div>
         <div
           className={cn(
@@ -838,51 +872,7 @@ function ChatMessageRow({
               : "rounded-es-sm border-white/[0.06] bg-white/[0.05] text-zinc-200"
           )}
         >
-          {m.text}
-        </div>
-        <div className="flex flex-wrap items-center gap-1 px-0.5">
-          {Object.entries(tally)
-            .filter(([, n]) => n > 0)
-            .map(([emoji, n]) => (
-              <button
-                key={emoji}
-                onClick={() => onReact(m.id, emoji)}
-                aria-label={reactAddLabel}
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[11px] transition-colors",
-                  mineEmoji.has(emoji)
-                    ? "border-cyan-400/40 bg-cyan-400/15"
-                    : "border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08]"
-                )}
-              >
-                <span>{emoji}</span>
-                <span className="text-[10px] tabular-nums text-muted-foreground">{n}</span>
-              </button>
-            ))}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                aria-label={reactAddLabel}
-                className="flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-all hover:bg-white/[0.08] hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
-              >
-                <Smile className="h-3 w-3" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent side="top" className="z-[80] w-auto glass p-1.5">
-              <div className="grid grid-cols-6 gap-0.5">
-                {CHAT_EMOJIS.map((emoji) => (
-                  <button
-                    key={emoji}
-                    onClick={() => onReact(m.id, emoji)}
-                    className="flex h-8 w-8 items-center justify-center rounded-md text-base transition-colors hover:bg-white/[0.08]"
-                    aria-label={emoji}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+          {m.body}
         </div>
       </div>
     </motion.div>

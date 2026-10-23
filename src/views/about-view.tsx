@@ -530,8 +530,8 @@ export function AboutView() {
             className="glass-card relative overflow-hidden rounded-3xl border border-white/[0.1]"
             style={{ boxShadow: "0 24px 70px -30px rgba(59,130,246,0.45)" }}
           >
-            {/* Russian flag tricolour ribbon */}
-            <div className="flex h-2 w-full" aria-hidden="true">
+            {/* Russian flag tricolour ribbon (fixed LTR order: white → blue → red) */}
+            <div dir="ltr" className="flex h-2 w-full" aria-hidden="true">
               <span className="flex-1 bg-white/90" />
               <span className="flex-1" style={{ background: "#0039A6" }} />
               <span className="flex-1" style={{ background: "#D52B1E" }} />
@@ -542,7 +542,7 @@ export function AboutView() {
             />
             <Flag aria-hidden className="absolute -bottom-8 -left-8 h-40 w-40 text-blue-300/[0.06]" />
 
-            <div dir="ltr" className="relative p-6 text-left sm:p-10">
+            <div dir="ltr" className="relative p-6 sm:p-10" style={{ textAlign: "left" }}>
               <div className="flex items-center gap-3">
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400/20 to-red-400/20 text-blue-300">
                   <GraduationCap size={24} />

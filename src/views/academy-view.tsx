@@ -508,49 +508,6 @@ function Hub({ onOpenCourse, onOpenLesson, progress, certs, exams, leaders, onSh
         />
       </FadeIn>
 
-      {/* Hack & Security — coming soon (Task 15-d) */}
-      <FadeIn>
-        <div className="academy-glass relative overflow-hidden rounded-2xl p-5 sm:p-6">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-rose-500/[0.14] blur-3xl" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 h-52 w-52 rounded-full bg-violet-500/[0.12] blur-3xl" />
-          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start">
-            <div
-              aria-hidden="true"
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-rose-400/25 bg-rose-500/10"
-            >
-              <ShieldCheck className="h-7 w-7 text-rose-300" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h2 className="text-lg font-bold text-white">{t("academy.hack.title")}</h2>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-rose-300 ring-1 ring-inset ring-rose-400/30">
-                  <motion.span
-                    aria-hidden="true"
-                    className="h-1.5 w-1.5 rounded-full bg-rose-400"
-                    animate={{ opacity: [1, 0.25, 1] }}
-                    transition={{ duration: 1.4, repeat: Infinity }}
-                  />
-                  {t("academy.hack.badge")}
-                </span>
-              </div>
-              <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{t("academy.hack.tagline")}</p>
-              <ul className="mt-3 grid gap-1.5 text-sm text-foreground/85 sm:grid-cols-3">
-                {[t("academy.hack.line1"), t("academy.hack.line2"), t("academy.hack.line3")].map((line) => (
-                  <li key={line} className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.03] px-2.5 py-1.5">
-                    <Lock className="h-3.5 w-3.5 shrink-0 text-rose-300/80" aria-hidden="true" />
-                    <span className="truncate" title={line}>{line}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-3 inline-flex items-center gap-2 rounded-lg bg-white/[0.04] px-3 py-1.5 text-xs text-muted-foreground">
-                <Sparkles className="h-3.5 w-3.5 text-amber-300" aria-hidden="true" />
-                {t("academy.hack.teaser")}
-              </p>
-            </div>
-          </div>
-        </div>
-      </FadeIn>
-
       {/* certificates + leaderboard */}
       <div className="grid gap-5 lg:grid-cols-2">
         <FadeIn>

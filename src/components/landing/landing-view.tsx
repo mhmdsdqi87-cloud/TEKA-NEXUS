@@ -7,7 +7,6 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
 import {
   ArrowRight,
   Award,
@@ -31,6 +30,15 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { LEGAL_CONTENT, type LegalDoc, type LegalSection } from "@/lib/legal-content";
+import { useI18n } from "@/lib/i18n/store";
 import {
   Accordion,
   AccordionContent,
@@ -366,7 +374,7 @@ function Footer() {
   const navigate = useApp((s) => s.navigate);
   const setSearchOpen = useApp((s) => s.setSearchOpen);
   const t = useT();
-  const comingSoon = () => toast(t("landing.toast.comingSoon"));
+  const [legalDoc, setLegalDoc] = useState<LegalDoc | null>(null);
   const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
   const scrollToFaqs = () =>
     document.getElementById("faq")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -391,14 +399,14 @@ function Footer() {
     {
       title: t("landing.footer.colLegal"),
       links: [
-        { label: t("landing.footer.terms"), action: comingSoon },
-        { label: t("landing.footer.privacy"), action: comingSoon },
-        { label: t("landing.footer.guidelines"), action: comingSoon },
+        { label: t("landing.footer.terms"), action: () => setLegalDoc("terms") },
+        { label: t("landing.footer.privacy"), action: () => setLegalDoc("privacy") },
+        { label: t("landing.footer.guidelines"), action: () => setLegalDoc("guidelines") },
       ],
     },
     {
       title: t("landing.footer.colSupport"),
-      links: [{ label: t("landing.footer.faq"), action: comingSoon }],
+      links: [{ label: t("landing.footer.faq"), action: scrollToFaqs }],
     },
   ];
 
@@ -426,7 +434,53 @@ function Footer() {
           <span className="font-mono">© {new Date().getFullYear()} TEKA</span>
         </div>
       </div>
+
+      <LegalDialog doc={legalDoc} onClose={() => setLegalDoc(null)} />
     </footer>
+  );
+}
+
+// ─── Legal & community dialog (real content, no "coming soon") ──
+
+function LegalDialog({ doc, onClose }: { doc: LegalDoc | null; onClose: () => void }) {
+  const t = useT();
+  const locale = useI18n((s) => s.locale);
+  const isRTL = locale === "fa" || locale === "ar";
+  // Content ships in fa + en; Persian readers get fa, everyone else en.
+  const lang: "fa" | "en" = locale === "fa" ? "fa" : "en";
+  const sections: LegalSection[] = doc ? LEGAL_CONTENT[doc] : [];
+  const title = doc
+    ? t(
+        doc === "terms"
+          ? "landing.footer.terms"
+          : doc === "privacy"
+            ? "landing.footer.privacy"
+            : "landing.footer.guidelines"
+      )
+    : "";
+
+  return (
+    <Dialog open={!!doc} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        dir={isRTL ? "rtl" : "ltr"}
+        className="max-h-[85vh] max-w-lg overflow-y-auto border-white/10 bg-[#0a0c14] text-foreground sm:max-w-xl"
+      >
+        <DialogHeader>
+          <DialogTitle className="text-base font-bold">{title}</DialogTitle>
+          <DialogDescription className="text-xs leading-5 text-muted-foreground">
+            {t("landing.footer.tagline")}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-5">
+          {sections.map((s, i) => (
+            <section key={i}>
+              <h3 className="text-sm font-bold text-foreground">{s.heading[lang]}</h3>
+              <p className="mt-1.5 text-[13px] leading-6 text-muted-foreground">{s.body[lang]}</p>
+            </section>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -38,6 +38,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/lib/store";
 import { useI18n } from "@/lib/i18n/store";
+import { COURSES, courseLessons } from "@/lib/academy";
+import { LOCALES } from "@/lib/i18n/locales";
+import { ARENA_GAMES } from "@/components/os/app-registry";
 import { AnimatedNumber } from "@/components/shared/motion";
 import { cn } from "@/lib/utils";
 
@@ -147,12 +150,16 @@ const RUSSIA_TEXT = [
 
 const RUSSIA_SIGNATURE = "— Мохаммад Садеги · самоучка, мечтающий об университете · Тегеран → Россия";
 
+// Real numbers, derived from the actual registries — they can never drift
+// from what the platform truly ships (lessons = course content, arenas =
+// the app registry, locales = the i18n locale table, models = schema count).
+const LESSON_COUNT = COURSES.reduce((a, c) => a + courseLessons(c).length, 0);
 const STATS = [
-  { value: 300, suffix: "+", label: { fa: "درس عملی", en: "hands-on lessons" } },
-  { value: 4, suffix: "", label: { fa: "مسیر آموزشی", en: "course tracks" } },
-  { value: 12, suffix: "", label: { fa: "بازی آرنا", en: "Arena games" } },
-  { value: 7, suffix: "", label: { fa: "زبان زنده", en: "live locales" } },
-  { value: 30, suffix: "+", label: { fa: "مدل دیتابیس", en: "database models" } },
+  { value: LESSON_COUNT, suffix: "", label: { fa: "درس عملی", en: "hands-on lessons" } },
+  { value: COURSES.length, suffix: "", label: { fa: "مسیر آموزشی", en: "course tracks" } },
+  { value: ARENA_GAMES.length, suffix: "", label: { fa: "بازی آرنا", en: "Arena games" } },
+  { value: LOCALES.length, suffix: "", label: { fa: "زبان زنده", en: "live locales" } },
+  { value: 45, suffix: "", label: { fa: "مدل دیتابیس", en: "database models" } },
   { value: 1, suffix: "", label: { fa: "سازنده — من", en: "maker — me" } },
 ];
 

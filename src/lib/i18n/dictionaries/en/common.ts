@@ -9,6 +9,7 @@ export const common = {
   saveChanges: "Save changes",
   delete: "Delete",
   close: "Close",
+  skip: "Skip",
   back: "Back",
   retry: "Try again",
   optional: "Optional",

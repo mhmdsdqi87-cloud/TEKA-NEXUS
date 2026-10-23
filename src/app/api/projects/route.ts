@@ -64,6 +64,7 @@ type ProjectCardRow = {
   status: string;
   visibility: string;
   coverImage: string;
+  bgImage: string;
   repositoryUrl: string;
   demoUrl: string;
   websiteUrl: string;
@@ -145,6 +146,7 @@ function toProjectDetail(p: ProjectCardRow): ProjectDetail {
   return {
     ...toProjectCard(p),
     description: p.description,
+    bgImage: p.bgImage,
     repositoryUrl: p.repositoryUrl,
     demoUrl: p.demoUrl,
     websiteUrl: p.websiteUrl,

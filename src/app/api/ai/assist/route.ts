@@ -142,8 +142,8 @@ QUALITY BAR: concrete, warm, builder-to-builder tone. Never invent fake metrics,
 
 // ─── Response sanitizing ─────────────────────────────────────
 
-const categorySlugs = new Set(PROJECT_CATEGORIES.map((c) => c.slug));
-const skillSlugs = new Set(SKILLS.map((s) => s.slug));
+const categorySlugs = new Set<string>(PROJECT_CATEGORIES.map((c) => c.slug));
+const skillSlugs = new Set<string>(SKILLS.map((s) => s.slug));
 
 const SuggestionSchema = z.object({
   name: z.string().trim().min(1).max(80).optional(),

@@ -1,5 +1,7 @@
 /**
  * TEKA NEXUS — production-style content seeder.
+ * DANGEROUS: wipes the database — deletes ALL existing users, projects and
+ * activity before re-seeding demo content. Requires SEED_WIPE_CONFIRM=teka-wipe.
  * Creates a realistic, thriving community: members with real histories,
  * projects across every category, active workspaces and a live feed.
  * Run: bun run scripts/seed.ts
@@ -65,6 +67,28 @@ const SKILL_NAMES: Record<string, string> = {
 };
 
 async function main() {
+  // HARD GUARD — this seeder DESTROYS all data (wipe() below deletes every
+  // table's rows). Refuse to run unless the operator explicitly opts in.
+  if (process.env.SEED_WIPE_CONFIRM !== "teka-wipe") {
+    console.error(
+      [
+        "",
+        "  🚨 DANGER — خطر 🚨",
+        "  This script WIPES THE ENTIRE DATABASE before re-seeding demo data.",
+        "  این اسکریپت قبل از ساخت دیتای نمونه، «تمام داده‌های دیتابیس» را پاک می‌کند",
+        "  (همهٔ کاربران، پروژه‌ها، پیام‌ها و فعالیت‌ها برای همیشه حذف می‌شوند).",
+        "",
+        "  Nothing has been deleted — the database was NOT touched.",
+        "  هیچ چیزی حذف نشد — دیتابیس دست‌نخورده باقی ماند.",
+        "",
+        "  To run it for real / برای اجرای واقعی:",
+        "    SEED_WIPE_CONFIRM=teka-wipe bun run scripts/seed.ts",
+        "",
+      ].join("\n"),
+    );
+    process.exit(1);
+  }
+
   console.log("🌱 Seeding TEKA NEXUS community…");
   await wipe();
 

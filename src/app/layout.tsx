@@ -41,11 +41,11 @@ const notoArabic = Noto_Sans_Arabic({
 
 // Google Search Console / Bing / Yandex verification via env vars —
 // set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in Vercel (or skip and use the HTML-file method).
-const verification: Record<string, string> = {};
+const verification: Metadata["verification"] = {};
 if (process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION)
   verification.google = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
 if (process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION)
-  verification.other = { "msvalidate.01": [process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION] };
+  verification.other = { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION };
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://teka-nexus.vercel.app"),

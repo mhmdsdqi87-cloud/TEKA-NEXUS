@@ -33,16 +33,17 @@
 
 Every layer of this product — the UX language, the 30+ model database schema, four
 auto-grading code engines, 300 lessons of bilingual course content, an arena of
-12 game modules, and seven fully localized interfaces — was built by a single
-developer with an obsession for polish and zero shortcuts.
+12 game modules, and seven fully localized interfaces — was built by one
+self-taught developer: learning as he builds, breaking and fixing, with more
+stubbornness than credentials.
 
 > 🎓 *This repository serves as a living portfolio. I am open to academic and
 > professional opportunities — feel free to reach out.*
 >
-> 🇷🇺 *This platform is also my letter of intent: **I dream of continuing my
-> education in Russia**, and TEKA NEXUS is the proof of what I can build. The
-> full letter — written in Russian — lives in the platform's About page
-> («В надежде на учёбу в России»).*
+> 🇷🇺 *I am a self-taught developer with no degree — yet. **My dream is to
+> continue my education in Russia**, and TEKA NEXUS is my quiet letter of
+> intent. The letter itself — written in Russian, humble and honest — lives in
+> the platform's About page («В надежде на учёбу в России»).*
 
 ---
 
@@ -305,7 +306,7 @@ the desktop window manager was retired on purpose — every module deserves the 
 
 ## 📜 License & credits
 
-Built with obsessive care by **Mohammad Sadeghi**.
+Built with stubborn hope by **Mohammad Sadeghi**.
 All product naming, design language and course content © 2025 Mohammad Sadeghi.
 
 <div align="center">

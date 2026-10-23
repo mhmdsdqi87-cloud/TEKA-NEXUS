@@ -47,11 +47,11 @@ const COPY = {
   fa: {
     dir: "rtl" as const,
     back: "بازگشت",
-    badge: "ساخته‌شده در ایران — تک‌نفره، از صفر تا صد",
+    badge: "ساخته‌شده در ایران — یک نفر، خودآموخته، با تمام کم‌وکاستی‌ها",
     title: "TEKA NEXUS",
     tagline: "جایی که ایده‌ها به تکنولوژی واقعی تبدیل می‌شوند.",
     intro:
-      "TEKA NEXUS یک پلتفرم اجتماعیِ برنامه‌نویس‌محور به‌همراه یک آکادمی برنامه‌نویسی رایگان است؛ در قالب یک وب‌اپلیکیشن قابل نصب (PWA). همه‌چیز — از طراحی رابط کاربری و معماری دیتابیس تا محتوای ۳۰۰ درس — توسط یک نفر طراحی، توسعه و تست شده است.",
+      "TEKA NEXUS یک پلتفرم اجتماعیِ برنامه‌نویس‌محور به‌همراه یک آکادمی رایگان است؛ در قالب یک وب‌اپلیکیشن قابل نصب (PWA). من خودآموخته‌ام؛ معلم و تیم و مدرکی نداشتم — فقط اینترنت و شب‌های بلند. همه‌چیز را همان‌طور که یاد می‌گرفتم ساختم: ناقص در جاهایی، پر از خطا، اما صادقانه.",
     ctaEnter: "ورود به پلتفرم",
     connectTitle: "ارتباط با سازنده",
     connectSub: "گیت‌هاب و ایمیل — برای هر همکاری یا سؤالی",
@@ -60,42 +60,42 @@ const COPY = {
     statsTitle: "پلتفرم در یک نگاه",
     storyTitle: "داستان پروژه",
     story: [
-      "هرچیزهای بزرگ از یک سؤال ساده شروع می‌شوند: «چرا یادگیری برنامه‌نویسی در ایران باید سخت باشد؟» TEKA NEXUS پاسخ من به این سؤال است — یک اکوسیستم کامل که شبکه‌سازی، ساخت پروژه و یادگیری را در یک تجربه یکپارچه ترکیب می‌کند.",
-      "به‌جای یک سایت آموزشی معمولی، TEKA NEXUS یک «آرنا اجتماعی» است: ۱۲ ماژول بازی‌گونه که هرکدام مستقیم در نوار اصلی سایت نشسته‌اند — از مبارزه با باس‌ها و درخت مهارت تا جنگ قرمز در برابر آبی، حیوان کدنویس شما و ترمینال زنده.",
-      "این پروژه در حال حاضر به‌صورت زنده روی Vercel اجرا می‌شود، با دیتابیس PostgreSQL (Supabase)، احراز هویت اختصاصی + Google OAuth، و پشتیبانی کامل از ۷ زبان زنده‌ی دنیا (فارسی، انگلیسی، عربی، اسپانیایی، فرانسوی، روسی و چینی)."
+      "همه‌چیز از یک سؤال ساده شروع شد: «چرا یادگیری برنامه‌نویسی در ایران باید این‌قدر سخت باشد؟» من جواب قطعی ندارم؛ TEKA NEXUS فقط تلاش کوچک من است — برای اینکه شبکه‌سازی، ساختن و یادگیری دست‌کم در یک گوشه‌ی اینترنت، ساده‌تر شوند.",
+      "یک سایت آموزشی معمولی نمی‌خواستم؛ TEKA NEXUS یک «آرنا اجتماعی» است: ۱۲ ماژول بازی‌گونه که هرکدام مستقیم در نوار اصلی سایت نشسته‌اند — از باس‌فایت و درخت مهارت تا جنگ قرمز و آبی، حیوان کدنویس و ترمینال زنده. هیچ‌کدام ادعای انقلابی بودن ندارند؛ فقط تلاش کرده‌ام هر کدام واقعاً کار کند.",
+      "این پروژه زنده روی Vercel اجرا می‌شود، با دیتابیس PostgreSQL (Supabase)، احراز هویت اختصاصی + Google OAuth، و ۷ زبان زنده‌ی دنیا (فارسی، انگلیسی، عربی، اسپانیایی، فرانسوی، روسی و چینی) — و هنوز هر روز چیز جدیدی به من یاد می‌دهد."
     ],
     featuresTitle: "هر چیزِ خفنی که فکرش رو بکنی، اینجاست",
     founderTitle: "سازنده",
     founderName: "محمد صادقی",
     founderNameEn: "Mohammad Sadeghi",
-    founderRole: "بنیان‌گذار و توسعه‌دهنده‌ی تمام‌وقت (Full-Stack)",
-    founderLead: "این پلتفرم را از صفر تا صد، تک‌نفره ساخته و نگه‌داری می‌کند:",
+    founderRole: "خودآموخته · سازنده و نگه‌دارنده‌ی پلتفرم",
+    founderLead: "مدرک و استاد و تیمی نداشتم؛ چیزی که داشتم پشتکار بود. این پلتفرم را تک‌نفره ساخته‌ام — همراه با همه‌ی اشتباه‌هایم:",
     founderPoints: [
-      "طراحی کامل محصول و تجربه کاربری (UI/UX) با زبان بصری شیشه‌ای و نئونی",
-      "توسعه‌ی فول‌استک: Next.js 16 + TypeScript + Tailwind CSS 4 + Prisma",
-      "نویسنده‌ی ۳۰۰ درس برنامه‌نویسی در ۴ مسیر (Python، HTML، CSS، JavaScript)",
-      "معماری دیتابیس PostgreSQL با ۳۰+ مدل داده و موتورهای تصحیح خودکار کد",
-      "سیستم‌های بازی‌وار: XP، سکه، کارت‌های کلکسیونی، باس‌فایت و جنگ تیمی",
+      "طراحی UI/UX را از صفر و با تکرارهای فراوان یاد گرفتم — زبان بصری شیشه‌ای و نئونی حاصل همان تمرین‌هاست",
+      "فول‌استک، خودآموخته: Next.js 16 + TypeScript + Tailwind CSS 4 + Prisma",
+      "نوشتن ۳۰۰ درس در ۴ مسیر — هر موضوع را دوبار یاد گرفتم: یک‌بار برای خودم، یک‌بار برای توضیح دادن",
+      "دیتابیس PostgreSQL با ۳۰+ مدل و موتورهای تصحیح خودکار — بیشتر حاصل آزمون‌وخطا تا مدرک",
+      "سیستم‌های کوچک بازی‌وار: XP، سکه، کارت‌های کلکسیونی، باس‌فایت و جنگ تیمی",
       "پیاده‌سازی ۷ زبان زنده (fa/en/ar/es/fr/ru/zh) با پشتیبانی کامل RTL",
       "ادغام هوش مصنوعی: مربی آموزشی، بررسی کد و خواندن صوتی درس‌ها (TTS)",
     ],
     stackTitle: "پشته فناوری",
     russiaTitle: "به امید تحصیل در روسیه",
-    russiaNote: "این بخش به روسی نوشته شده است — زبانِ دانشگاهی که آرزویش را دارم.",
+    russiaNote: "این نامه به روسی نوشته شده — به همان زبانی که آرزو دارم یک روز، درس‌هایم را به آن ادامه بدهم.",
     missionTitle: "چرا این پروژه مهم است؟",
     mission:
-      "TEKA NEXUS ثابت می‌کند که با اراده، انضباط و عشق به ساختن، یک نفر هم می‌تواند محصولی بسازد که روزی هزاران نفر را در مسیر یادگیری همراهی کند. این پروژه، رزومه‌ی زنده‌ی من است — نه یک سند ثابت.",
-    openTo: "این پروژه به‌عنوان نمونه‌کار حرفه‌ای ارائه شده — برای فرصت‌های تحصیلی و حرفه‌ای در دسترسم هستم.",
+      "TEKA NEXUS چیزی را «اثبات» نمی‌کند و بی‌نقص نیست؛ یک تمرین بلندمدت در پشتکار است. هر روز از آن چیزی یاد می‌گیرم، هر هفته چیزی در آن می‌شکنم و درستش می‌کنم. این پروژه رزومه‌ی زنده‌ی من است — با همه‌ی ترک‌ها و وصله‌هایش.",
+    openTo: "این پروژه نمونه‌کار من است — نه سندی از دانستن، بلکه نشانه‌ای از خواستن. برای هر فرصت تحصیلی یا حرفه‌ای، در دسترس‌ام.",
     footerNote: "TEKA NEXUS — ساخته‌شده با ❤️ و کدهای تمیز",
   },
   en: {
     dir: "ltr" as const,
     back: "Back",
-    badge: "Built in Iran — solo, from zero to one",
+    badge: "Built in Iran — one self-taught developer, imperfections included",
     title: "TEKA NEXUS",
     tagline: "Where ideas become real technology.",
     intro:
-      "TEKA NEXUS is a developer-first social platform fused with a free coding academy, shipped as an installable PWA. Everything — from UI design and database architecture to 300 lessons of course content — was designed, built and tested end-to-end by a single person.",
+      "TEKA NEXUS is a developer-first social platform fused with a free coding academy, shipped as an installable PWA. I am self-taught — no degree, no teachers, no team; just the internet and long nights. Everything here was built the way I learned it: incomplete in places, full of mistakes, but honest.",
     ctaEnter: "Enter the platform",
     connectTitle: "Connect with the maker",
     connectSub: "GitHub & email — for any collaboration or question",
@@ -104,32 +104,32 @@ const COPY = {
     statsTitle: "The platform at a glance",
     storyTitle: "The story",
     story: [
-      "Big things start with a simple question: “Why should learning to code be hard?” TEKA NEXUS is my answer — a complete ecosystem that blends networking, building and learning into one seamless experience.",
-      "Instead of a typical course site, TEKA NEXUS is a social arena: 12 game-like modules, each promoted to a first-class view in the main navigation — from Boss Fights and a galaxy Skill Tree to Red-vs-Blue team wars, your very own Code Pet and a live terminal.",
-      "The platform runs live on Vercel with PostgreSQL (Supabase), custom session auth + Google OAuth, and full localization for 7 languages — Persian, English, Arabic, Spanish, French, Russian and Chinese."
+      "It all started with a simple question: “Why should learning to code be this hard?” I don't have the final answer — TEKA NEXUS is just my small attempt to make networking, building and learning a little easier, in at least one corner of the internet.",
+      "I didn't want a typical course site — TEKA NEXUS is a social arena: 12 game-like modules, each sitting directly in the main navigation — Boss Fights, a galaxy Skill Tree, Red-vs-Blue wars, a Code Pet and a live terminal. None of it claims to be revolutionary; I have only tried to make each piece genuinely work.",
+      "The platform runs live on Vercel with PostgreSQL (Supabase), custom session auth + Google OAuth, and 7 languages — Persian, English, Arabic, Spanish, French, Russian and Chinese — and it keeps teaching me something new every day."
     ],
     featuresTitle: "Every cool thing you can imagine lives here",
     founderTitle: "The maker",
     founderName: "Mohammad Sadeghi",
     founderNameEn: "محمد صادقی",
-    founderRole: "Founder & Full-Stack Developer",
-    founderLead: "Designed, engineered and maintains the entire platform single-handedly:",
+    founderRole: "Self-taught · maker & maintainer of the platform",
+    founderLead: "No degree, no teachers, no team — only persistence. I built and maintain this platform alone, mistakes included:",
     founderPoints: [
-      "Complete product design & UX with a glassmorphic neon visual language",
-      "Full-stack engineering: Next.js 16 + TypeScript + Tailwind CSS 4 + Prisma",
-      "Author of 300 coding lessons across 4 tracks (Python, HTML, CSS, JavaScript)",
-      "PostgreSQL architecture with 30+ models and custom auto-grading code engines",
-      "Game systems: XP economy, collectible cards, boss fights and team wars",
+      "Learned UI/UX from scratch, through endless reiterations — the glassmorphic neon language is the result of that practice",
+      "Self-taught full-stack work: Next.js 16 + TypeScript + Tailwind CSS 4 + Prisma",
+      "Wrote 300 lessons across 4 tracks — learning every topic twice: once for myself, once to explain it",
+      "A PostgreSQL schema with 30+ models and auto-grading engines — mostly trial, error and rewrites",
+      "Small game systems: XP economy, collectible cards, boss fights and team wars",
       "Seven live locales (fa/en/ar/es/fr/ru/zh) with full right-to-left support",
       "AI integrations: tutoring, code review and text-to-speech lesson narration",
     ],
     stackTitle: "Tech stack",
     russiaTitle: "In hope of studying in Russia",
-    russiaNote: "This section is written in Russian — the language of the university I dream of.",
+    russiaNote: "This letter is written in Russian — the language I hope to one day continue my studies in.",
     missionTitle: "Why this project matters",
     mission:
-      "TEKA NEXUS proves that with discipline, determination and love for building, one person can create a product that guides thousands of learners. This project is my living résumé — not a static document.",
-    openTo: "This project is presented as a professional portfolio piece — I am open to academic and career opportunities.",
+      "TEKA NEXUS proves nothing and is far from flawless — it is a long exercise in patience. I learn from it every day, break something almost weekly, and repair what I break. It is my living résumé — cracks and patches included.",
+    openTo: "This project is my portfolio — not proof of knowing, but evidence of wanting. I am open to any academic or professional opportunity.",
     footerNote: "TEKA NEXUS — built with ❤️ and clean code",
   },
 };
@@ -139,13 +139,13 @@ const COPY = {
 // this block is addressed to Russian universities & reviewers.
 
 const RUSSIA_TEXT = [
-  "Меня зовут Мохаммад Садеги. Я — разработчик-самоучка из Ирана и создатель TEKA NEXUS: социальной платформы для программистов и бесплатной академии с 300 уроками, которую я построил в одиночку — от первого эскиза интерфейса до последней строки кода.",
-  "Этот проект — моё живое портфолио и доказательство серьёзности моих намерений. Каждая функция здесь говорит за меня: я умею ставить большие цели и доводить их до конца.",
-  "Я мечтаю продолжить своё образование в России — стране великой математической и инженерной школы. Верю, что российский университет даст мне глубину знаний, сильных наставников и среду, в которой мои идеи станут ещё масштабнее.",
-  "TEKA NEXUS — мой первый шаг на этом пути. Я готов учиться, работать и вносить вклад. Надеюсь, однажды студенческая жизнь приведёт меня в Россию — и эта платформа станет свидетельством того, на что я способен.",
+  "Меня зовут Мохаммад Садеги. Я самоучка из Ирана: у меня нет диплома, учителей или университетского билета — только интернет, длинные ночи и упрямое желание понимать, как устроен мир программирования.",
+  "TEKA NEXUS — платформа, которую я построил в одиночку. Не потому, что я особенный, а потому, что у меня не было другого пути. Я не считаю её совершенной: в ней много шероховатостей, как и в моих знаниях. Но каждая строчка написана честно — это всё, что я умею на сегодня, вложенное в одно место.",
+  "Я мечтаю учиться в России. Не ради диплома — ради возможности впервые сесть за одну парту с настоящими преподавателями, задать вопросы, которые годами копились в моей голове, и узнать, сколько всего я ещё не знаю. Для меня Россия всегда была синонимом большой математической школы и глубокой инженерной мысли.",
+  "Если мне дадут этот шанс, я не подведу: буду учиться усердно и работать благодарно — потому что я знаю цену образованию, которое приходится добывать самому.",
 ];
 
-const RUSSIA_SIGNATURE = "— Мохаммад Садеги · создатель TEKA NEXUS · Тегеран → Россия";
+const RUSSIA_SIGNATURE = "— Мохаммад Садеги · самоучка, мечтающий об университете · Тегеран → Россия";
 
 const STATS = [
   { value: 300, suffix: "+", label: { fa: "درس عملی", en: "hands-on lessons" } },

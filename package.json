@@ -4,17 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000 2>&1 | tee dev.log",
-    "postinstall": "prisma generate",
+    "postinstall": "bun scripts/postinstall-prisma.ts",
     "build": "prisma generate && next build",
     "build:standalone": "prisma generate && next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
     "lint": "eslint .",
-    "db:push": "prisma db push --accept-data-loss",
-    "db:generate": "prisma generate",
+    "db:push": "prisma db push --accept-data-loss --schema prisma/schema.local.prisma",
+    "db:push:remote": "prisma db push --accept-data-loss",
+    "db:generate": "bun scripts/postinstall-prisma.ts",
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
-    "db:switch:postgres": "bun scripts/db-switch.ts postgres",
-    "db:switch:sqlite": "bun scripts/db-switch.ts sqlite",
     "icons": "bun scripts/make-icons.ts"
   },
   "dependencies": {

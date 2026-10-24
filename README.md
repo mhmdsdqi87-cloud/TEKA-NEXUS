@@ -22,25 +22,29 @@
 
 ## 👤 About the maker
 
-> **TEKA NEXUS is designed, engineered, tested and operated end-to-end by one person.**
+> **TEKA NEXUS was designed, engineered, tested and operated end-to-end by one person — not out of pride, but out of necessity: there was no one else.**
 
 | | |
 |---|---|
 | **Author** | **Mohammad Sadeghi** (محمد صادقی) |
-| **Role** | Founder · Full-Stack Developer · Product Designer · Curriculum Author |
+| **Role** | Founder · Self-taught Full-Stack Developer · Product Designer |
 | **GitHub** | <https://github.com/mhmdsdqi87-cloud> |
 | **Email** | <mailto:mhmdsdqi87@gmail.com> |
 
-Every layer of this product — the UX language, the 30+ model database schema, four
-auto-grading code engines, 300 lessons of bilingual course content, an arena of
-12 game modules, and seven fully localized interfaces — was built by one
-self-taught developer: learning as he builds, breaking and fixing, with more
-stubbornness than credentials.
+There was no teacher to ask at 2 AM, no team to share the weight with, no degree
+to open doors — only the internet, long nights and more stubbornness than
+credentials. So every layer of this product — the UX language, the 45-model
+database schema, four auto-grading code engines, 300 lessons of bilingual
+course content, an arena of 12 game modules, and seven fully localized
+interfaces — was learned and built the only way its maker knows: by building,
+breaking, and rebuilding until it finally works.
 
-> 🎓 *This repository serves as a living portfolio. I am open to academic and
-> professional opportunities — feel free to reach out.*
+> 🎓 *This repository serves as a living portfolio — not proof of knowing, but
+> evidence of wanting. I am open to academic and professional opportunities —
+> feel free to reach out.*
 >
-> 🇷🇺 *I am a self-taught developer with no degree — yet. **My dream is to
+> 🇷🇺 *I am a self-taught developer with no degree — yet. What I have instead:
+> nights, mistakes, and a platform that actually works. **My dream is to
 > continue my education in Russia**, and TEKA NEXUS is my quiet letter of
 > intent. The letter itself — written in Russian, humble and honest — lives in
 > the platform's About page («В надежде на учёбу в России»).*
@@ -306,7 +310,7 @@ the desktop window manager was retired on purpose — every module deserves the 
 
 ## 📜 License & credits
 
-Built with stubborn hope by **Mohammad Sadeghi**.
+Built with stubborn hope — and more nights than sleep — by **Mohammad Sadeghi**.
 All product naming, design language and course content © 2025 Mohammad Sadeghi.
 
 <div align="center">

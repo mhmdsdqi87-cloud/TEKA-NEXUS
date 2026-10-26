@@ -39,11 +39,15 @@ const notoArabic = Noto_Sans_Arabic({
   weight: ["400", "500", "600", "700"],
 });
 
-// Google Search Console / Bing / Yandex verification via env vars —
-// set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in Vercel (or skip and use the HTML-file method).
+// Google Search Console / Bing / Yandex verification.
+// The token is public by design — it ships in every page's HTML head.
+// Env var (NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION) wins if set in Vercel;
+// the literal below is the fallback so verification works without extra config.
+const GOOGLE_SITE_VERIFICATION =
+  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ??
+  "mMKxL_BAaptdW6S8jh3E_YcjtaWew5cXS_QXEKaC_ug";
 const verification: Metadata["verification"] = {};
-if (process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION)
-  verification.google = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
+if (GOOGLE_SITE_VERIFICATION) verification.google = GOOGLE_SITE_VERIFICATION;
 if (process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION)
   verification.other = { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION };
 

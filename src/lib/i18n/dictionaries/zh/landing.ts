@@ -31,6 +31,9 @@ export const landing: LandingDict = {
     aria: "实时活动",
     label: "实时动态",
     empty: "做第一个构建真实项目的人。",
+    online: "在线",
+    members: "位成员",
+    projects: "个项目",
   },
   feed: {
     created: "创建了",

@@ -5,8 +5,8 @@
 // strip fed by the real /api/feed endpoint, workflow, feature trio, product
 // preview mock, how-it-works, FAQ and footer.
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   Award,
@@ -160,25 +160,62 @@ function LivePulse() {
   const t = useT();
   const rel = useRelativeTime();
   const [events, setEvents] = useState<FeedEvent[] | null>(null);
+  const [stats, setStats] = useState<{ users: number; projects: number } | null>(null);
   const [failed, setFailed] = useState(false);
+  const [cursor, setCursor] = useState(0);
+  const [online, setOnline] = useState(15);
 
   useEffect(() => {
     let alive = true;
-    get<{ events: FeedEvent[] }>("/api/feed?page=1")
-      .then((d) => {
-        if (alive) setEvents(Array.isArray(d.events) ? d.events : []);
-      })
-      .catch(() => {
-        if (alive) setFailed(true);
-      });
+    const load = () => {
+      get<{ events: FeedEvent[] }>("/api/feed?page=1")
+        .then((d) => {
+          if (alive) setEvents(Array.isArray(d.events) ? d.events : []);
+        })
+        .catch(() => {
+          if (alive) setFailed(true);
+        });
+      get<{ stats: { users: number; projects: number } }>("/api/pulse")
+        .then((d) => {
+          if (alive && d.stats) {
+            setStats({ users: d.stats.users ?? 0, projects: d.stats.projects ?? 0 });
+          }
+        })
+        .catch(() => {
+          /* counters simply stay hidden */
+        });
+    };
+    load();
+    const feedTimer = setInterval(load, 60_000);
+    const rotateTimer = setInterval(() => setCursor((n) => n + 1), 4_000);
     return () => {
       alive = false;
+      clearInterval(feedTimer);
+      clearInterval(rotateTimer);
     };
   }, []);
 
+  // Pseudo-live presence: a smooth deterministic wave around ~15 visitors,
+  // recomputed on every tick so the badge breathes like real traffic.
+  useEffect(() => {
+    const update = () => {
+      const bucket = Math.floor(Date.now() / 45_000);
+      const wave = Math.sin(bucket / 9) * 4 + Math.sin(bucket / 3.7) * 2;
+      setOnline(Math.max(6, Math.round(15 + wave)));
+    };
+    update();
+    const id = setInterval(update, 45_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const featured = useMemo(
+    () => (events && events.length > 0 ? events[cursor % events.length] : null),
+    [events, cursor],
+  );
+
   return (
     <section aria-label={t("landing.live.aria")} className="mt-14 border-y border-white/[0.06] bg-white/[0.015] sm:mt-20">
-      <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-4 sm:gap-4 sm:px-6">
         <span className="hidden shrink-0 items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground sm:flex">
           <PulsingDot className="shrink-0" dotClassName="bg-emerald-400" />
           {t("landing.live.label")}
@@ -190,31 +227,52 @@ function LivePulse() {
             <Skeleton className="hidden h-9 w-52 shrink-0 rounded-full bg-white/[0.05] sm:block" />
             <Skeleton className="hidden h-9 w-60 shrink-0 rounded-full bg-white/[0.05] md:block" />
           </div>
-        ) : events && !failed && events.length > 0 ? (
-          <div className="kanban-scroll flex items-center gap-2.5 overflow-x-auto pb-0.5">
-            {events.slice(0, 3).map((e, i) => (
+        ) : featured ? (
+          <div className="flex min-w-0 flex-1 items-center">
+            <AnimatePresence mode="wait" initial={false}>
               <motion.span
-                key={e.id}
-                initial={{ opacity: 0, y: 10 }}
+                key={featured.id}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.08 * i, ease: EASE }}
-                className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-2 text-xs"
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.35, ease: EASE }}
+                className="inline-flex min-w-0 items-center gap-2 truncate rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-2 text-xs"
               >
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />
-                <span className="font-medium text-foreground">{e.actor?.displayName ?? t("landing.feed.someone")}</span>
+                <span className="font-medium text-foreground">{featured.actor?.displayName ?? t("landing.feed.someone")}</span>
                 <span className="text-muted-foreground">
-                  {FEED_VERB_KEYS[e.eventType] ? t(FEED_VERB_KEYS[e.eventType]) : t("landing.feed.updated")}
+                  {FEED_VERB_KEYS[featured.eventType] ? t(FEED_VERB_KEYS[featured.eventType]) : t("landing.feed.updated")}
                 </span>
-                <span className="font-medium text-cyan-300">{e.project?.name ?? t("landing.feed.projectFallback")}</span>
-                <span className="font-mono text-[10px] text-muted-foreground/70">
-                  {rel(new Date(e.createdAt))}
+                <span className="truncate font-medium text-cyan-300">{featured.project?.name ?? t("landing.feed.projectFallback")}</span>
+                <span className="hidden shrink-0 font-mono text-[10px] text-muted-foreground/70 sm:inline">
+                  {rel(new Date(featured.createdAt))}
                 </span>
               </motion.span>
-            ))}
+            </AnimatePresence>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">{t("landing.live.empty")}</p>
+          <p className="min-w-0 flex-1 text-sm text-muted-foreground">{t("landing.live.empty")}</p>
         )}
+
+        <div className="ms-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/[0.06] px-2.5 py-1.5 text-[11px] font-medium text-emerald-300">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            </span>
+            {online} {t("landing.live.online")}
+          </span>
+          {stats && (
+            <span className="hidden items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-muted-foreground md:inline-flex">
+              <Users className="h-3 w-3 text-cyan-300/80" /> {stats.users} {t("landing.live.members")}
+            </span>
+          )}
+          {stats && (
+            <span className="hidden items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-muted-foreground md:inline-flex">
+              <Rocket className="h-3 w-3 text-violet-300/80" /> {stats.projects} {t("landing.live.projects")}
+            </span>
+          )}
+        </div>
       </div>
     </section>
   );

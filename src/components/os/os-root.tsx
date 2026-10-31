@@ -15,7 +15,7 @@ import { useT } from "@/lib/i18n";
 import { useOs } from "@/lib/os/os-store";
 import { useOsSession } from "@/lib/os/session-store";
 import { tekaEventWindow, formatCountdown } from "@/lib/os/events";
-import { OS_APPS, getOsApp } from "./app-registry";
+import { OS_APPS, getOsApp } from "./os-apps";
 import { WindowFrame } from "./window-frame";
 import { MatrixOverlay } from "./matrix-overlay";
 import { LogoMark } from "@/components/brand/logo";

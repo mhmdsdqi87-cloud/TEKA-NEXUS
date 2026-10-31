@@ -31,6 +31,9 @@ export const landing: LandingDict = {
     aria: "فعالیت زنده",
     label: "نبض زنده",
     empty: "اولین کسی باش که یه چیز واقعی می‌سازه.",
+    online: "آنلاین",
+    members: "عضو",
+    projects: "پروژه",
   },
   feed: {
     created: "پروژه‌ای ساخت:",

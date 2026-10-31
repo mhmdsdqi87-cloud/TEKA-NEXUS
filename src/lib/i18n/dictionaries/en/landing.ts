@@ -29,6 +29,9 @@ export const landing = {
     aria: "Live activity",
     label: "Live pulse",
     empty: "Be the first to build something real.",
+    online: "online",
+    members: "members",
+    projects: "projects",
   },
   feed: {
     created: "created",

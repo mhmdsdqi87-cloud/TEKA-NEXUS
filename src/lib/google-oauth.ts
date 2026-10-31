@@ -121,7 +121,9 @@ export async function exchangeCodeForProfile(
       profile: {
         sub: info.sub,
         email: info.email.toLowerCase(),
-        emailVerified: info.email_verified !== false,
+        // Line 117 already returned early when email_verified === false, so
+        // reaching this point guarantees a verified address.
+        emailVerified: true,
         name: info.name?.trim() || null,
         picture: info.picture ?? null,
       },

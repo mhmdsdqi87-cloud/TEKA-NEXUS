@@ -178,5 +178,12 @@ cd android && ./gradlew :app:bundleRelease
 - فینگرپرینت عوض نمی‌شود — assetlinks.json دست‌نخورده می‌ماند
 - AAB جدید را در مایکت «به‌روزرسانی» همان اپ آپلود کن
 
-### دانلود نسخه ۱.۰.۰
-- ریلیز گیت‌هاب: `github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases` → `myket-v1.0.0`
+### ✅ نسخه ۱.۰.۱ همین حالا آماده است — بیلد گرفته شد و امضا شد
+
+نیازی به بازسازی نیست! APK/AAB با همان کی‌استور رسمی (فینگرپرینت `C1:F2:...` تایید شد) ساخته شد:
+
+- **دانلود مستقیم:** https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/download/myket-v1.0.1/teka-nexus-v1.0.1.apk
+- AAB: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/download/myket-v1.0.1/teka-nexus-v1.0.1.aab
+- صفحه ریلیز: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.1
+
+امضای APK با `apksigner verify` تایید شد: `c1f20ee3... = C1:F2:0E:E3:14:A3:02:26:EA:35:8A:9F:9F:AE:E1:27:F6:07:28:CA:30:A0:BB:D5:87:60:83:C0:CE:CA:07:13` — دقیقاً همان فینگرپرینت `assetlinks.json` → نصب تمام‌صفحه بدون نوار آدرس ✨

@@ -1,6 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- FIX (v1.0.1): required by the official TWA template. Without INTERNET
+         permission the TWA session cannot be established on strict OEM ROMs
+         (Samsung OneUI Android 14/16) and the app force-closes at launch. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- FIX (v1.0.1): package-visibility block, mandatory on Android 11+ (API 30+).
+         Without it the app cannot SEE any browser / Custom Tabs provider, so
+         CustomTabsClient.getPackageName() returns null and LauncherActivity
+         crashes instantly on icon tap — the exact Force Close Myket's testers
+         hit on Samsung A23 (Android 14) and A36 (Android 16). -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.support.customtabs.action.CustomTabsService" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

@@ -4,6 +4,42 @@
 
 ---
 
+## 🚨 رفع خطای Force Close — نسخه ۱.۰.۱ (versionCode 2)
+
+مایکت اپ را ریجکت کرد: «کلیک روی آیکون → بسته شدن اجباری» روی سامسونگ A23 (اندروید ۱۴) و A36 (اندروید ۱۶).
+
+**علت ریشه‌ای:** مانیفست دستیِ ما دو بلوکِ حیاتیِ قالب رسمی TWA را نداشت:
+
+1. `<uses-permission android:name="android.permission.INTERNET" />` — اصلاً وجود نداشت
+2. `<queries>` — بلوک package-visibility که اندروید ۱۱+ (API 30+) اجباری‌اش می‌کند؛ بدون آن اپ **اصلاً نمی‌تواند مرورگر / سرویس Custom Tabs را ببیند**، `CustomTabsClient.getPackageName()` مقدار null برمی‌گرداند و LauncherActivity در همان لحظه‌ی کلیک روی آیکون کرش می‌کند — دقیقاً همان Force Close تسترها
+
+**چه چیزی در v1.0.1 درست شد:**
+- ✅ هر دو بلوک به `android/app/src/main/AndroidManifest.xml` اضافه شد
+- ✅ `versionCode 1 → 2` و `versionName 1.0.0 → 1.0.1`
+- ✅ Gradle wrapper اضافه شد — دیگر Gradle نصب لازم نیست؛ `./gradlew` خودش 8.11.1 را دانلود می‌کند
+
+### بازسازی (روی کامپیوتر خودت)
+```bash
+git pull origin main
+cd android
+export JAVA_HOME=/path/to/jdk17
+export ANDROID_HOME=/path/to/android-sdk
+export TEKA_KEYSTORE_PATH=/path/to/teka-release.keystore
+export TEKA_STORE_PASS='...'
+export TEKA_KEY_PASS='...'
+./gradlew :app:assembleRelease   # خروجی: app/build/outputs/apk/release/app-release.apk
+```
+
+### چک‌لیست ارسال مجدد به مایکت
+1. نسخه build شده حتماً با **همان keystore قبلی** باشد (فینگرپرینت `C1:F2:...` در assetlinks.json با آن ساخته شده)
+2. `versionCode` باید **بزرگ‌تر از ۱** باشد ✅ (همین الان ۲ است)
+3. در پنل مایکت روی همان اپ، **به‌روزرسانی نسخه** را بزن و APK/AAB جدید را آپلود کن
+4. در پاسخ به تیم بررسی بنویس: «خطای Force Close برطرف شد — بلوک‌های permission و queries مطابق قالب رسمی TWA اصلاح گردید»
+
+> 💡 اگر باز هم کرش داشت، خروجی `adb logcat -b crash` را بفرست تا علت دقیق را از stack trace ببینیم.
+
+---
+
 ## متن آماده لیستینگ (کپی-پیست در پنل مایکت)
 
 ### عنوان اپ
@@ -131,10 +167,11 @@ export ANDROID_HOME=/path/to/android-sdk
 export TEKA_KEYSTORE_PATH=/path/to/teka-release.keystore
 export TEKA_STORE_PASS='TekaNexus2026!Secure'
 export TEKA_KEY_PASS='TekaNexus2026!Secure'
-# ۱) versionCode را در android/app/build.gradle زیاد کن (۱ → ۲ → …)
-cd android && gradle :app:bundleRelease
+# ۱) versionCode را در android/app/build.gradle زیاد کن (۲ → ۳ → …)
+cd android && ./gradlew :app:bundleRelease
 # خروجی: app/build/outputs/bundle/release/app-release.aab
 ```
+> Gradle دیگر لازم نیست نصب کنی — wrapper (8.11.1) در ریپو هست و `./gradlew` خودش دانلود می‌کند.
 
 ### نکته‌های نسخه‌بندی
 - `versionName` را هم زیاد کن (۱.۰.۰ → ۱.۱.۰)

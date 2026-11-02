@@ -50,7 +50,10 @@ export async function setSessionCookie(token: string, expiresAt: Date): Promise<
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: false, // sandbox preview runs over plain http
+    // Secure flag ON in production (Vercel serves HTTPS) so the session token
+    // is never sent over plain http. Dev/sandbox preview runs over http, so
+    // Secure must stay off there or preview login would silently break.
+    secure: process.env.NODE_ENV === "production",
     expires: expiresAt,
     path: "/",
   });

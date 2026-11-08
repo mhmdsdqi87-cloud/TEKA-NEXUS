@@ -1,3 +1,5 @@
+**English** | [فارسی](README.fa.md)
+
 <div align="center">
 
 # ⚡ TEKA NEXUS
@@ -6,6 +8,7 @@
 
 **A developer-first social platform · a free 300-lesson coding academy · an arena of 12 game modules — in one installable PWA.**
 
+[![Live](https://img.shields.io/badge/LIVE-teka--nexus.vercel.app-FF6B35?logo=vercel)](https://teka-nexus.vercel.app/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs&logoColor=white)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
@@ -13,8 +16,15 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-3ECF8E?logo=postgresql&logoColor=white)](https://supabase.com)
 [![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)](https://developer.mozilla.org/docs/Web/Progressive_web_apps)
 [![i18n](https://img.shields.io/badge/locales-7-FF6B35)](#internationalization)
+[![Release](https://img.shields.io/github/v/release/mhmdsdqi87-cloud/TEKA-NEXUS?logo=github)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases)
+[![Stars](https://img.shields.io/github/stars/mhmdsdqi87-cloud/TEKA-NEXUS?logo=github&label=stars&color=yellow)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/stargazers)
+[![Views](https://komarev.com/ghpvc/?username=mhmdsdqi87-cloud&label=views&color=FF6B35)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS)
 
-[Live Platform](https://teka-nexus.vercel.app/) · [GitHub](https://github.com/mhmdsdqi87-cloud) · [Contact](mailto:mhmdsdqi87@gmail.com)
+[🚀 Live Platform](https://teka-nexus.vercel.app/) · [📱 Android APK](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.1) · [👤 GitHub](https://github.com/mhmdsdqi87-cloud) · [✉️ Contact](mailto:mhmdsdqi87@gmail.com)
+
+<img src="public/screenshots/landing-wide.png" alt="TEKA NEXUS — the landing experience" width="860">
+
+<sub><b>Social feed · free 300-lesson academy · 12 game modules — 7 languages, one platform.</b></sub>
 
 </div>
 
@@ -313,7 +323,24 @@ the desktop window manager was retired on purpose — every module deserves the 
 Built with stubborn hope — and more nights than sleep — by **Mohammad Sadeghi**.
 All product naming, design language and course content © 2025 Mohammad Sadeghi.
 
+---
+
+## 📊 Repository stats
+
 <div align="center">
+
+<a href="https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS">
+  <img src="https://github-readme-stats.vercel.app/api/pin/?username=mhmdsdqi87-cloud&repo=TEKA-NEXUS&theme=tokyonight&show_owner=true" alt="TEKA NEXUS — repository stats card">
+</a>
+
+<br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=mhmdsdqi87-cloud/TEKA-NEXUS&type=Date&theme=dark">
+  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=mhmdsdqi87-cloud/TEKA-NEXUS&type=Date">
+  <img src="https://api.star-history.com/svg?repos=mhmdsdqi87-cloud/TEKA-NEXUS&type=Date" alt="Star history chart" width="620">
+</picture>
+
   <sub>⭐ If this project inspires you, a star on GitHub means a lot.</sub><br>
   <a href="https://github.com/mhmdsdqi87-cloud">GitHub</a> · <a href="mailto:mhmdsdqi87@gmail.com">mhmdsdqi87@gmail.com</a>
 </div>

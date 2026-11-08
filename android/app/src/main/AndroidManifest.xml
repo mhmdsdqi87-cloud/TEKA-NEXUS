@@ -1,76 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- FIX (v1.0.1): required by the official TWA template. Without INTERNET
-         permission the TWA session cannot be established on strict OEM ROMs
-         (Samsung OneUI Android 14/16) and the app force-closes at launch. -->
+    <!-- v1.0.2: WebView shell — INTERNET permission only. The TWA-era
+         <queries> browser-visibility block is gone: we no longer look up any
+         external browser, which is what eliminated the Force Close class of
+         failures on devices without Chrome (Myket test devices). -->
     <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- FIX (v1.0.1): package-visibility block, mandatory on Android 11+ (API 30+).
-         Without it the app cannot SEE any browser / Custom Tabs provider, so
-         CustomTabsClient.getPackageName() returns null and LauncherActivity
-         crashes instantly on icon tap — the exact Force Close Myket's testers
-         hit on Samsung A23 (Android 14) and A36 (Android 16). -->
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="https" />
-        </intent>
-        <intent>
-            <action android:name="android.support.customtabs.action.CustomTabsService" />
-        </intent>
-    </queries>
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.TwaBase">
+        android:theme="@style/Theme.TwaSplash">
 
+        <!-- The single launcher activity: a native WebView shell.
+             Theme.TwaSplash paints the brand background from the very first
+             frame — no white flash, no external browser involved. -->
         <activity
-            android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
+            android:name=".MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize|uiMode"
             android:exported="true"
-            android:theme="@style/Theme.TwaSplash"
             android:windowSoftInputMode="adjustResize">
-
-            <meta-data
-                android:name="android.support.customtabs.trusted.DEFAULT_URL"
-                android:value="https://teka-nexus.vercel.app/" />
-            <meta-data
-                android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR"
-                android:resource="@color/navigationColor" />
-            <meta-data
-                android:name="android.support.customtabs.trusted.NAVIGATION_BAR_COLOR"
-                android:resource="@color/navigationColor" />
-            <meta-data
-                android:name="android.support.customtabs.trusted.SPLASH_IMAGE_DRAWABLE"
-                android:resource="@drawable/splash" />
-            <meta-data
-                android:name="android.support.customtabs.trusted.SPLASH_SCREEN_BACKGROUND_COLOR"
-                android:resource="@color/background" />
-            <meta-data
-                android:name="android.support.customtabs.trusted.SPLASH_SCREEN_FADE_OUT_DURATION"
-                android:value="300" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <intent-filter android:autoVerify="true">
+            <!-- Deep links open the exact URL inside the app's WebView. -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="teka-nexus.vercel.app" />
             </intent-filter>
         </activity>
-
-        <meta-data
-            android:name="asset_statements"
-            android:resource="@string/asset_statements" />
     </application>
 </manifest>

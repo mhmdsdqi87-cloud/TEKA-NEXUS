@@ -1,4 +1,14 @@
 <resources>
+    <!-- v1.0.2: Myket rejected the store listing title for being too long —
+         the in-app label is kept intentionally SHORT. Use exactly this in the
+         Myket panel «عنوان فارسی» field too. -->
     <string name="app_name">تکا نکسوس</string>
+
+    <!-- Offline / retry view -->
+    <string name="offline_title">اتصال برقرار نیست</string>
+    <string name="offline_body">اتصال اینترنتت رو بررسی کن و دوباره تلاش کن.</string>
+    <string name="retry">تلاش دوباره</string>
+    <string name="download_started">دانلود شروع شد</string>
+
     <string name="asset_statements" translatable="false">[{ \"relation\": [\"delegate_permission/common.handle_all_urls\"], \"target\": { \"namespace\": \"android_app\", \"package_name\": \"ir.teka.nexus\", \"sha256_cert_fingerprints\": [\"C1:F2:0E:E3:14:A3:02:26:EA:35:8A:9F:9F:AE:E1:27:F6:07:28:CA:30:A0:BB:D5:87:60:83:C0:CE:CA:07:13\"] } }]</string>
 </resources>

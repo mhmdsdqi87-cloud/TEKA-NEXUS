@@ -1,12 +1,17 @@
 pluginManagement {
     repositories {
         google()
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
         mavenCentral()
         gradlePluginPortal()
     }
 }
 dependencyResolutionManagement {
     repositories {
+        // Aliyun mirrors first — Maven Central rate-limits shared CI IPs (HTTP 429).
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
         google()
         mavenCentral()
     }

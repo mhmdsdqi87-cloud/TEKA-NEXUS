@@ -1,10 +1,49 @@
 # انتشار TEKA NEXUS در مایکت 📱
 
-راهنمای کامل بسته‌بندی PWA به اپ اندروید (TWA) و انتشار در مایکت.
+راهنمای کامل بسته‌بندی سایت به اپ اندروید و انتشار در مایکت.
 
 ---
 
-## 🚨 رفع خطای Force Close — نسخه ۱.۰.۱ (versionCode 2)
+## 🚨 رفع قطعی Force Close — نسخه ۱.۰.۲ (versionCode 3)
+
+مایکت دوباره ریجکت کرد: «کلیک روی آیکون → Force Close» روی **شیائومی Poco X5 (اندروید ۱۴)** و **سامسونگ Galaxy A51 (اندروید ۱۲)** — با اینکه فیکس‌های TWA نسخه ۱.۰.۱ (INTERNET + queries) اعمال شده بود.
+
+**تشخیص نهایی:** معماری TWA ذاتاً به یک مرورگر خارجیِ سازگار با Custom Tabs وابسته است (Chrome و…). روی خیلی از گوشی‌های ایران (بدون گوگل‌پلی) Chrome حذف شده یا غیرفعاله؛ در آن حالت `LauncherActivity` مرورگری پیدا نمی‌کند و کرش می‌کند — صرف‌نظر از اینکه مانیفست چقدر درست باشد.
+
+**راه‌حل v1.0.2 — حذف کلاس کاملِ این خطا:**
+- ❌ حذف کامل `androidbrowserhelper` و معماری TWA
+- ✅ `MainActivity` جاوای خالص با **WebView بومی** (`android.webkit` که روی هر اندروید ۵+ نصب است — هیچ وابستگی خارجی‌ای برای «باز شدن» وجود ندارد)
+- ✅ اسکرول-به-رفرش، صفحه خطای آفلاین با دکمه «تلاش دوباره»، دیپ‌لینک داخل اپ
+- ✅ دانلود فایل‌ها با DownloadManager (مثلاً APK از خود سایت)، انتخاب فایل برای آپلود آواتار
+- ✅ خودترمیمی: کرش رندرر WebView باعث بسته شدن کل اپ نمی‌شود (`onRenderProcessGone → recreate`)
+- ✅ UA suffix: `TekaNexusApp/1.0.2` — ترافیک اپ قابل تشخیص است
+- ✅ عنوان داخل اپ و «عنوان فارسی» پنل مایکت باید **«تکا نکسوس»** باشد (کوتاه)
+
+### بازسازی v1.0.2+
+```bash
+git pull origin main
+cd android
+export JAVA_HOME=/path/to/jdk17
+export ANDROID_HOME=/path/to/android-sdk
+export TEKA_KEYSTORE_PATH=/path/to/teka-release.keystore
+export TEKA_STORE_PASS='...'
+export TEKA_KEY_PASS='...'
+./gradlew :app:assembleRelease :app:bundleRelease
+# خروجی‌ها:
+#   app/build/outputs/apk/release/app-release.apk
+#   app/build/outputs/bundle/release/app-release.aab
+```
+
+### چک‌لیست ارسال مجدد به مایکت (v1.0.2)
+1. همان keystore قبلی (`C1:F2:...`) ✅ — فینگرپرینت assetlinks تغییر نکرده
+2. `versionCode 3` > `2` ✅
+3. در پنل مایکت: **عنوان فارسی را کوتاه کن** → فقط «تکا نکسوس» (بدون توضیح اضافه — علت دوم ریجکت)
+4. APK یا AAB جدید را آپلود کن و برای بررسی مجدد ارسال کن
+5. در پاسخ به تیم بررسی بنویس: «نسخه ۱.۰.۲ معماری اپ را از TWA به WebView بومی تبدیل کرد؛ اپ دیگر به هیچ مرورگر خارجی وابسته نیست و Force Close در هر دستگاهی از بین رفته است.»
+
+---
+
+## 🗄 آرشیو: فیکس TWA نسخه ۱.۰.۱ (versionCode 2)
 
 مایکت اپ را ریجکت کرد: «کلیک روی آیکون → بسته شدن اجباری» روی سامسونگ A23 (اندروید ۱۴) و A36 (اندروید ۱۶).
 

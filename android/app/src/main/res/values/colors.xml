@@ -1,4 +1,6 @@
 <resources>
     <color name="background">#08080d</color>
     <color name="navigationColor">#08080d</color>
+    <color name="offlineText">#f4f4f6</color>
+    <color name="offlineTextSoft">#9a9aa6</color>
 </resources>

@@ -10,8 +10,10 @@ android {
         applicationId 'ir.teka.nexus'
         minSdk 24
         targetSdk 34
-        versionCode 2
-        versionName '1.0.1'
+        // v1.0.2 (code 3): TWA → native WebView shell (Myket Force Close fix:
+        // no browser dependency at all) + offline retry view + deep links.
+        versionCode 3
+        versionName '1.0.2'
     }
 
     signingConfigs {
@@ -39,5 +41,8 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.4'
+    // v1.0.2: androidbrowserhelper (TWA) removed on purpose.
+    // appcompat: theme + AppCompatActivity; swiperefreshlayout: pull-to-refresh.
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 }

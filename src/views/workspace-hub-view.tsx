@@ -63,13 +63,13 @@ type HubResponse = {
 
 function StatChip({ icon: Icon, value, label, tone }: { icon: typeof Files; value: number; label: string; tone: string }) {
   return (
-    <div className="glass-card flex items-center gap-3 rounded-xl px-4 py-3">
-      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${tone}`}>
-        <Icon className="h-4 w-4" aria-hidden="true" />
+    <div className="glass-card flex items-center gap-1.5 rounded-xl px-2 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
+      <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg sm:h-9 sm:w-9 ${tone}`}>
+        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
       </span>
       <span className="min-w-0">
-        <span className="block font-display text-lg font-bold leading-none tabular-nums">{value}</span>
-        <span className="block truncate text-[11px] text-muted-foreground">{label}</span>
+        <span className="block font-display text-sm font-bold leading-none tabular-nums sm:text-lg">{value}</span>
+        <span className="block truncate text-[10px] text-muted-foreground sm:text-[11px]">{label}</span>
       </span>
     </div>
   );
@@ -137,7 +137,7 @@ export function WorkspaceHubView() {
           </div>
 
           {/* stats */}
-          <div className="relative mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="relative mt-5 grid grid-cols-3 gap-2 sm:gap-3">
             <StatChip icon={FolderGit2} value={data?.stats.projects ?? 0} label={t("workspace.hub.stats.projects")} tone="bg-cyan-500/15 text-cyan-300" />
             <StatChip icon={Files} value={data?.stats.files ?? 0} label={t("workspace.hub.stats.files")} tone="bg-violet-500/15 text-violet-300" />
             <StatChip icon={History} value={data?.stats.revisions ?? 0} label={t("workspace.hub.stats.revisions")} tone="bg-emerald-500/15 text-emerald-300" />

@@ -233,18 +233,19 @@ export function HomeView() {
             <p className="font-display font-semibold">{t("home.welcomeBack", { name: user.displayName })}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{t("home.readyToBuild", { username: user.username })}</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
+              className="min-h-[36px]"
               onClick={() => navigate({ name: "profile", username: user.username })}
             >
               <CircleUserRound className="h-3.5 w-3.5" /> {t("home.yourProfile")}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate({ name: "saved" })}>
+            <Button variant="outline" size="sm" className="min-h-[36px]" onClick={() => navigate({ name: "saved" })}>
               <Bookmark className="h-3.5 w-3.5" /> {t("common.saved")}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate({ name: "teams" })}>
+            <Button variant="outline" size="sm" className="min-h-[36px]" onClick={() => navigate({ name: "teams" })}>
               <Users className="h-3.5 w-3.5" /> {t("common.teams")}
             </Button>
           </div>

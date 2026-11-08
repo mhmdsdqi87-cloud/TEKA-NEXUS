@@ -470,7 +470,7 @@ export function OnboardingView() {
                       </p>
                     </div>
 
-                    <Stagger className="grid gap-2 sm:grid-cols-2" gap={0.03} delayChildren={0.12}>
+                    <Stagger className="grid grid-cols-2 gap-2" gap={0.03} delayChildren={0.12}>
                       {PROJECT_CATEGORIES.map((c) => {
                         const Icon = CATEGORY_ICONS[c.icon] ?? Sparkles;
                         const active = interests.includes(c.slug);
@@ -483,14 +483,14 @@ export function OnboardingView() {
                             variants={staggerChild}
                             whileTap={{ scale: 0.97 }}
                             className={cn(
-                              "flex min-h-[44px] items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-all",
+                              "flex min-h-[48px] items-center gap-2 rounded-xl border px-2.5 py-3 text-left transition-all",
                               active
                                 ? "border-cyan-400/50 bg-cyan-500/10 scale-[1.02]"
                                 : "border-white/[0.07] bg-white/[0.02] hover:border-white/20"
                             )}
                           >
-                            <Icon className={cn("h-5 w-5 shrink-0", active ? "text-cyan-300" : "text-muted-foreground")} />
-                            <span className="text-sm font-medium">{lbl("project.categories", c.slug, c.name)}</span>
+                            <Icon className={cn("h-4.5 w-4.5 shrink-0", active ? "text-cyan-300" : "text-muted-foreground")} />
+                            <span className="text-[13px] font-medium leading-snug">{lbl("project.categories", c.slug, c.name)}</span>
                             {active && (
                               <motion.span
                                 initial={{ scale: 0.4, opacity: 0 }}
@@ -528,7 +528,7 @@ export function OnboardingView() {
                       </p>
                     </div>
 
-                    <Stagger className="grid gap-2 sm:grid-cols-2" gap={0.03} delayChildren={0.12}>
+                    <Stagger className="grid grid-cols-2 gap-2" gap={0.03} delayChildren={0.12}>
                       {GOALS.map((g) => {
                         const active = goals.includes(g.slug);
                         return (
@@ -540,7 +540,7 @@ export function OnboardingView() {
                             variants={staggerChild}
                             whileTap={{ scale: 0.97 }}
                             className={cn(
-                              "flex min-h-[44px] items-center justify-between gap-2 rounded-lg border px-3.5 py-3 text-left text-sm transition-all",
+                              "flex min-h-[48px] items-center justify-between gap-2 rounded-lg border px-3 py-3 text-left text-[13px] leading-snug transition-all",
                               active
                                 ? "border-cyan-400/50 bg-cyan-500/10 text-cyan-100 scale-[1.02]"
                                 : "border-white/[0.07] bg-white/[0.02] text-foreground/85 hover:border-white/20"

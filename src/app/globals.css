@@ -334,11 +334,30 @@ body {
   textarea:not(.text-transparent),
   select {
     font-size: 16px !important;
+    /* Softer, more modern rounding on phones. */
+    border-radius: 0.75rem !important;
   }
 
   /* Lift sonner toasts above the fixed bottom nav (h-16) + home-bar inset. */
   [data-sonner-toaster] {
     bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* Touch feedback: pressed-state on every control for coarse pointers
+   (phones/tablets). Desktop keeps hover-only behavior. motion.* elements
+   carry inline transforms, which safely win over this. */
+@media (hover: none) and (pointer: coarse) {
+  button:not([disabled]) {
+    transition-property: transform, filter;
+    transition-duration: 0.12s;
+  }
+  button:not([disabled]):active {
+    transform: scale(0.96);
+  }
+  .btn-hero:active {
+    filter: brightness(1.15) saturate(1.12);
+    box-shadow: 0 0 26px -4px rgba(34, 211, 238, 0.75);
   }
 }
 

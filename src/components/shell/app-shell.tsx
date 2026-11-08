@@ -508,27 +508,39 @@ function MobileTab({
       onClick={onClick}
       aria-current={active ? "page" : undefined}
       aria-label={label}
-      className={cn(
-        "relative flex flex-col items-center justify-center gap-1 w-full min-h-[44px] text-[10px] font-medium transition-colors outline-none focus-glow",
-        active ? "text-cyan-300" : "text-muted-foreground"
-      )}
+      className="relative flex w-full min-h-[44px] flex-col items-center justify-center py-2 outline-none focus-glow transition-transform active:scale-[0.94]"
     >
-      {/* sliding active pill (separate layoutId namespace from desktop) */}
+      {/* sliding active pill — gradient core + neon halo */}
       {active && (
         <motion.span
           layoutId="navPillMobile"
           aria-hidden="true"
           transition={SPRING}
-          className="absolute inset-x-2 top-1.5 bottom-1.5 rounded-xl bg-cyan-400/[0.09] ring-1 ring-inset ring-cyan-400/20"
+          className="absolute inset-x-1 top-1.5 bottom-1.5 rounded-2xl bg-gradient-to-b from-cyan-400/[0.16] to-violet-500/[0.09] ring-1 ring-inset ring-cyan-400/30 shadow-[0_0_20px_-6px_rgba(34,211,238,0.55),inset_0_1px_0_rgba(255,255,255,0.08)]"
         />
       )}
       <span className="relative">
-        <Icon className="h-5 w-5" />
+        <Icon
+          className={cn(
+            "h-5 w-5 transition-all",
+            active
+              ? "h-[22px] w-[22px] text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+              : "text-muted-foreground"
+          )}
+        />
         {typeof badge === "number" && badge > 0 && (
           <UnreadBadge count={badge} className="absolute -top-1.5 -right-2.5" />
         )}
       </span>
-      <span className="relative">{label}</span>
+      {/* Label only on the active tab — kills truncation on the 8-slot bar */}
+      <span
+        className={cn(
+          "relative text-[10px] font-semibold leading-none",
+          active ? "block max-w-full truncate px-1 text-cyan-200" : "sr-only"
+        )}
+      >
+        {label}
+      </span>
     </button>
   );
 }
@@ -543,7 +555,7 @@ function MobileNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-40 glass pb-safe"
+      className="md:hidden fixed bottom-0 inset-x-0 z-40 glass pb-safe before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-cyan-400/30 before:to-transparent"
       aria-label={t("nav.mobileNavAria")}
     >
       <div className="grid grid-cols-8 items-stretch h-16">

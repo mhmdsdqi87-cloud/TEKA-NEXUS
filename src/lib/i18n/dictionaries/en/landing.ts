@@ -33,6 +33,17 @@ export const landing = {
     members: "members",
     projects: "projects",
   },
+  live2: {
+    aria: "Community activity notifications",
+    dismiss: "Dismiss",
+    joined: "{name} from {city} just joined TEKA NEXUS",
+    lesson: "{name} completed the “{item}” lesson",
+    xp: "{name} just earned {xp} XP",
+    project: "{name} published the project “{item}”",
+    teammate: "{name} joined the team “{item}”",
+    certificate: "{name} earned the “{item}” certificate",
+    weekSignups: "+{n} new members this week",
+  },
   feed: {
     created: "created",
     released: "released",

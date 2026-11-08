@@ -51,6 +51,10 @@ if (GOOGLE_SITE_VERIFICATION) verification.google = GOOGLE_SITE_VERIFICATION;
 if (process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION)
   verification.other = { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION };
 
+// Build marker shipped in every page's <head> — curl-verifiable proof of which
+// commit is actually serving on Vercel (deployment-failure forensics).
+const BUILD_VERSION = "v1.62.0";
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://teka-nexus.vercel.app"),
   title: {
@@ -97,6 +101,7 @@ export const metadata: Metadata = {
   publisher: "TEKA NEXUS",
   applicationName: "TEKA NEXUS",
   manifest: "/manifest.webmanifest",
+  other: { "teka-build": BUILD_VERSION },
   appleWebApp: {
     capable: true,
     title: "TEKA",

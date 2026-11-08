@@ -35,6 +35,17 @@ export const landing: LandingDict = {
     members: "membres",
     projects: "projets",
   },
+  live2: {
+    aria: "Notifications d'activité de la communauté",
+    dismiss: "Fermer",
+    joined: "{name} de {city} vient de rejoindre TEKA NEXUS",
+    lesson: "{name} a terminé la leçon « {item} »",
+    xp: "{name} vient de gagner {xp} XP",
+    project: "{name} a publié le projet « {item} »",
+    teammate: "{name} a rejoint l'équipe « {item} »",
+    certificate: "{name} a obtenu le certificat « {item} »",
+    weekSignups: "+{n} nouveaux membres cette semaine",
+  },
   feed: {
     created: "a créé",
     released: "a publié",

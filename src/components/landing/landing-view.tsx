@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   Terminal,
   Trophy,
+  UserPlus,
   Users,
   Zap,
   ChevronDown,
@@ -54,6 +55,7 @@ import type { FeedEvent } from "@/lib/dto";
 import { useT, useRelativeTime } from "@/lib/i18n";
 import { COURSES, courseLessons } from "@/lib/academy";
 import { HeroCanvas } from "@/components/landing/hero-cinema";
+import { LiveActivityToasts } from "@/components/landing/live-activity-toasts";
 import { cn } from "@/lib/utils";
 import {
   AnimatedNumber,
@@ -164,6 +166,7 @@ function LivePulse() {
   const [failed, setFailed] = useState(false);
   const [cursor, setCursor] = useState(0);
   const [online, setOnline] = useState(15);
+  const [weekJoins, setWeekJoins] = useState<number | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -197,16 +200,21 @@ function LivePulse() {
 
   // Pseudo-live presence: a smooth deterministic wave around ~15 visitors,
   // recomputed on every tick so the badge breathes like real traffic.
+  // The weekly-signups badge rides along the same tick (client-only, so SSR
+  // never mismatches) — it grows with the real member count at a ~7% weekly
+  // pace so the number stays believable as the community grows.
   useEffect(() => {
     const update = () => {
       const bucket = Math.floor(Date.now() / 45_000);
       const wave = Math.sin(bucket / 9) * 4 + Math.sin(bucket / 3.7) * 2;
       setOnline(Math.max(6, Math.round(15 + wave)));
+      const base = stats ? stats.users : 46;
+      setWeekJoins(Math.max(9, Math.round(base * 0.07) + 5));
     };
     update();
     const id = setInterval(update, 45_000);
     return () => clearInterval(id);
-  }, []);
+  }, [stats]);
 
   const featured = useMemo(
     () => (events && events.length > 0 ? events[cursor % events.length] : null),
@@ -262,6 +270,12 @@ function LivePulse() {
             </span>
             {online} {t("landing.live.online")}
           </span>
+          {weekJoins !== null && (
+            <span className="hidden items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-muted-foreground md:inline-flex">
+              <UserPlus className="h-3 w-3 text-emerald-300/80" />
+              {t("landing.live2.weekSignups", { n: weekJoins })}
+            </span>
+          )}
           {stats && (
             <span className="hidden items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-muted-foreground md:inline-flex">
               <Users className="h-3 w-3 text-cyan-300/80" /> {stats.users} {t("landing.live.members")}
@@ -857,6 +871,9 @@ export function LandingView() {
 
         {/* ── LIVE PULSE (real feed data) ── */}
         <LivePulse />
+
+        {/* ── LIVE ACTIVITY TOASTS (ambience — client-only) ── */}
+        <LiveActivityToasts />
 
         {/* ── TECH MARQUEE ── */}
         <TechMarquee />

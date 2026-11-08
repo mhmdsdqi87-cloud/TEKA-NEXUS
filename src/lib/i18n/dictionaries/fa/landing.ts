@@ -35,6 +35,17 @@ export const landing: LandingDict = {
     members: "عضو",
     projects: "پروژه",
   },
+  live2: {
+    aria: "اعلان‌های فعالیت جامعه",
+    dismiss: "بستن",
+    joined: "{name} از {city} به تکا نکسوس پیوست",
+    lesson: "{name} درس «{item}» رو تموم کرد",
+    xp: "{name} {xp} XP کسب کرد",
+    project: "{name} پروژه «{item}» رو منتشر کرد",
+    teammate: "{name} به تیم «{item}» پیوست",
+    certificate: "{name} گواهینامه «{item}» رو گرفت",
+    weekSignups: "+{n} عضو جدید این هفته",
+  },
   feed: {
     created: "پروژه‌ای ساخت:",
     released: "نسخه‌ای منتشر کرد:",

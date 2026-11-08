@@ -35,6 +35,17 @@ export const landing: LandingDict = {
     members: "位成员",
     projects: "个项目",
   },
+  live2: {
+    aria: "社区动态通知",
+    dismiss: "关闭",
+    joined: "{name}（来自{city}）刚刚加入 TEKA NEXUS",
+    lesson: "{name} 完成了课程「{item}」",
+    xp: "{name} 刚刚获得了 {xp} XP",
+    project: "{name} 发布了项目「{item}」",
+    teammate: "{name} 加入了团队「{item}」",
+    certificate: "{name} 获得了「{item}」证书",
+    weekSignups: "本周新增 {n} 位成员",
+  },
   feed: {
     created: "创建了",
     released: "发布了",

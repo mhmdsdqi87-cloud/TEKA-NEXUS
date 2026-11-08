@@ -401,7 +401,7 @@ export function DmView({ initialConversationId }: { initialConversationId?: stri
           aria-label={other ? t("dm.chatAria", { name: other.displayName }) : t("dm.title")}
           className={cn(
             "glass-card rounded-2xl flex flex-col min-h-0 overflow-hidden",
-            "h-[calc(100vh-13rem)] md:h-auto",
+            "h-[calc(100vh-13rem)] supports-[height:100dvh]:h-[calc(100dvh-13rem)] md:h-auto",
             !activeId && "hidden md:flex"
           )}
         >

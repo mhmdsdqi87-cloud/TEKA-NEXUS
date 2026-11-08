@@ -299,6 +299,58 @@ body {
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
+/* ── Mobile Chrome polish ─────────────────────────────────── */
+
+/* Kill the grey tap-flash Android Chrome paints on every touch. */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Stop Chrome Android font-boosting / text inflation on wide blocks. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* App-like vertical scroll: no pull-to-refresh, no scroll chaining
+   from inner panels back to the document. */
+html {
+  overscroll-behavior-y: none;
+}
+
+/* Lock horizontal swipes — stray wide elements can't shake the page.
+   `clip` (unlike `hidden`) does not break position: sticky. */
+html,
+body {
+  overflow-x: clip;
+}
+
+/* Chrome Android zooms the whole viewport when an input smaller than 16px
+   gets focus — the classic "page jumps on tap" bug. Pin form controls to
+   16px on phones, EXCEPT overlay code editors (their transparent textarea
+   must stay pixel-aligned with the highlighted <pre> layer underneath). */
+@media (max-width: 767px) {
+  input:not(.text-transparent),
+  textarea:not(.text-transparent),
+  select {
+    font-size: 16px !important;
+  }
+
+  /* Lift sonner toasts above the fixed bottom nav (h-16) + home-bar inset. */
+  [data-sonner-toaster] {
+    bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* Dynamic viewport: Chrome's collapsing URL bar makes 100vh taller than the
+   visible window, so page roots under-shoot/over-shoot. Upgrade every
+   min-h-screen root to 100dvh when supported; old browsers keep 100vh. */
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .orbit-slow, .orbit-rev, .float-y, .pulse-dot {

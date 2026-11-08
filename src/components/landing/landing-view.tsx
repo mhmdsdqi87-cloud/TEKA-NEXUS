@@ -715,14 +715,14 @@ export function LandingView() {
             <LanguageSwitcher />
             <Button
               variant="ghost"
-              className="h-10 px-3 text-muted-foreground hover:text-foreground"
+              className="hidden h-10 px-3 text-muted-foreground hover:text-foreground sm:inline-flex"
               onClick={() => navigate({ name: "about" })}
             >
               <Info size={16} className="me-1" />{t("landing.topbar.about")}
             </Button>
             <Button
               variant="ghost"
-              className="h-10 px-3 text-muted-foreground hover:text-foreground"
+              className="h-10 px-2.5 sm:px-3 text-muted-foreground hover:text-foreground"
               onClick={() => navigate({ name: "login" })}
             >
               {t("common.signIn")}

@@ -2,6 +2,14 @@
 
 // TEKA NEXUS — typed client for the REST API.
 // Every call returns parsed JSON; failures throw ApiError with a readable message.
+//
+// Conventions:
+//  - `get` / `post` / `patch` / `del` append the session token from localStorage
+//    automatically when one exists; routes re-check the session server-side.
+//  - `qs` builds a querystring, skipping undefined/null/"" entries so callers
+//    never assemble "?page=undefined".
+//  - Never import this module from a server component — it is client-only
+//    ("use client") and reads browser storage directly.
 
 export class ApiError extends Error {
   status: number;

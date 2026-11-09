@@ -160,6 +160,8 @@ cd mini-services/chat-service && bun run dev
 
 > 🎓 *این ریپو یک پورتفولیوی زنده است — نه اثبات دانستن، بلکه مدرک خواستن. برای فرصت‌های تحصیلی و حرفه‌ای بازم؛ در تماس باش.*
 
+📘 تاریخچه نسخه‌ها: [CHANGELOG.md](CHANGELOG.md) · 🤝 راهنمای مشارکت: [CONTRIBUTING.md](CONTRIBUTING.md) · 🔒 امنیت: [SECURITY.md](SECURITY.md)
+
 </div>
 
 ---

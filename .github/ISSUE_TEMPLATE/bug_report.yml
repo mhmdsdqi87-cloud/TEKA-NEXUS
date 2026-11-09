@@ -1,0 +1,63 @@
+name: 🐛 Bug report
+description: Something in TEKA NEXUS is broken or behaves wrong.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ممنون که وقت می‌ذاری! Thanks for reporting — please fill the details below.
+        For security issues, use **Security → Report a vulnerability** instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us what you expected to happen.
+      placeholder: The feed scrolls but the refresh spinner appears when pulling inside the chat…
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area?
+      options:
+        - Landing / auth
+        - Feed / projects
+        - Academy (lessons, exam, certificate)
+        - Arena (boss, pet, war, cards…)
+        - Chat / DM / notifications
+        - Workspace (files, terminal)
+        - Profile / settings
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Where did it happen?
+      options:
+        - Android Chrome (phone)
+        - Android PWA (installed)
+        - iOS Safari
+        - Desktop browser
+        - API / server
+    validations:
+      required: true
+  - type: input
+    id: language
+    attributes:
+      label: App language
+      placeholder: fa / en / ar / es / fr / ru / zh
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open …
+        2. Tap …
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Optional but very helpful.

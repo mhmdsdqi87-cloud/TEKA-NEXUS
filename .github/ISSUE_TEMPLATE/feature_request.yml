@@ -1,0 +1,47 @@
+name: ✨ Feature request
+description: Suggest an idea that would make the Nexus better.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ایده‌ات رو برامون تعریف کن! Tell us your idea — keep it concrete.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and what's missing?
+      placeholder: "I want to practice SQL in the academy but there's no playground…"
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: The solution you'd like
+      description: What should happen instead?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area?
+      options:
+        - Landing / auth
+        - Feed / projects
+        - Academy (lessons, exam, certificate)
+        - Arena (boss, pet, war, cards…)
+        - Chat / DM / notifications
+        - Workspace (files, terminal)
+        - Profile / settings
+        - Translations (fa/ar/es/fr/ru/zh)
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Are you willing to help build it?
+      options:
+        - label: Yes, I can open a PR for this
+        - label: I can help test it
+        - label: Just the idea for now

@@ -2,6 +2,14 @@
 
 // TEKA NEXUS — SPA view router + session store.
 // The whole app lives on "/" ; navigation is state-based via this store.
+//
+// Why a state router instead of URL routes: one deployable surface (""),
+// instant transitions with the cinematic shell, and deep-link-free privacy
+// for authed views. View guards (auth-required, onboarding-incomplete) are
+// enforced in src/app/page.tsx after the session resolves.
+//
+// Persisted session state: the auth token lives in localStorage
+// (see setSessionToken in @/lib/api) and is restored on boot by /api/auth/me.
 
 import { create } from "zustand";
 

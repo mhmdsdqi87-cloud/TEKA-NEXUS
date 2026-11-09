@@ -53,7 +53,7 @@ if (process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION)
 
 // Build marker shipped in every page's <head> — curl-verifiable proof of which
 // commit is actually serving on Vercel (deployment-failure forensics).
-const BUILD_VERSION = "v1.69.0";
+const BUILD_VERSION = "v1.70.0";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://teka-nexus.vercel.app"),

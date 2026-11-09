@@ -6,7 +6,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
 import { useApp } from "@/lib/store";
 import { get, setSessionToken } from "@/lib/api";
 import { SessionUser } from "@/lib/store";
@@ -364,26 +363,6 @@ export default function Page() {
       cancelled = true;
     };
   }, [setUser, setAuthChecked]);
-
-  // OAuth return feedback (Google redirect lands on "/" with query params).
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const err = params.get("authError");
-    if (err === "google_failed") toast.error(t("auth.err.googleFailed"));
-    else if (err === "google_state") toast.error(t("auth.err.googleState"));
-    else if (err === "google_disabled") toast.error(t("auth.err.googleNotConfigured"));
-    const welcomed = params.get("welcome") === "google";
-    if (welcomed) toast.success(t("auth.portal.secured"));
-    if (err || welcomed) {
-      params.delete("authError");
-      params.delete("welcome");
-      window.history.replaceState(
-        null,
-        "",
-        window.location.pathname + (params.toString() ? `?${params}` : ""),
-      );
-    }
-  }, [t]);
 
   // Routing rules after auth state resolves:
   // - logged-in users don't see the marketing landing — they go home

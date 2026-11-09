@@ -173,7 +173,6 @@ anti-cheat) → a verifiable license certificate with a unique ID per track.
 <summary><b>Authentication & security</b></summary>
 
 - Email/password with **scrypt** hashing (per-user salt, `timingSafeEqual`)
-- **Google OAuth 2.0** full flow (status probe → start → callback → account link by email)
 - httpOnly session cookies, 30-day server-side sessions (Session table)
 - All 60+ REST endpoints zod-validated; authorization checked per-request server-side
 - Anti-cheat for exams and speedruns enforced **server-side**
@@ -274,7 +273,7 @@ cd mini-services/chat-service && bun run dev
 ```text
 src/
   app/                  # "/" SPA shell + /api/** route handlers (REST, zod)
-    api/auth/           #   session + Google OAuth (status/start/callback)
+    api/auth/           #   session auth (login/register/me/logout)
     api/academy/        #   grading, exam, tutor
     api/arena/          #   12 arena module backends (boss, pet, war, cards, …)
   views/                # one client view per product area (SPA router = zustand)
@@ -299,7 +298,7 @@ with live commands, matrix mode, all 12 modules as first-class main-nav views),
 academy 300 lessons with auto-grading (Python interpreter, HTML/CSS/JS engines),
 proctored exam → license, social feed/projects/tasks/milestones/team chat/DM/notifications,
 XP + coins + cards + war + pet economy, heatmap + time machine + speedrun,
-AI tutor + TTS, 7 locales, PWA, Google OAuth.
+AI tutor + TTS, 7 locales, PWA.
 
 **Known trade-offs:** sockets for chat run as a separate mini-service (by design);
 voice rooms use AI narration clips rather than full WebRTC audio (deliberate scope cut);

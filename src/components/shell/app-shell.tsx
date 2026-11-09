@@ -345,7 +345,9 @@ function TopBar() {
   };
 
   return (
-    <header className="glass sticky top-0 z-40 h-14 flex items-center gap-2 md:gap-3 px-4 md:px-6">
+    <header
+      className="glass sticky top-0 z-40 flex min-h-14 items-center gap-2 pt-[env(safe-area-inset-top,0px)] md:gap-3 px-4 md:px-6"
+    >
       {/* Mobile logo (compact) */}
       <button
         onClick={() => navigate({ name: "landing" })}

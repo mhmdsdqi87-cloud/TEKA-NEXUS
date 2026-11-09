@@ -707,7 +707,7 @@ export function LandingView() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* ── Sticky glass top bar ── */}
-      <header className="glass sticky top-0 z-40">
+      <header className="glass sticky top-0 z-40 pt-[env(safe-area-inset-top,0px)]">
         <FadeIn y={-8} duration={0.5}>
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Logo size={28} onClick={scrollTop} />

@@ -102,10 +102,6 @@ END $$`,
   { name: "column User.reputation", sql: `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "reputation" INTEGER NOT NULL DEFAULT 0` },
   { name: "column Project.repositoryUrl", sql: `ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "repositoryUrl" TEXT NOT NULL DEFAULT ''` },
   { name: "column Project.bgImage", sql: `ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "bgImage" TEXT NOT NULL DEFAULT ''` },
-  // ── Task 15: Google login columns on "User" (additive, idempotent) ──
-  { name: "column User.googleId", sql: `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "googleId" TEXT` },
-  { name: "column User.authProvider", sql: `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "authProvider" TEXT NOT NULL DEFAULT 'password'` },
-  { name: "uniq User.googleId", sql: `CREATE UNIQUE INDEX IF NOT EXISTS "User_googleId_key" ON "User"("googleId")` },
   // ── Task ws-1: Project Workspace (files / revisions / debug logs) ──
   {
     name: "create WorkspaceFile",

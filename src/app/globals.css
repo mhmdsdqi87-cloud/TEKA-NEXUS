@@ -312,10 +312,28 @@ html {
   text-size-adjust: 100%;
 }
 
-/* App-like vertical scroll: no pull-to-refresh, no scroll chaining
-   from inner panels back to the document. */
-html {
-  overscroll-behavior-y: none;
+/* Pull-to-refresh policy (Android Chrome): the refresh circle belongs ONLY
+   to the whole-page pull — dragging the root document down while it sits at
+   its very top. Chromium reads the root scroller's overscroll-behavior from
+   <body> (not <html>), so the old `html { overscroll-behavior-y: none }`
+   was inert AND too aggressive. Every INNER scroll panel (chats, feeds,
+   rails, kanban, editor output) gets `contain` so its overscroll never
+   chains into the viewport trigger; the document keeps native PTR. */
+body {
+  overscroll-behavior-y: auto;
+}
+.overflow-y-auto,
+.overflow-y-scroll,
+.overflow-auto,
+.overflow-scroll,
+.kanban-scroll {
+  overscroll-behavior-y: contain;
+}
+/* Horizontal panels (kanban, workspace tools) must not chain sideways
+   into the browser's back/forward swipe either. */
+.overflow-x-auto,
+.overflow-x-scroll {
+  overscroll-behavior-x: contain;
 }
 
 /* Lock horizontal swipes — stray wide elements can't shake the page.

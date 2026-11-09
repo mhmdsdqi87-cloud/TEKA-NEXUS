@@ -15,7 +15,7 @@ import { useT } from "@/lib/i18n";
 const EVENT = "teka-enter-portal";
 const FLAG = "teka_enter_portal";
 
-// Fire the portal from anywhere (password login, signup, Google callback boot).
+// Fire the portal from anywhere (password login, signup).
 export function triggerEnterPortal(name: string): void {
   try {
     sessionStorage.setItem(FLAG, "1");
@@ -24,28 +24,6 @@ export function triggerEnterPortal(name: string): void {
     /* storage unavailable */
   }
   window.dispatchEvent(new CustomEvent(EVENT, { detail: { name } }));
-}
-
-// Mark "play the portal once the session resolves" (Google callback boot path,
-// where the user object isn't known yet). Cleared by takePendingEnterPortal().
-export function markPendingEnterPortal(): void {
-  try {
-    sessionStorage.setItem(FLAG, "1");
-  } catch {
-    /* storage unavailable */
-  }
-}
-
-// Returns true once if a pending portal was queued, consuming the flag.
-export function takePendingEnterPortal(): boolean {
-  try {
-    if (sessionStorage.getItem(FLAG) !== "1") return false;
-    sessionStorage.removeItem(FLAG);
-    sessionStorage.removeItem("teka_enter_name");
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 type Particle = { a: number; d: number; v: number; hue: number; w: number };

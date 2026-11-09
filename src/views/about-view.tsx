@@ -65,7 +65,7 @@ const COPY = {
     story: [
       "همه‌چیز از یک سؤال ساده شروع شد: «چرا یادگیری برنامه‌نویسی در ایران باید این‌قدر سخت باشد؟» من جواب قطعی ندارم؛ اینجا را به‌خاطر نوجوانی ساختم که ده سال پیش — مثل خیلی‌های دیگر — بدون معلم و تنها شروع کرد. TEKA NEXUS تلاش کوچک من است که دست‌کم او دیگر تنها نباشد.",
       "یک سایت آموزشی معمولی نمی‌خواستم؛ TEKA NEXUS یک «آرنا اجتماعی» است: ۱۲ ماژول بازی‌گونه که هرکدام مستقیم در نوار اصلی سایت نشسته‌اند — از باس‌فایت و درخت مهارت تا جنگ قرمز و آبی، حیوان کدنویس و ترمینال زنده. هیچ‌کدام ادعای انقلابی بودن ندارند؛ فقط تلاش کرده‌ام هر کدام واقعاً کار کند.",
-      "این پروژه زنده روی Vercel اجرا می‌شود، با دیتابیس PostgreSQL (Supabase)، احراز هویت اختصاصی + Google OAuth، و ۷ زبان زنده‌ی دنیا (فارسی، انگلیسی، عربی، اسپانیایی، فرانسوی، روسی و چینی) — و هنوز هر روز چیز جدیدی به من یاد می‌دهد."
+      "این پروژه زنده روی Vercel اجرا می‌شود، با دیتابیس PostgreSQL (Supabase)، احراز هویت اختصاصی، و ۷ زبان زنده‌ی دنیا (فارسی، انگلیسی، عربی، اسپانیایی، فرانسوی، روسی و چینی) — و هنوز هر روز چیز جدیدی به من یاد می‌دهد."
     ],
     featuresTitle: "هر چیزِ خفنی که فکرش رو بکنی، اینجاست",
     founderTitle: "سازنده",
@@ -109,7 +109,7 @@ const COPY = {
     story: [
       "It all started with a simple question: “Why should learning to code be this hard?” I don't have the final answer — I built this for the teenager I was ten years ago, who started alone, without a teacher, like so many others. TEKA NEXUS is my small attempt to make sure at least he isn't alone anymore.",
       "I didn't want a typical course site — TEKA NEXUS is a social arena: 12 game-like modules, each sitting directly in the main navigation — Boss Fights, a galaxy Skill Tree, Red-vs-Blue wars, a Code Pet and a live terminal. None of it claims to be revolutionary; I have only tried to make each piece genuinely work.",
-      "The platform runs live on Vercel with PostgreSQL (Supabase), custom session auth + Google OAuth, and 7 languages — Persian, English, Arabic, Spanish, French, Russian and Chinese — and it keeps teaching me something new every day."
+      "The platform runs live on Vercel with PostgreSQL (Supabase), custom session auth, and 7 languages — Persian, English, Arabic, Spanish, French, Russian and Chinese — and it keeps teaching me something new every day."
     ],
     featuresTitle: "Every cool thing you can imagine lives here",
     founderTitle: "The maker",
@@ -182,7 +182,7 @@ const FEATURES = [
 
 const STACK = [
   "Next.js 16", "TypeScript 5", "Tailwind CSS 4", "shadcn/ui", "Prisma ORM",
-  "PostgreSQL · Supabase", "socket.io", "framer-motion", "PWA", "Google OAuth",
+  "PostgreSQL · Supabase", "socket.io", "framer-motion", "PWA",
   "z-ai LLM & TTS", "Vercel",
 ];
 

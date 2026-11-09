@@ -99,5 +99,15 @@
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.5",
     "typescript": "^5"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues"
+  },
+  "homepage": "https://teka-nexus.vercel.app",
+  "description": "TEKA NEXUS — free programming academy (Python & web) + social platform to find teammates and build real projects. Persian-first, 7 languages.",
+  "license": "MIT"
 }

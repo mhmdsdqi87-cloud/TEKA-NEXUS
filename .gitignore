@@ -64,3 +64,7 @@ server.log
 /tmp-*
 /tool-results
 /public/teka-nexus-v1.0.0.apk
+
+# Local sandbox runtime artifacts (never ship these)
+.zscripts/dev.pid
+.zscripts/*.png

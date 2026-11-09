@@ -321,6 +321,9 @@ the desktop window manager was retired on purpose — every module deserves the 
 
 Built with stubborn hope — and more nights than sleep — by **Mohammad Sadeghi**.
 All product naming, design language and course content © 2025 Mohammad Sadeghi.
+Released under the [MIT License](LICENSE).
+
+📘 Release history: [CHANGELOG.md](CHANGELOG.md) · 🗺️ Deep roadmap: [docs/ROADMAP.md](docs/ROADMAP.md)
 
 ---
 

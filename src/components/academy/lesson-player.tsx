@@ -209,6 +209,46 @@ const TTS_ERROR_TEXT: Record<"fa" | "en", string> = {
   en: "Voice playback is unavailable right now — please try again.",
 };
 
+// Browser-native fallback when the server synthesizer is unavailable (e.g.
+// hosting without a speech endpoint): the Web Speech API reads the same
+// narration with the device's own voice. Plainer than the server voice, but
+// the "Listen" button keeps working everywhere instead of dead-ending.
+function speakLocally(
+  text: string,
+  lang: "fa" | "en",
+  onEnd: () => void,
+): boolean {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
+  try {
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang === "fa" ? "fa-IR" : "en-US";
+    utter.rate = 0.95;
+    const voices = synth.getVoices();
+    const match =
+      voices.find((v) => v.lang?.toLowerCase().startsWith(lang)) ??
+      (lang === "fa"
+        ? voices.find((v) => v.lang?.toLowerCase().startsWith("ar"))
+        : null);
+    if (match) utter.voice = match;
+    utter.onend = onEnd;
+    utter.onerror = onEnd;
+    synth.speak(utter);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function stopLocalSpeech() {
+  try {
+    window.speechSynthesis?.cancel();
+  } catch {
+    /* speech API unavailable */
+  }
+}
+
 // ─── Player ──────────────────────────────────────────────────
 
 export function LessonPlayer({
@@ -262,6 +302,7 @@ export function LessonPlayer({
     return () => {
       audioRef.current?.pause();
       audioRef.current = null;
+      stopLocalSpeech();
     };
   }, [lesson.id]);
   const steps = lesson.steps;
@@ -349,6 +390,7 @@ export function LessonPlayer({
   };
 
   const playNarrationUrl = (url: string) => {
+    stopLocalSpeech();
     audioRef.current?.pause();
     const audio = new Audio(url);
     audioRef.current = audio;
@@ -363,9 +405,14 @@ export function LessonPlayer({
   };
 
   const handleTtsClick = async () => {
-    // Playing → this click stops the narration.
+    // Playing → this click stops the narration (server audio or local voice).
     if (ttsState === "playing") {
-      audioRef.current?.pause();
+      if (audioRef.current) {
+        audioRef.current.pause();
+      } else {
+        stopLocalSpeech();
+        setTtsState("idle");
+      }
       return;
     }
     if (ttsState === "loading") return;
@@ -400,6 +447,12 @@ export function LessonPlayer({
         clearTimeout(timer);
       }
       if (!res.ok) {
+        // Server synthesis unavailable → read the narration with the device's
+        // own voice before giving up entirely.
+        if (speakLocally(buildNarrationText(), ttsLang, () => setTtsState("idle"))) {
+          setTtsState("playing");
+          return;
+        }
         setTtsState("idle");
         toast.error(TTS_ERROR_TEXT[ttsLang]);
         return;
@@ -417,6 +470,10 @@ export function LessonPlayer({
       }
       playNarrationUrl(url);
     } catch {
+      if (speakLocally(buildNarrationText(), ttsLang, () => setTtsState("idle"))) {
+        setTtsState("playing");
+        return;
+      }
       setTtsState("idle");
       toast.error(TTS_ERROR_TEXT[ttsLang]);
     }

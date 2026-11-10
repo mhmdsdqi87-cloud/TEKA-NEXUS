@@ -8,6 +8,8 @@ export const nav: NavDict = {
   portal: "پرتال یادگیری",
   founder: "کنسول بنیان‌گذار",
   workspaceHub: "ورک‌اسپیس",
+  universe: "گیتی زنده",
+  projectDna: "DNA پروژه",
   primaryNavAria: "ناوبری اصلی",
   mainAria: "اصلی",
   mobileNavAria: "ناوبری موبایل",

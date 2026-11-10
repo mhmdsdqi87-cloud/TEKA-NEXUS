@@ -1,0 +1,93 @@
+// TEKA NEXUS — fa dictionary: "dna" namespace (NEXUS 2.0 Phase 1).
+// برچسب‌های «محاسبه‌شده» بخشی از قرارداد صداقت داده‌اند: هر عدد مشتق‌شده
+// باید صادقانه برچسب بخورد، نه اینکه به‌جای داده اندازه‌گیری‌شده جا زده شود.
+
+import type { DnaDict } from "../en/dna";
+
+export const dna: DnaDict = {
+  title: "DNA پروژه",
+  subtitle: "هویت دیجیتال کامل هر پروژه — هویت، معماری، نقشه راه و تاریخچه تأییدشده.",
+  searchPlaceholder: "جستجوی پروژه‌ها…",
+  error: "بارگذاری DNA این پروژه ناموفق بود.",
+  noResults: "هیچ پروژه‌ای با جستجوی شما مطابقت ندارد.",
+  empty: "هنوز پروژه عمومی‌ای نیست — اولین پروژه را بساز تا DNA آن رشد کند.",
+  createFirst: "ساخت پروژه",
+  openAria: "باز کردن DNA پروژه {name}",
+  updated: "به‌روزرسانی",
+  prevPage: "قبلی",
+  nextPage: "بعدی",
+  pageOf: "صفحه {page} از {pages}",
+
+  notFoundTitle: "DNA در دسترس نیست",
+  notFoundBody: "این پروژه وجود ندارد یا خصوصی است. DNA خصوصی فقط برای اعضای همان پروژه دیده می‌شود.",
+  backToPicker: "همه پروژه‌ها",
+
+  privateBadge: "خصوصی",
+  verifiedBadge: "رکوردهای تأییدشده پلتفرم",
+  created: "ساخته‌شده",
+  linkRepo: "مخزن",
+  linkDemo: "دمو",
+  linkSite: "وب‌سایت",
+  openWorkspace: "ورود به ورک‌اسپیس",
+
+  countMembers: "اعضا",
+  countLikes: "پسندها",
+  countUpdates: "به‌روزرسانی‌ها",
+  countTasks: "کارها",
+  countComments: "دیدگاه‌ها",
+  countRequests: "درخواست‌های باز",
+
+  archTitle: "نقشه معماری",
+  archRootLabel: "لایه‌های فناوری اعلام‌شده",
+  archDeclaredNote: "فقط از تگ‌های اعلام‌شده پروژه رسم شده — هیچ چیزی حدس زده نمی‌شود.",
+  emptyStack: "هنوز فناوری‌ای اعلام نشده — مالک می‌تواند از صفحه پروژه تگ اضافه کند.",
+  layerFrontend: "فرانت‌اند",
+  layerBackend: "بک‌اند",
+  layerData: "داده",
+  layerTools: "ابزارها",
+  layerOther: "اعلام‌شده (دسته‌بندی‌نشده)",
+
+  healthTitle: "شاخص‌های سلامت",
+  calculatedBadge: "محاسبه‌شده",
+  healthTaskRate: "نرخ تکمیل کارها",
+  healthFormulaTasks: "انجام‌شده ÷ کل کارها",
+  healthProgress: "پیشرفت نقشه راه",
+  healthFormulaMilestones: "کامل‌شده ÷ کل نقاط عطف",
+  healthActivity: "فعالیت (۳۰ روز)",
+  healthFormulaActivity: "رویدادهای واقعی فعالیت",
+  healthMomentum: "شتاب",
+  healthFormulaMomentum: "فعالیت ÷ روزهای فعال",
+  healthDisclaimer: "همه شاخص‌ها از رکوردهای واقعی پلتفرم محاسبه شده‌اند — نه اندازه‌گیری بیرونی‌اند و نه پیش‌بینی هوش مصنوعی.",
+  healthLastActivity: "آخرین فعالیت:",
+
+  milestonesTitle: "نقشه راه و نقاط عطف",
+  milestoneAdd: "افزودن نقطه عطف",
+  milestoneProgress: "{percent}٪ · {done} از {total} کامل شده",
+  milestoneTitleLabel: "عنوان",
+  milestoneDueLabel: "مهلت (اختیاری)",
+  milestoneSave: "ذخیره نقطه عطف",
+  cancel: "انصراف",
+  emptyMilestones: "هنوز نقطه عطفی نیست. اعضا می‌توانند اولین نقطه عطف را اضافه کنند تا نقشه راه شروع شود.",
+  overdue: "از مهلت گذشته",
+  milestoneDone: "کامل شد",
+  milestoneCompleteAria: "علامت‌گذاری نقطه عطف به‌عنوان کامل",
+  milestoneUncompleteAria: "بازگرداندن نقطه عطف به حالت ناکامل",
+  milestoneDeleteAria: "حذف نقطه عطف",
+
+  timelineTitle: "خط زمانی توسعه",
+  timelineVerifiedNote: "فقط رکوردهای تأییدشده",
+  emptyTimeline: "هنوز رویداد ثبت‌شده‌ای نیست.",
+  timelineKinds: {
+    PROJECT_CREATED: "پروژه ساخته شد",
+    MEMBER_JOINED: "عضو جدید پیوست",
+    UPDATE_POSTED: "به‌روزرسانی منتشر شد",
+    MILESTONE_CREATED: "نقطه عطف برنامه‌ریزی شد",
+    MILESTONE_COMPLETED: "نقطه عطف کامل شد",
+    TASK_COMPLETED: "کاری کامل شد",
+  },
+
+  contributorsTitle: "مشارکت‌کنندگان",
+  contributorsNote: "با شمارش مشارکت‌های تأییدشده",
+  joined: "پیوسته",
+  verifiedEvents: "رویداد تأییدشده",
+};

@@ -35,6 +35,8 @@ export type View =
   | { name: "home" }
   | { name: "explore"; query?: string }
   | { name: "live" }
+  | { name: "universe" }
+  | { name: "dna"; slug?: string }
   | { name: "workspaceHub" }
   | { name: "projectNew" }
   | { name: "project"; slug: string; tab?: string; fileId?: string }
@@ -57,6 +59,7 @@ export type SessionUser = {
   avatarColor: string;
   avatarUrl: string | null;
   websiteUrl: string;
+  country?: string; // ISO 3166-1 alpha-2, self-reported ("" = undeclared)
   role: string;
   goals: string[];
   interests: string[];

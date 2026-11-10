@@ -7,6 +7,8 @@ export const nav = {
   portal: "Учебный портал",
   founder: "Консоль основателя",
   workspaceHub: "Рабочие пространства",
+  universe: "Живая вселенная",
+  projectDna: "ДНК проекта",
   primaryNavAria: "Основная навигация",
   mainAria: "Основное содержимое",
   mobileNavAria: "Мобильная навигация",

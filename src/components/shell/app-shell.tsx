@@ -13,7 +13,9 @@ import {
   CircleUserRound,
   Compass,
   Crown,
+  Dna,
   FileCode2,
+  Globe2,
   GraduationCap,
   FolderGit2,
   Hash,
@@ -233,6 +235,27 @@ function LeftNav() {
           onClick={go({ name: "academyPortal" })}
         />
 
+        {/* ── NEXUS 2.0 — connected systems (Phase 1: Universe + DNA) ── */}
+        <div className="mt-4 mb-1 flex items-center gap-2 px-3" aria-hidden="true">
+          <span className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-400/30 to-amber-400/10" />
+          <span className="font-mono text-[9px] font-bold uppercase tracking-[0.3em] text-amber-300/80">
+            NEXUS
+          </span>
+          <span className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-400/30 to-amber-400/10" />
+        </div>
+        <NavItem
+          icon={Globe2}
+          label={t("nav.universe")}
+          active={view.name === "universe"}
+          onClick={go({ name: "universe" })}
+        />
+        <NavItem
+          icon={Dna}
+          label={t("nav.projectDna")}
+          active={view.name === "dna"}
+          onClick={go({ name: "dna" })}
+        />
+
         {/* ── ARENA — games promoted from the old TEKA OS (Task 23) ── */}
         <div className="mt-4 mb-1 flex items-center gap-2 px-3" aria-hidden="true">
           <span className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-400/30 to-amber-400/10" />
@@ -413,6 +436,16 @@ function TopBar() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-70" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500" />
           </span>
+        </button>
+        <button
+          onClick={() => navigate({ name: "universe" })}
+          className={cn(
+            "flex items-center justify-center h-11 w-11 rounded-lg transition-colors outline-none focus-glow",
+            view.name === "universe" ? "text-amber-300" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.05]",
+          )}
+          aria-label={t("nav.universe")}
+        >
+          <Globe2 className="h-5 w-5" />
         </button>
         <TapScale>
           <button

@@ -77,6 +77,7 @@ export type AuthUser = {
   avatarColor: string;
   avatarUrl: string | null;
   websiteUrl: string;
+  country: string; // ISO 3166-1 alpha-2, self-reported ("" = undeclared)
   role: string;
   goals: string[];
   interests: string[];
@@ -110,6 +111,7 @@ export async function getSessionUser(token: string | undefined): Promise<AuthUse
     avatarColor: u.avatarColor,
     avatarUrl: u.avatarUrl,
     websiteUrl: u.websiteUrl,
+    country: u.country,
     role: u.role,
     goals: safeParseArray(u.goals),
     interests: safeParseArray(u.interests),

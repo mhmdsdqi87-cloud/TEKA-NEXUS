@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { requireUser, handle, ok, parseBody } from "@/lib/server";
 import { safeParseArray, AuthUser } from "@/lib/auth";
 import { SKILLS, AVATAR_GRADIENT_KEYS, LIMITS } from "@/lib/constants";
+import { isValidCountryCode } from "@/lib/countries";
 
 const SKILL_SLUGS: string[] = SKILLS.map((s) => s.slug);
 
@@ -29,6 +30,12 @@ const patchSchema = z.object({
     .string()
     .refine((v) => AVATAR_GRADIENT_KEYS.includes(v), { message: "Unknown avatar color." })
     .optional(),
+  country: z
+    .string()
+    .refine((v) => v === "" || isValidCountryCode(v), {
+      message: "Unknown country code (ISO 3166-1 alpha-2 expected).",
+    })
+    .optional(),
   skills: z
     .array(z.string().refine((v) => SKILL_SLUGS.includes(v), { message: "Unknown skill selected." }))
     .max(24, "Too many skills selected.")
@@ -44,6 +51,7 @@ function toSessionUser(u: {
   avatarColor: string;
   avatarUrl: string | null;
   websiteUrl: string;
+  country: string;
   role: string;
   goals: string;
   interests: string;
@@ -64,6 +72,7 @@ function toSessionUser(u: {
     avatarColor: u.avatarColor,
     avatarUrl: u.avatarUrl,
     websiteUrl: u.websiteUrl,
+    country: u.country,
     role: u.role,
     goals: safeParseArray(u.goals),
     interests: safeParseArray(u.interests),
@@ -133,6 +142,7 @@ export async function PATCH(req: NextRequest) {
             ...(body.bio !== undefined ? { bio: body.bio } : {}),
             ...(body.websiteUrl !== undefined ? { websiteUrl: body.websiteUrl } : {}),
             ...(body.avatarColor !== undefined ? { avatarColor: body.avatarColor } : {}),
+            ...(body.country !== undefined ? { country: body.country } : {}),
           },
         });
       },

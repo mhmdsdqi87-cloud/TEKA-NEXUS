@@ -25,6 +25,8 @@ import { AppShell, SearchDialog } from "@/components/shell/app-shell";
 import { HomeView } from "@/views/home-view";
 import { ExploreView } from "@/views/explore-view";
 import { LiveView } from "@/views/live-view";
+import { UniverseView } from "@/components/universe/live-universe-view";
+import { DnaView } from "@/components/dna/dna-view";
 import { WorkspaceHubView } from "@/views/workspace-hub-view";
 import { ProjectNewView } from "@/views/project-new-view";
 import { ProjectView } from "@/views/project-view";
@@ -46,6 +48,7 @@ const AUTH_REQUIRED_VIEWS = new Set([
   "arena", "boss", "skilltree", "pet", "cards", "war", "shop", "crime",
   "speedrun", "timemachine", "heatmap", "voice", "terminal",
   "home", "projectNew", "teams", "notifications", "dm", "settings", "saved",
+  "universe", "dna",
 ]);
 
 // ── SSR SEO block ──────────────────────────────────────────────
@@ -417,6 +420,12 @@ export default function Page() {
     case "live":
       content = <LiveView />;
       break;
+    case "universe":
+      content = <UniverseView />;
+      break;
+    case "dna":
+      content = <DnaView key={view.slug ?? "picker"} slug={view.slug} />;
+      break;
     case "projectNew":
       content = <ProjectNewView />;
       break;
@@ -470,7 +479,7 @@ export default function Page() {
   }
 
   const shellViews = new Set([
-    "home", "explore", "live", "workspaceHub", "projectNew", "project", "teams", "notifications", "dm", "profile", "settings", "saved", "academy", "academyPortal", "founder",
+    "home", "explore", "live", "universe", "dna", "workspaceHub", "projectNew", "project", "teams", "notifications", "dm", "profile", "settings", "saved", "academy", "academyPortal", "founder",
     "arena", "boss", "skilltree", "pet", "cards", "war", "shop", "crime", "speedrun", "timemachine", "heatmap", "voice", "terminal",
   ]);
   const inShell = shellViews.has(view.name);

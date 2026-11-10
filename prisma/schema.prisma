@@ -38,6 +38,7 @@ model User {
   avatarUrl           String?   // optional external avatar
   googleId            String?   @unique // LEGACY: Google OAuth was removed in v1.70.0 — column kept (nullable, unused) to avoid a destructive migration; safe to drop in a future cleanup
   websiteUrl          String    @default("")
+  country             String    @default("") // ISO 3166-1 alpha-2, self-reported (Live Universe map)
   role                String    @default("user") // user | moderator | admin
   goals               String    @default("[]") // JSON: build|contribute|learn|discover
   interests           String    @default("[]") // JSON: category slugs

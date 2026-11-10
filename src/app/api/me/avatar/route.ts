@@ -36,6 +36,7 @@ function toSessionUser(u: {
   avatarColor: string;
   avatarUrl: string | null;
   websiteUrl: string;
+  country: string;
   role: string;
   goals: string;
   interests: string;
@@ -56,6 +57,7 @@ function toSessionUser(u: {
     avatarColor: u.avatarColor,
     avatarUrl: u.avatarUrl,
     websiteUrl: u.websiteUrl,
+    country: u.country,
     role: u.role,
     goals: safeParseArray(u.goals),
     interests: safeParseArray(u.interests),

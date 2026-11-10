@@ -8,6 +8,8 @@ export const nav: NavDict = {
   portal: "学习门户",
   founder: "创始人控制台",
   workspaceHub: "工作台",
+  universe: "实时宇宙",
+  projectDna: "项目 DNA",
   primaryNavAria: "主导航",
   mainAria: "导航",
   mobileNavAria: "移动端导航",

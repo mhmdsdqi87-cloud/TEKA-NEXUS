@@ -28,6 +28,14 @@ import { useT, useLabeled } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n/store";
 import { LOCALES } from "@/lib/i18n/locales";
 import { ProfileDetail } from "@/lib/dto";
+import { COUNTRY_LIST_SORTED } from "@/lib/countries";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AVATAR_GRADIENTS, AVATAR_GRADIENT_KEYS, LIMITS, SKILLS } from "@/lib/constants";
 import { cn, normalizeUrlInput } from "@/lib/utils";
 import { EmptyState, UserAvatar } from "@/components/shared/atoms";
@@ -246,6 +254,7 @@ function ProfileTab({ user }: { user: SessionUser }) {
   const [displayName, setDisplayName] = useState(user.displayName);
   const [bio, setBio] = useState(user.bio ?? "");
   const [websiteUrl, setWebsiteUrl] = useState(user.websiteUrl ?? "");
+  const [country, setCountry] = useState(user.country ?? "");
   const [avatarColor, setAvatarColor] = useState(user.avatarColor);
   const [skills, setSkills] = useState<string[]>([]);
   const [skillsLoaded, setSkillsLoaded] = useState(false);
@@ -290,6 +299,7 @@ function ProfileTab({ user }: { user: SessionUser }) {
         displayName: name,
         bio,
         websiteUrl: site,
+        country,
         avatarColor,
         // Only replace skills once the current set has loaded, so we never wipe them.
         ...(skillsLoaded ? { skills } : {}),
@@ -473,6 +483,24 @@ function ProfileTab({ user }: { user: SessionUser }) {
           ) : (
             <p className="text-xs text-muted-foreground">{t("settings.profileTab.websiteHint")}</p>
           )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="country">{t("settings.profileTab.country")}</Label>
+          <Select value={country || "__none__"} onValueChange={(v) => setCountry(v === "__none__" ? "" : v)}>
+            <SelectTrigger id="country" className="w-full sm:w-72 focus-glow" aria-label={t("settings.profileTab.country")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="max-h-72">
+              <SelectItem value="__none__">{t("settings.profileTab.countryUndeclared")}</SelectItem>
+              {COUNTRY_LIST_SORTED.map((c) => (
+                <SelectItem key={c.code} value={c.code}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">{t("settings.profileTab.countryHint")}</p>
         </div>
 
         <div className="space-y-2">

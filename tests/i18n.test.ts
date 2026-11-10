@@ -1,5 +1,7 @@
 // TEKA NEXUS — i18n integrity tests.
-// 7 locales (en base + es/zh/ar/fa/fr/ru) × 22 namespaces. The UI assumes
+// 7 locales (en base + es/zh/ar/fa/fr/ru) × 24 namespaces (incl. universe +
+// dna from NEXUS 2.0 Phase 1; es/zh/ar/fr/ru currently resolve those two via
+// the en fallback until translated). The UI assumes
 // every locale resolves the exact same key tree — a missing key renders raw
 // text to users. This suite flattens every namespace and pins each locale's
 // key paths to the English source of truth (extra keys fail too).
@@ -48,9 +50,10 @@ describe("locale registry", () => {
 describe("dictionary key parity (en = source of truth)", () => {
   const enKeys = keyPaths(en);
 
-  test("en dictionary is non-trivial (22 namespaces, 400+ keys)", () => {
+  test("en dictionary is non-trivial (24 namespaces, 400+ keys)", () => {
     const namespaces = Object.keys(en);
-    expect(namespaces.length).toBe(22);
+    // 24 = 22 pre-NEXUS-2.0 namespaces + universe + dna (Phase 1).
+    expect(namespaces.length).toBe(24);
     expect(enKeys.size).toBeGreaterThan(400);
   });
 

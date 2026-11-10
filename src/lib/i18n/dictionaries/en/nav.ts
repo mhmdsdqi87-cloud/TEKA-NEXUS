@@ -9,6 +9,8 @@ export const nav = {
   portal: "Learning Portal",
   founder: "Founder Console",
   workspaceHub: "Workspace",
+  universe: "Live Universe",
+  projectDna: "Project DNA",
   primaryNavAria: "Primary navigation",
   mainAria: "Main",
   mobileNavAria: "Mobile navigation",

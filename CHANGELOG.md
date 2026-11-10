@@ -4,10 +4,62 @@ All notable changes to TEKA NEXUS are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.75.0] — 2026-11-10 — NEXUS 2.0 Phase 1
+
+### Added — Live Universe
+
+- New workspace: interactive WebGL globe (cobe, ~5 KB) of self-declared member
+  countries — markers sized by real members + projects + 30-day verified
+  activity, drag-to-rotate, click-a-marker country selection (pixel-exact
+  hit-testing against cobe's own projection math), graceful 2D fallback when
+  WebGL is unavailable, lazy-loaded via `next/dynamic`.
+- `GET /api/universe` — real platform aggregates only: member/country/project/
+  task/milestone counters, per-country rolls, top declared technologies,
+  verified contribution-event feed, public project discovery list. 30-second
+  in-memory cache; the view polls every 45 s while visible (honest constraint:
+  Vercel serverless has no persistent socket layer). Nothing sampled, nothing
+  invented — countries appear only when a member declares one.
+- Data integrity contract surfaced in the UI: "Real platform data" badge,
+  "no country is ever guessed" legend, honest empty states, generated-at stamp.
+
+### Added — Project DNA
+
+- New workspace: the digital identity of every project — identity header
+  (status/owner/category/links/counts), architecture map rendered strictly
+  from declared tags (grouped by a static tech taxonomy, unknown tags pass
+  through untouched), roadmap & milestones with live contributor workflow
+  (create/complete/delete via existing RBAC-guarded endpoints), development
+  timeline built from verified records only, contributors with verified
+  event counts, health indicators explicitly labeled "Calculated" with
+  formulas shown (task completion rate, milestone progress, 30-day activity,
+  momentum). No AI estimates, no invented telemetry; GitHub-derived layers
+  are deliberately deferred to Phase 3 (Code Intelligence).
+- `GET /api/projects/[slug]/dna` — visibility-enforced dossier endpoint
+  (private DNA stays private to members).
+
+### Added — Profile country (self-declared)
+
+- `User.country` (ISO 3166-1 alpha-2, default undeclared) + country selector
+  in Settings → Profile; session carries it end-to-end.
+- Production DDL rides the deploy: `src/instrumentation.ts` applies the
+  idempotent `ADD COLUMN IF NOT EXISTS` guard on Postgres cold starts (the
+  sandbox holds no Supabase migration credentials); the same step was added
+  to `/api/bootstrap` for manual runs.
+- `src/lib/countries.ts` — factual ISO registry (names + centroids only;
+  no activity data lives in code).
+
+### i18n
+
+- Two new namespaces (`universe`, `dna`) shipped en + fa (fully translated,
+  RTL-verified); ar/es/fr/ru/zh resolve them via the en fallback until
+  translated (accepted Phase-0 default). Dictionary parity suite updated
+  (24 namespaces).
+
 ## [Unreleased]
 
 ### Planned
 
+- NEXUS 2.0 Phase 2 — AI Autonomous Studio + War Room
 - Fake-activity engine (live feed simulation, online counters) — i18n-safe, client-only
 - Myket Android release v1.0.2 (versionCode 3) with force-close fixes
 - Academy boot-time optimization (the ~8s intro on slow connections)

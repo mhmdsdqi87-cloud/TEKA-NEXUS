@@ -21,6 +21,8 @@ import { pulse } from "./pulse";
 import { workspace } from "./workspace";
 import { os } from "./os";
 import { arena } from "./arena";
+import { universe } from "./universe";
+import { dna } from "./dna";
 
 export const en = {
   common,
@@ -45,4 +47,6 @@ export const en = {
   workspace,
   os,
   arena,
+  universe,
+  dna,
 };

@@ -21,6 +21,10 @@ import { pulse } from "./pulse";
 import { workspace } from "./workspace";
 import { os } from "./os";
 import { arena } from "./arena";
+// NEXUS 2.0 Phase 1: universe + dna ship en-first (accepted default); fa is
+// translated. These locales fall back to the en strings until translated.
+import { universe } from "../en/universe";
+import { dna } from "../en/dna";
 
 export const ar = {
   common,
@@ -45,4 +49,6 @@ export const ar = {
   workspace,
   os,
   arena,
+  universe,
+  dna,
 };

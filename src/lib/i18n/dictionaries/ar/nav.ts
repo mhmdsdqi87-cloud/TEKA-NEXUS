@@ -8,6 +8,8 @@ export const nav: NavDict = {
   portal: "بوابة التعلم",
   founder: "لوحة المؤسس",
   workspaceHub: "مساحة العمل",
+  universe: "الكون الحي",
+  projectDna: "DNA المشروع",
   primaryNavAria: "التنقل الرئيسي",
   mainAria: "الرئيسي",
   mobileNavAria: "التنقل عبر الجوال",

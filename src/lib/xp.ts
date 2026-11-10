@@ -2,6 +2,7 @@
 // Level curve: xp needed for level n = 120 · (n-1)²  →  gentle start,
 // steep later (Lv2 @120, Lv3 @480, Lv4 @1080, Lv5 @1920, Lv6 @3000…).
 
+/** Level for a total XP amount (1-based; level 1 starts at 0 XP). */
 export function levelFromXp(xp: number): number {
   return Math.max(1, Math.floor(Math.sqrt(Math.max(0, xp) / 120)) + 1);
 }

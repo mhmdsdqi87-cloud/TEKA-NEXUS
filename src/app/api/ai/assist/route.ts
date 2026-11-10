@@ -1,13 +1,13 @@
 // TEKA NEXUS — POST /api/ai/assist
 // AI copilot for the "Launch a project" form: turns a rough idea into a
-// filled-out draft (tagline, description, tags, category, skills). The z-ai
+// filled-out draft (tagline, description, tags, category, skills). The AI
 // SDK is used BACKEND ONLY. Provider chain mirrors the academy tutor:
 //   1) explicit OpenAI-compatible provider via AI_* env vars (production),
 //   2) sandbox SDK (dev environment).
 // No offline fabrication: if no provider answers, we say so honestly.
 
 import { z } from "zod";
-import ZAI from "z-ai-web-dev-sdk";
+import AiSdk from "z-ai-web-dev-sdk";
 
 import { handle, HttpError, ok, requireUser } from "@/lib/server";
 import { PROJECT_CATEGORIES, SKILLS } from "@/lib/constants";
@@ -51,7 +51,7 @@ function rateLimit(userId: string) {
 // ─── Provider plumbing (mirrors academy tutor) ───────────────
 
 const SDK_TIMEOUT_MS = 15_000;
-// Public Z.ai endpoint can be slow from Vercel regions — generous window,
+// Public free LLM endpoint can be slow from Vercel regions — generous window,
 // same rationale as the tutor route (maxDuration 60s covers both attempts).
 const EXTERNAL_TIMEOUT_MS = 30_000;
 
@@ -72,7 +72,7 @@ function externalProviderConfig() {
     base,
     key,
     model: process.env.AI_MODEL || "glm-4.5-flash",
-    isZai: /z\.ai$/i.test(new URL(base).hostname),
+    managedFreeApi: /z\.ai$/i.test(new URL(base).hostname),
   };
 }
 
@@ -89,8 +89,9 @@ async function externalCompletion(
     ],
     max_tokens: 900,
   };
-  // The `thinking` switch is Z.ai-specific; other providers may reject it.
-  if (cfg.isZai) body.thinking = { type: "disabled" };
+  // The `thinking` switch is only accepted by the managed free endpoint;
+  // other providers may reject it.
+  if (cfg.managedFreeApi) body.thinking = { type: "disabled" };
 
   const res = await withTimeout(
     fetch(`${cfg.base}/chat/completions`, {
@@ -221,9 +222,9 @@ export async function POST(req: Request) {
       }
       // 2) Sandbox SDK (private endpoint — works in this dev environment).
       if (raw === null) {
-        const zai = await withTimeout(ZAI.create(), SDK_TIMEOUT_MS, "zai-create");
+        const sdk = await withTimeout(AiSdk.create(), SDK_TIMEOUT_MS, "sdk-create");
         const completion = await withTimeout(
-          zai.chat.completions.create({
+          sdk.chat.completions.create({
             messages: [
               { role: "assistant", content: system },
               { role: "user", content: userPrompt },
@@ -231,7 +232,7 @@ export async function POST(req: Request) {
             thinking: { type: "disabled" },
           }),
           SDK_TIMEOUT_MS,
-          "zai-completion",
+          "sdk-completion",
         );
         const candidate = completion?.choices?.[0]?.message?.content;
         raw = typeof candidate === "string" && candidate.trim() ? candidate.trim() : null;

@@ -10,6 +10,7 @@ import { ArrowLeft, ArrowRight, BookOpen, Bookmark, BookmarkCheck, CheckCircle2,
 
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { getSessionToken } from "@/lib/api";
 import { XP_RULES } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/store";
 import { EASE, Stagger, StaggerItem } from "@/components/shared/motion";
@@ -199,6 +200,10 @@ function Quiz({ questions, locale, t }: { questions: QuizQuestion[]; locale: str
 const TTS_URL_CACHE_MAX = 20;
 const ttsUrlCache = new Map<string, string>(); // lessonId → blob URL
 
+// The narrator synthesizes on a serverless backend that can legitimately need
+// ~50s (cold start + speech provider) — the abort window must outlive that.
+const TTS_TIMEOUT_MS = 55_000;
+
 const TTS_ERROR_TEXT: Record<"fa" | "en", string> = {
   fa: "پخش صدا الان در دسترس نیست — یه بار دیگه امتحان کن.",
   en: "Voice playback is unavailable right now — please try again.",
@@ -374,11 +379,26 @@ export function LessonPlayer({
 
     setTtsState("loading");
     try {
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "audio/wav" },
-        body: JSON.stringify({ text: buildNarrationText(), lang: ttsLang }),
-      });
+      // Session header mirrors lib/api.ts: in the cross-origin preview iframe
+      // cookies are dropped and the middleware needs the token mirror.
+      const token = getSessionToken();
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), TTS_TIMEOUT_MS);
+      let res: Response;
+      try {
+        res = await fetch("/api/tts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "audio/wav",
+            ...(token ? { "x-teka-session": token } : {}),
+          },
+          body: JSON.stringify({ text: buildNarrationText(), lang: ttsLang }),
+          signal: ctrl.signal,
+        });
+      } finally {
+        clearTimeout(timer);
+      }
       if (!res.ok) {
         setTtsState("idle");
         toast.error(TTS_ERROR_TEXT[ttsLang]);

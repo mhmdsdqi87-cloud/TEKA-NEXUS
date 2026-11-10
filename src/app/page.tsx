@@ -5,13 +5,14 @@
 // (src/lib/store.ts). See docs/FRONTEND_GUIDE.md + docs/API_CONTRACT.md.
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "@/lib/store";
 import { get, setSessionToken } from "@/lib/api";
 import { SessionUser } from "@/lib/store";
 import { useInitLocale } from "@/lib/i18n/store";
 import { useT } from "@/lib/i18n";
 import { TekaDirectionProvider } from "@/components/shared/teka-direction";
+import { EASE } from "@/components/shared/motion";
 import { EnterPortal } from "@/components/auth/enter-portal";
 import { ArenaHubView } from "@/views/arena-hub-view";
 import { GameShell } from "@/components/arena/game-shell";
@@ -342,6 +343,8 @@ export default function Page() {
     return () => clearTimeout(id);
   }, []);
 
+  const booting = !authChecked || !bootMinDone;
+
   // Restore session on boot (retries — a cold-compiled API route can 500 once).
   useEffect(() => {
     let cancelled = false;
@@ -383,14 +386,6 @@ export default function Page() {
       navigate({ name: "landing" });
     }
   }, [authChecked, user, view.name, navigate]);
-
-  if (!authChecked || !bootMinDone)
-    return (
-      <TekaDirectionProvider>
-        <SeoStaticBlock />
-        <BootScreen />
-      </TekaDirectionProvider>
-    );
 
   let content: React.ReactNode;
 
@@ -491,22 +486,39 @@ export default function Page() {
 
   return (
     <TekaDirectionProvider>
-    <MotionRoot>
       <SeoStaticBlock />
-      <div className="min-h-screen flex flex-col">
-        {inShell ? (
-          <AppShell>
-            <PageTransition viewKey={viewKey}>{content}</PageTransition>
-          </AppShell>
-        ) : (
-          <main className="flex-1 flex flex-col">
-            <PageTransition viewKey={viewKey}>{content}</PageTransition>
-          </main>
+      {/* Cinematic hand-off: the boot overlay stays mounted inside
+          AnimatePresence, so when `booting` flips it fades/blurs out ON TOP of
+          the app that renders underneath — no hard cut. */}
+      <AnimatePresence>
+        {booting && (
+          <motion.div
+            key="boot-overlay"
+            className="fixed inset-0 z-[100] bg-[#04060e]"
+            exit={{ opacity: 0, scale: 1.03, filter: "blur(10px)" }}
+            transition={{ duration: 0.55, ease: EASE }}
+          >
+            <BootScreen />
+          </motion.div>
         )}
-        <SearchDialog />
-        <EnterPortal />
-      </div>
-    </MotionRoot>
+      </AnimatePresence>
+      {!booting && (
+        <MotionRoot>
+          <div className="min-h-screen flex flex-col">
+            {inShell ? (
+              <AppShell>
+                <PageTransition viewKey={viewKey}>{content}</PageTransition>
+              </AppShell>
+            ) : (
+              <main className="flex-1 flex flex-col">
+                <PageTransition viewKey={viewKey}>{content}</PageTransition>
+              </main>
+            )}
+            <SearchDialog />
+            <EnterPortal />
+          </div>
+        </MotionRoot>
+      )}
     </TekaDirectionProvider>
   );
 }

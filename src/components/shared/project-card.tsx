@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { ProjectCard as ProjectCardDTO } from "@/lib/dto";
 import { PROJECT_CATEGORIES } from "@/lib/constants";
 import { StatusPill, ProjectCover, UserAvatar } from "@/components/shared/atoms";
-import { EASE, HoverLift } from "@/components/shared/motion";
+import { EASE, HoverLift, SpotlightCard } from "@/components/shared/motion";
 import { useApp } from "@/lib/store";
 import { useT, useRelativeTime, useLabeled } from "@/lib/i18n";
 import { Skeleton as ShadSkeleton } from "@/components/ui/skeleton";
@@ -29,14 +29,15 @@ export function ProjectCardView({
 
   return (
     <HoverLift className="h-full w-full">
-      <button
-        onClick={() => navigate({ name: "project", slug: project.slug })}
-        className={cn(
-          "glass-card rounded-xl text-left group overflow-hidden focus-glow cursor-pointer w-full h-full",
-          compact ? "p-3" : "p-0"
-        )}
-        aria-label={t("profile.shared.openProjectAria", { name: project.name })}
-      >
+      <SpotlightCard className="h-full w-full overflow-hidden rounded-xl">
+        <button
+          onClick={() => navigate({ name: "project", slug: project.slug })}
+          className={cn(
+            "glass-card rounded-xl text-left group overflow-hidden focus-glow cursor-pointer w-full h-full",
+            compact ? "p-3" : "p-0"
+          )}
+          aria-label={t("profile.shared.openProjectAria", { name: project.name })}
+        >
         {!compact && (
           <div className="h-32 overflow-hidden border-b border-white/[0.06]">
             <div className="w-full h-full transition-transform duration-500 group-hover:scale-[1.05]">
@@ -100,7 +101,8 @@ export function ProjectCardView({
             </div>
           </motion.div>
         </div>
-      </button>
+        </button>
+      </SpotlightCard>
     </HoverLift>
   );
 }

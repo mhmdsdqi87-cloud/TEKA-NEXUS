@@ -35,7 +35,7 @@ import {
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
-import { SPRING, TapScale } from "@/components/shared/motion";
+import { SPRING, ScrollProgress, TapScale } from "@/components/shared/motion";
 import { useApp, type View } from "@/lib/store";
 import { get, post, qs, setSessionToken } from "@/lib/api";
 import {
@@ -130,9 +130,9 @@ function NavItem({
           layoutId="navPillDesktop"
           aria-hidden="true"
           transition={SPRING}
-          className="absolute inset-0 rounded-lg bg-white/[0.05] ring-1 ring-inset ring-cyan-400/15"
+          className="absolute inset-0 rounded-lg bg-white/[0.05] ring-1 ring-inset ring-cyan-400/20 shadow-[0_0_24px_-8px_rgba(34,211,238,0.55),inset_0_1px_0_rgba(255,255,255,0.07)]"
         >
-          <span className="absolute start-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-e-full bg-cyan-400" />
+          <span className="absolute start-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-e-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)]" />
         </motion.span>
       )}
       <Icon className={cn("relative h-[18px] w-[18px] shrink-0", active ? "text-cyan-300" : "text-muted-foreground")} />
@@ -970,6 +970,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex">
+      {/* viewport-top reading progress — shared chrome for every app view */}
+      <ScrollProgress className="z-50" />
       <LeftNav />
 
       <div className="flex-1 flex flex-col min-w-0">

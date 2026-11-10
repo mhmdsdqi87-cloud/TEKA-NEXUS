@@ -3,7 +3,7 @@
 // Never caches API responses (always live), never caches POSTs.
 
 const CACHE = "teka-shell-v1";
-const SHELL = ["/", "/manifest.webmanifest", "/favicon.svg", "/icons/icon-192.png"];
+const SHELL = ["/", "/manifest.webmanifest", "/favicon.svg", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

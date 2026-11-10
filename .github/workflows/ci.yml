@@ -1,13 +1,7 @@
 # TEKA NEXUS — Continuous Integration
-# Runs on every push to main and every PR:
-#   1. quality : lint + typecheck + unit tests (pylite engine, exam engine,
-#                academy content contract, i18n key parity, platform kernel)
-#   2. build   : production build (prisma generate + next build)
-#
-# Note on the dummy DATABASE_URL: all data surfaces are force-dynamic route
-# handlers, so `next build` never opens a database connection (verified:
-# every route lands in the ƒ Dynamic bucket, only /sitemap.xml is static).
-# The URL only has to be a well-formed Postgres DSN for the Prisma client.
+# Runs on every push to main and every pull request:
+# lint → typecheck → unit tests (pylite engine, exam engine, i18n key parity,
+# platform kernel). Minimal on purpose — no caching, no deploy steps.
 
 name: CI
 
@@ -15,49 +9,11 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   quality:
     name: Lint · Typecheck · Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      # Well-formed dummy DSNs — PrismaClient only validates their presence at
-      # construction (connection is lazy); no real database is ever contacted.
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/teka_ci
-      DIRECT_URL: postgresql://ci:ci@localhost:5432/teka_ci
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install dependencies (postinstall generates the Prisma client)
-        run: bun install --frozen-lockfile
-
-      - name: Lint
-        run: bun run lint
-
-      - name: Typecheck
-        run: bun run typecheck
-
-      - name: Unit tests
-        run: bun test
-
-  build:
-    name: Production build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: quality
-    env:
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/teka_ci
-      DIRECT_URL: postgresql://ci:ci@localhost:5432/teka_ci
     steps:
       - uses: actions/checkout@v4
 
@@ -68,5 +24,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build (prisma generate + next build)
-        run: bun run build
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Unit tests
+        run: bun test

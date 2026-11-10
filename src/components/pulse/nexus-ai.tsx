@@ -12,7 +12,7 @@ import { Eraser, RotateCcw, SendHorizontal, Sparkles, WifiOff } from "lucide-rea
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
-import { ApiError, post } from "@/lib/api";
+import { AI_TIMEOUT_MS, ApiError, post } from "@/lib/api";
 import { useT, useTList } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n/store";
 import { EASE } from "@/components/shared/motion";
@@ -40,10 +40,14 @@ export function NexusAI({ className }: { className?: string }) {
   }, [messages, pending, error]);
 
   const call = async (history: ChatMsg[]) => {
-    const res = await post<{ reply: string; offline?: boolean }>("/api/ai/nexus", {
-      messages: history.slice(-MAX_HISTORY),
-      locale,
-    });
+    const res = await post<{ reply: string; offline?: boolean }>(
+      "/api/ai/nexus",
+      {
+        messages: history.slice(-MAX_HISTORY),
+        locale,
+      },
+      AI_TIMEOUT_MS,
+    );
     return { reply: res.reply, offline: res.offline === true };
   };
 

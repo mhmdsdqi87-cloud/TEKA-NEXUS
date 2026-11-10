@@ -48,9 +48,12 @@ export function setSessionToken(token: string | null): void {
 //      (only on gateway errors 502/503/504 where the server never processed
 //      the request) with a short backoff.
 const REQUEST_TIMEOUT_MS = 20_000;
-// Slow-but-legit calls (e.g. the AI project copilot on a cold serverless
-// backend) can outlive the default window — callers pass a bigger budget.
-export const AI_TIMEOUT_MS = 45_000;
+// Slow-but-legit calls (AI chat + project copilot + TTS on a cold serverless
+// backend) can legitimately take ~50s: the external provider window is 50s
+// (see lib/ai-provider.ts). The client budget must OUTLIVE the server's own
+// timeout chain, otherwise the browser aborts a request that was about to
+// succeed and the user sees a fake "Network connection failed".
+export const AI_TIMEOUT_MS = 58_000;
 
 function isIdempotent(method: string) {
   return method === "GET" || method === "HEAD";

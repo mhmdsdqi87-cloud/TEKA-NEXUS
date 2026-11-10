@@ -13,7 +13,7 @@ import { BookOpen, Eraser, RotateCcw, SendHorizontal, WifiOff } from "lucide-rea
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
-import { ApiError, post } from "@/lib/api";
+import { AI_TIMEOUT_MS, ApiError, post } from "@/lib/api";
 import { useI18n } from "@/lib/i18n/store";
 import { EASE } from "@/components/shared/motion";
 import { LogoMark } from "@/components/brand/logo";
@@ -49,14 +49,18 @@ export function TutorPanel({ context }: { context?: TutorContext }) {
   }, [messages, pending, error]);
 
   const callTutor = async (history: ChatMsg[]) => {
-    const res = await post<{ reply: string; offline?: boolean }>("/api/academy/tutor", {
-      messages: history,
-      context: {
-        courseId: context?.courseId,
-        lessonId: context?.lessonId,
-        locale,
+    const res = await post<{ reply: string; offline?: boolean }>(
+      "/api/academy/tutor",
+      {
+        messages: history,
+        context: {
+          courseId: context?.courseId,
+          lessonId: context?.lessonId,
+          locale,
+        },
       },
-    });
+      AI_TIMEOUT_MS,
+    );
     return { reply: res.reply, offline: res.offline === true };
   };
 

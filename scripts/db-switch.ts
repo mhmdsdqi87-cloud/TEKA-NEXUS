@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 // TEKA NEXUS — Prisma provider switcher (SQLite ⇄ PostgreSQL).
 // Usage:
-//   bun run db:switch:postgres    # point Prisma at Supabase Postgres
-//   bun run db:switch:sqlite      # switch back to local SQLite
+//   bun scripts/db-switch.ts postgres    # point Prisma at Supabase Postgres
+//   bun scripts/db-switch.ts sqlite      # switch back to local SQLite
 // After switching run:  bunx prisma db push   (creates/mirrors the schema)
 
 import { readFileSync, writeFileSync } from "fs";

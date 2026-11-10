@@ -19,8 +19,9 @@ git remote add origin https://github.com/USERNAME/teka-nexus.git
 git push -u origin main
 ```
 
-CI (GitHub Actions) از قبل گذاشته شده: `.github/workflows/ci.yml` روی هر push
-`lint` + `tsc` را اجرا می‌کند.
+CI (GitHub Actions) واقعاً موجود است: `.github/workflows/ci.yml` روی هر push به
+`main` و هر pull request سه گام را اجرا می‌کند — `bun run lint`، `bun run typecheck`
+و `bun test` (با `bun install --frozen-lockfile`).
 
 > در سندباکس هیچ توکن گیت‌هابی موجود نبود، پس push از اینجا انجام نشد — دستورهای بالا
 > روی سیستم خودتان ۳۰ ثانیه بیشتر نمی‌گیرد.
@@ -30,8 +31,12 @@ CI (GitHub Actions) از قبل گذاشته شده: `.github/workflows/ci.yml` 
 طبق `docs/SUPABASE.md` — فقط رمز دیتابیس لازم است:
 
 ```bash
-bun run db:switch:postgres && bunx prisma db push
+bun run db:push:remote   # prisma db push روی prisma/schema.prisma (Postgres) — مسیر کانونیکال
 ```
+
+> نکته: `scripts/db-switch.ts` یک ابزار دستی است (اسکریپت npm ندارد):
+> `bun scripts/db-switch.ts postgres` یا `bun scripts/db-switch.ts sqlite` — فقط خط
+> provider را در `prisma/schema.prisma` عوض می‌کند؛ بعد از آن همچنان `bun run db:push:remote`.
 
 ## ۳. دپلوی / Deploy
 

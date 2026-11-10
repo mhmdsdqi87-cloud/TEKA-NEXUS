@@ -12,6 +12,96 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Myket Android release v1.0.2 (versionCode 3) with force-close fixes
 - Academy boot-time optimization (the ~8s intro on slow connections)
 
+## [1.74.0] — 2026-11-10
+
+### Security
+
+- Bootstrap and speedrun secrets are no longer present in source.
+- `/api/supabase/status` is now founder-only.
+- Plaintext password mirroring into Supabase Auth removed — user passwords never
+  leave the TEKA server.
+- Security-focused configuration consolidation.
+
+### Fixed
+
+- AI terminal timeout, level-formula divergence (XP curve now matches the
+  documented `levelFromXp`), and malformed-JSON requests returning 400s on the
+  7 JSON-parsing API routes instead of leaking raw errors.
+- TTS: SDK timeout hardened, language cache correctness, assist route now
+  returns honest 502 semantics, and the offline tutor locale fixed.
+
+### Removed
+
+- Dead OS-desktop chain (`os-root`, `os-apps`, `window-frame`,
+  `matrix-overlay`, `os-store`) and the dead toast chain (`toast`, `toaster`,
+  `use-toast`).
+- 7 unused shadcn wrappers: `calendar`, `carousel`, `chart`, `drawer`, `form`,
+  `input-otp`, `resizable`.
+- 16 unused dependencies (incl. `next-auth`, `next-intl`,
+  `@tanstack/react-query`, `@tanstack/react-table`, `recharts`,
+  `react-hook-form`, `uuid`).
+
+### Added
+
+- GitHub Actions CI (`.github/workflows/ci.yml`): lint + typecheck + tests on
+  every push to `main` and every pull request.
+- `src/proxy.ts` — the request middleware renamed to the Next.js 16 `proxy`
+  file convention, with identical logic (x-teka-session header → teka_session
+  cookie bridge).
+
+### Changed
+
+- Removed the empty `next.config.mjs` — `next.config.ts` is the single
+  canonical config.
+
+## [1.73.0] — 2026-11-10
+
+### Added
+
+- Motion primitives: spotlight, tilt, magnetic, text reveal, scroll progress
+  + glow CSS system.
+- Cinematic landing: pointer-parallax starfield hero, rotating conic orbit
+  frame, magnetic CTAs, shimmering wordmark, word-reveal subtitle,
+  cursor-spotlight cards, animated section underlines, glowing footer seam,
+  living aurora preview.
+- App shell polish: reading progress in the chrome, glowing nav pill,
+  spotlight project cards, cinematic boot hand-off.
+
+### Performance
+
+- Edge cache (`s-maxage` + stale-while-revalidate) on the public feed and
+  pulse endpoints.
+
+### Fixed
+
+- Hero punctuation stays glued to the gradient run (lone-period wrap in Latin
+  locales).
+
+## [1.72.1] — 2026-11-10
+
+### Added
+
+- Browser-voice fallback for TTS when server synthesis is unavailable.
+
+## [1.72.0] — 2026-11-10
+
+### Fixed
+
+- TTS uses the OpenAI-compatible speech path in production.
+- AI client timeout raised to 58s so it outlives the server chain.
+
+## [1.71.0] — 2026-11-10
+
+### Changed
+
+- Shared AI provider chain: single 50s window, URL guard, `ru` locale support.
+- All six fonts self-hosted — unbreaks Vercel builds.
+- Vendor-neutral AI provider naming across UI and docs.
+
+### Added
+
+- 512px app icon precached in the offline PWA shell.
+
 ## [1.70.0] — 2025-11-16
 
 ### Added
@@ -75,7 +165,12 @@ the academy content engine (300 lessons in 4 tracks), the 12 arena modules,
 the social graph (projects, tasks, milestones, team chat, DM), the XP/coin
 economy and the PWA shell all landed in this window.
 
-[Unreleased]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.70.0...HEAD
+[Unreleased]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.74.0...HEAD
+[1.74.0]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.73.0...v1.74.0
+[1.73.0]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.72.1...v1.73.0
+[1.72.1]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.72.0...v1.72.1
+[1.72.0]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.71.0...v1.72.0
+[1.71.0]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.70.0...v1.71.0
 [1.70.0]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.69.0...v1.70.0
 [1.69.0]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.68.0...v1.69.0
 [1.67.0]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.66.0...v1.67.0

@@ -10,7 +10,7 @@ bun test             # ۵۱ تست خودکار موتورها (tests/)
 ```
 
 - اسکریپت اثبات: `scripts/engine-proof.ts`
-- تست‌ها: `tests/pylite.test.ts`، `tests/exam-engine.test.ts`، `tests/academy-content.test.ts`
+- تست‌ها: `tests/exam-engine.test.ts`، `tests/platform.test.ts`، `tests/i18n.test.ts`، `tests/pylite.test.ts`
 - تاریخ ترنسکریپت زیر: `2026-11-02` با bun 1.3.14
 
 ---

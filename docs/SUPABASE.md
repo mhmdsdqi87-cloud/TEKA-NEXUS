@@ -29,18 +29,17 @@ cp .env.example .env   # اگر .env از قبل نیست
 # فایل .env را باز کنید و DATABASE_URL را با رشتهٔ بالا (با رمز واقعی) عوض کنید
 ```
 
-## ۳. Prisma را به Postgres سوئیچ کن و جدول‌ها را بساز / Switch & push
+## ۳. جدول‌ها را در Supabase بساز / Push the schema
 
 ```bash
-bun run db:switch:postgres   # provider را در prisma/schema.prisma به postgresql عوض می‌کند
-bunx prisma db push          # همهٔ ۲۰+ جدول TEKA را در Supabase می‌سازد
+bun run db:push:remote       # prisma db push روی prisma/schema.prisma (Postgres) — همهٔ ۲۰+ جدول TEKA را در Supabase می‌سازد
 bun run dev                  # اجرا — حالا کل سایت (ثبت‌نام، پروژه‌ها، آکادمی، امتحان، چت) روی Supabase است
 ```
 
-برگشت به SQLite محلی (برای توسعهٔ آفلاین):
+برگشت به SQLite محلی (برای توسعهٔ آفلاین — ابزار دستی، اسکریپت npm ندارد):
 
 ```bash
-bun run db:switch:sqlite && bunx prisma db push
+bun scripts/db-switch.ts sqlite && bunx prisma db push
 ```
 
 ## ۴. Supabase CLI (اختیاری) / Supabase CLI
@@ -62,6 +61,8 @@ supabase link --project-ref ljevcviygnknjmhzvtjk # پروژه را به کد و�
 - کلید `sb_publishable_...` فقط برای مرورگر است (جایگزین anon key) — مشکلی ندارد.
 - **هیچ‌وقت** `service_role` را در کد کلاینت یا گیت‌هاب نگذارید.
 - رمز دیتابیس فقط در `.env` می‌ماند و `.env` در `.gitignore` است ✅
+- Supabase فقط میزبان Postgres + Storage (آواتارها) است — از Supabase Auth برای حساب‌ها
+  استفاده نمی‌شود و رمز عبور کاربران هرگز سرور TEKA را ترک نمی‌کند (آینه‌سازی حذف‌شده در v1.74.0).
 - اگر بعداً Supabase Auth/RLS خواستید: RLS را روی جدول‌های exposed فعال کنید و عملیات privileged
   سمت سرور ولیدیت شود (معماری فعلی TEKA همه‌چیز را سمت سرور با سشن خودش کنترل می‌کند، پس
   نیازی به RLS برای همین معماری نیست).

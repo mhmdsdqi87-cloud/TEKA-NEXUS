@@ -1,13 +1,13 @@
 // TEKA NEXUS — POST /api/tts
 // "AI Voice Mentor": read-aloud narration for TEKA Academy lessons. Text in,
-// WAV bytes out, synthesized through the z-ai SDK (BACKEND ONLY). Requires an
+// WAV bytes out, synthesized by the backend speech SDK (BACKEND ONLY). Requires an
 // authenticated user, applies a per-user sliding-window rate limit, and keeps
 // a small in-memory audio cache (sha1 of text+lang) so repeats stay instant.
 
 import { createHash } from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import ZAI from "z-ai-web-dev-sdk";
+import AiSdk from "z-ai-web-dev-sdk";
 
 import { fail, handle, HttpError, requireUser } from "@/lib/server";
 
@@ -92,8 +92,8 @@ export async function POST(req: Request) {
     }
 
     try {
-      const zai = await ZAI.create();
-      const response = await zai.audio.tts.create({
+      const sdk = await AiSdk.create();
+      const response = await sdk.audio.tts.create({
         input: text,
         voice: "tongtong",
         speed: 1.0,

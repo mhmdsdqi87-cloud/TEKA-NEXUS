@@ -193,7 +193,7 @@ function Quiz({ questions, locale, t }: { questions: QuizQuestion[]; locale: str
 }
 
 // ─── AI Voice Mentor (read-aloud narration) ─────────────────
-// Speaks the lesson's goal + theory through POST /api/tts (backend z-ai SDK).
+// Speaks the lesson's goal + theory through POST /api/tts (backend speech service).
 // Blob URLs are cached per lesson for instant replay; the cache is capped.
 
 const TTS_URL_CACHE_MAX = 20;

@@ -214,11 +214,26 @@ body {
 
 /* Primary gradient button */
 .btn-hero {
+  position: relative;
+  overflow: hidden;
   background: linear-gradient(92deg, #0ea5c9, #22d3ee 45%, #8b5cf6 110%);
   color: #06121a;
   font-weight: 600;
   transition: filter 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 4px 24px -6px rgba(34, 211, 238, 0.45);
+}
+/* Light sweep that crosses the button on hover. */
+.btn-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%);
+  transform: translateX(-160%);
+  transition: transform 0.65s ease;
+  pointer-events: none;
+}
+.btn-hero:hover::after {
+  transform: translateX(160%);
 }
 .btn-hero:hover {
   filter: brightness(1.12);
@@ -247,6 +262,66 @@ body {
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
+}
+
+/* ── v1.73 interaction & glow system ──────────────────── */
+
+/* Cursor-tracked spotlight overlay. SpotlightCard/useSpotlight feeds the
+   pointer position through --mx/--my; the radial glow follows the cursor. */
+.spotlight-card {
+  position: relative;
+}
+.spotlight-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    420px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(34, 211, 238, 0.12),
+    rgba(167, 139, 250, 0.06) 45%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.spotlight-card:hover::after {
+  opacity: 1;
+}
+
+/* Aurora border comes alive: a slow hue drift over the existing gradient. */
+.aurora-shift::before {
+  animation: aurora-hue 9s ease-in-out infinite alternate;
+}
+@keyframes aurora-hue {
+  from { filter: hue-rotate(-16deg) saturate(1.08); }
+  to   { filter: hue-rotate(22deg) saturate(1.18); }
+}
+
+/* Rotor for the hero's rotating conic border (element spins, card masks it). */
+.spin-border-rotor {
+  animation: orbit 8s linear infinite;
+}
+
+/* Shimmering gradient text — a light band sweeps across the glyphs. */
+.text-shimmer {
+  background: linear-gradient(100deg, #67e8f9 15%, #e0f2fe 38%, #a78bfa 55%, #67e8f9 85%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: text-shimmer 6s linear infinite;
+}
+@keyframes text-shimmer {
+  from { background-position: 180% 0; }
+  to   { background-position: -180% 0; }
+}
+
+/* Brand-colored text selection. */
+::selection {
+  background: rgba(34, 211, 238, 0.32);
+  color: #f4feff;
 }
 
 /* Status pulse dot */
@@ -390,8 +465,13 @@ body {
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .orbit-slow, .orbit-rev, .float-y, .pulse-dot {
-    animation: none;
+  .orbit-slow, .orbit-rev, .float-y, .pulse-dot,
+  .aurora-drift, .aurora-drift-slow,
+  .aurora-shift::before,
+  .spin-border-rotor,
+  .text-shimmer,
+  .btn-hero::after {
+    animation: none !important;
   }
   * {
     transition-duration: 0.01ms !important;

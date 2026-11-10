@@ -10,6 +10,19 @@ export function ok<T>(data: T, init?: number) {
   return NextResponse.json(data as any, { status: init ?? 200 });
 }
 
+// OK response with public CDN cache headers. For hot, public, poll-friendly
+// GET endpoints: Vercel's edge serves the JSON for s-maxage seconds and keeps
+// serving a stale copy for swr seconds while it revalidates in the background.
+// This flattens DB load spikes when many visitors poll the same public feed.
+export function okCached<T>(data: T, sMaxage = 15, swr = 30) {
+  return NextResponse.json(data as any, {
+    status: 200,
+    headers: {
+      "Cache-Control": `public, s-maxage=${sMaxage}, stale-while-revalidate=${swr}`,
+    },
+  });
+}
+
 export function fail(message: string, status = 400, extra?: Record<string, unknown>) {
   return NextResponse.json({ error: message, ...extra }, { status });
 }

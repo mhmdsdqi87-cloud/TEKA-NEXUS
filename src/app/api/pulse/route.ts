@@ -6,7 +6,7 @@
 // Public read; polling clients dedupe by event id.
 
 import { db } from "@/lib/db";
-import { ok, handle } from "@/lib/server";
+import { okCached, handle } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -307,7 +307,8 @@ export async function GET() {
     const [userCount, projectCount, likeCount, commentCount, chatCount, followCount, saveCount, memberCount, fileCount] =
       stats;
 
-    return ok({
+    // Public community pulse — polled by terminal/feed/live clients; edge cache.
+    return okCached({
       events: events.slice(0, MAX_EVENTS),
       stats: {
         users: userCount,
@@ -321,6 +322,6 @@ export async function GET() {
         files: fileCount,
         generatedAt: new Date().toISOString(),
       },
-    });
+    }, 15, 30);
   });
 }

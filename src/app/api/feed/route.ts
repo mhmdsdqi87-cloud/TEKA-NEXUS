@@ -5,7 +5,7 @@
 import type { NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { ok, handle } from "@/lib/server";
+import { okCached, handle } from "@/lib/server";
 import type { FeedEvent, UserCard } from "@/lib/dto";
 
 export const dynamic = "force-dynamic";
@@ -101,6 +101,7 @@ export async function GET(req: NextRequest) {
     }));
 
     const pages = Math.max(1, Math.ceil(total / FEED_PAGE_SIZE));
-    return ok({ events, page, pages, total });
+    // Public landing feed — polled by every visitor; 15s edge cache + SWR.
+    return okCached({ events, page, pages, total }, 15, 30);
   });
 }

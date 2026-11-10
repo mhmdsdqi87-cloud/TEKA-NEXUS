@@ -270,3 +270,129 @@ export type WorkspaceFileResponse = {
   file: WsFileFull;
   revisions: WsRevisionMeta[];
 };
+
+// ─────────────────────────────────────────────────────────────
+// NEXUS 2.0 — LIVE UNIVERSE & PROJECT DNA (Phase 1)
+// ─────────────────────────────────────────────────────────────
+
+export type UniverseStats = {
+  users: number;
+  declaredCountries: number;
+  publicProjects: number;
+  tasksDone: number;
+  milestonesCompleted: number;
+  requestsAccepted: number;
+  updatesPosted: number;
+  generatedAt: string;
+};
+
+export type UniverseCountry = {
+  code: string;
+  users: number;
+  projects: number;
+  activity30d: number;
+};
+
+export type UniverseTechnology = { tag: string; projects: number };
+
+export type UniverseActivityEvent = {
+  id: string;
+  eventType: string;
+  xp: number;
+  reputation: number;
+  createdAt: string;
+  actor: { username: string; displayName: string; avatarColor: string; country: string };
+  project: { slug: string; name: string; category: string } | null;
+};
+
+export type UniverseProject = {
+  slug: string;
+  name: string;
+  tagline: string;
+  category: string;
+  status: string;
+  createdAt: string;
+  owner: { username: string; displayName: string; avatarColor: string; country: string };
+  members: number;
+  likes: number;
+  tags: string[];
+};
+
+export type UniverseResponse = {
+  universe: {
+    stats: UniverseStats;
+    countries: UniverseCountry[];
+    technologies: UniverseTechnology[];
+    activity: UniverseActivityEvent[];
+    projects: UniverseProject[];
+  };
+  cached: boolean;
+};
+
+export type DnaIdentity = {
+  slug: string;
+  name: string;
+  tagline: string;
+  description: string;
+  category: string;
+  status: string;
+  visibility: string;
+  coverImage: string;
+  repositoryUrl: string;
+  demoUrl: string;
+  websiteUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  owner: UserCard & { country: string };
+  counts: {
+    members: number;
+    likes: number;
+    updates: number;
+    tasks: number;
+    comments: number;
+    openRequests: number;
+  };
+};
+
+export type DnaTimelineEvent = {
+  id: string;
+  kind: "PROJECT_CREATED" | "MEMBER_JOINED" | "UPDATE_POSTED" | "MILESTONE_CREATED" | "MILESTONE_COMPLETED" | "TASK_COMPLETED";
+  at: string;
+  title: string;
+  actor: string | null;
+  href: string | null;
+};
+
+export type DnaContributor = {
+  user: UserCard & { country: string };
+  role: string;
+  joinedAt: string;
+  verifiedEvents: number;
+};
+
+export type DnaHealth = {
+  // Every field here is CALCULATED from real records — never measured
+  // external telemetry, never AI-generated. The UI labels them as such.
+  taskCompletionRate: number | null; // 0..1, null = no tasks yet
+  openTasks: number;
+  doneTasks: number;
+  activity30d: number; // ProjectActivity rows in the last 30 days
+  momentumPerDay: number | null; // activity30d / active days in window (rounded 2dp)
+  lastActivityAt: string | null;
+  progressPercent: number | null; // milestones completed / total, null = none
+};
+
+export type DnaResponse = {
+  dna: {
+    identity: DnaIdentity;
+    stack: {
+      tags: string[];
+      layers: { frontend: string[]; backend: string[]; data: string[]; tools: string[]; other: string[] };
+    };
+    milestones: MilestoneDTO[];
+    timeline: DnaTimelineEvent[];
+    contributors: DnaContributor[];
+    health: DnaHealth;
+    viewerRole: string; // OWNER|ADMIN|CONTRIBUTOR|VIEWER|GUEST
+  };
+};

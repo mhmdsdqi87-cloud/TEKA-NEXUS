@@ -11,6 +11,12 @@ import AiSdk from "z-ai-web-dev-sdk";
 
 import { handle, HttpError, ok, requireUser } from "@/lib/server";
 import { PROJECT_CATEGORIES, SKILLS } from "@/lib/constants";
+import {
+  SDK_TIMEOUT_MS,
+  externalCompletion,
+  externalProviderConfig,
+  withTimeout,
+} from "@/lib/ai-provider";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -19,7 +25,7 @@ export const maxDuration = 60;
 
 const Body = z.object({
   idea: z.string().trim().min(10).max(600),
-  locale: z.enum(["en", "fa", "es", "zh", "ar", "fr"]).optional(),
+  locale: z.enum(["en", "fa", "es", "zh", "ar", "fr", "ru"]).optional(),
 });
 
 // ─── Rate limit (in-memory sliding window, per user) ─────────
@@ -48,68 +54,6 @@ function rateLimit(userId: string) {
   }
 }
 
-// ─── Provider plumbing (mirrors academy tutor) ───────────────
-
-const SDK_TIMEOUT_MS = 15_000;
-// Public free LLM endpoint can be slow from Vercel regions — generous window,
-// same rationale as the tutor route (maxDuration 60s covers both attempts).
-const EXTERNAL_TIMEOUT_MS = 30_000;
-
-function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
-  return Promise.race([
-    p,
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`${label}-timeout`)), ms),
-    ),
-  ]);
-}
-
-function externalProviderConfig() {
-  const base = process.env.AI_BASE_URL?.replace(/\/+$/, "");
-  const key = process.env.AI_API_KEY;
-  if (!base || !key) return null;
-  return {
-    base,
-    key,
-    model: process.env.AI_MODEL || "glm-4.5-flash",
-    managedFreeApi: /z\.ai$/i.test(new URL(base).hostname),
-  };
-}
-
-async function externalCompletion(
-  cfg: NonNullable<ReturnType<typeof externalProviderConfig>>,
-  system: string,
-  userPrompt: string,
-): Promise<string> {
-  const body: Record<string, unknown> = {
-    model: cfg.model,
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: userPrompt },
-    ],
-    max_tokens: 900,
-  };
-  // The `thinking` switch is only accepted by the managed free endpoint;
-  // other providers may reject it.
-  if (cfg.managedFreeApi) body.thinking = { type: "disabled" };
-
-  const res = await withTimeout(
-    fetch(`${cfg.base}/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.key}` },
-      body: JSON.stringify(body),
-    }),
-    EXTERNAL_TIMEOUT_MS,
-    "external-completion",
-  );
-  if (!res.ok) throw new Error(`provider responded ${res.status}`);
-  const data = (await res.json()) as { choices?: { message?: { content?: unknown } }[] };
-  const raw = data?.choices?.[0]?.message?.content;
-  const reply = typeof raw === "string" ? raw.trim() : "";
-  if (!reply) throw new Error("empty provider reply");
-  return reply;
-}
-
 // ─── Prompt ──────────────────────────────────────────────────
 
 const LOCALE_NAME: Record<string, string> = {
@@ -119,6 +63,7 @@ const LOCALE_NAME: Record<string, string> = {
   zh: "Simplified Chinese",
   ar: "Arabic",
   fr: "French",
+  ru: "Russian",
 };
 
 function buildSystemPrompt(locale: string): string {
@@ -212,7 +157,9 @@ export async function POST(req: Request) {
       // 1) Explicitly configured provider (production hosting, e.g. Vercel).
       if (ext) {
         try {
-          raw = await externalCompletion(ext, system, userPrompt);
+          raw = await externalCompletion(ext, system, [{ role: "user", content: userPrompt }], {
+            maxTokens: 900,
+          });
         } catch (extErr) {
           console.error(
             "[ai-assist] external provider failed:",

@@ -10,6 +10,12 @@ import AiSdk from "z-ai-web-dev-sdk";
 
 import { handle, HttpError, ok, requireUser } from "@/lib/server";
 import { getCourse, pick } from "@/lib/academy";
+import {
+  SDK_TIMEOUT_MS,
+  externalCompletion,
+  externalProviderConfig,
+  withTimeout,
+} from "@/lib/ai-provider";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -27,7 +33,7 @@ const Body = z.object({
     .object({
       courseId: z.string().max(64).optional(),
       lessonId: z.string().max(96).optional(),
-      locale: z.enum(["en", "fa", "es", "zh", "ar", "fr"]).optional(),
+      locale: z.enum(["en", "fa", "es", "zh", "ar", "fr", "ru"]).optional(),
     })
     .optional(),
 });
@@ -157,21 +163,6 @@ function buildSystemPrompt(locale: string, context?: { courseId?: string; lesson
 // It never pretends to be the live model and never fabricates new facts.
 
 const OFFLINE_THEORY_CAP = 700;
-const SDK_TIMEOUT_MS = 15_000;
-// The public free endpoint can be slow from Vercel regions (cold TLS + model
-// latency) — the original 15s cap timed out in production logs, so give the
-// external provider a generous window. maxDuration is 60s, and the SDK attempt
-// only runs when the external provider throws, so this stays inside budget.
-const EXTERNAL_TIMEOUT_MS = 30_000;
-
-function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
-  return Promise.race([
-    p,
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`${label}-timeout`)), ms),
-    ),
-  ]);
-}
 
 type OfflineLesson = {
   lessonTitle?: string;
@@ -326,53 +317,10 @@ function localTopicReply(locale: string, question: string): string | null {
 // ─── External provider (production hosting) ─────────────────
 // The sandbox SDK talks to a private endpoint that doesn't exist on real
 // hosting. Any OpenAI-compatible provider with a free chat model fills that
-// gap via env vars:
+// gap via env vars (see lib/ai-provider.ts):
 //   AI_BASE_URL = https://<openai-compatible-endpoint>/v4
 //   AI_API_KEY  = <your key>
 //   AI_MODEL    = optional (defaults to the provider's free chat model)
-
-function externalProviderConfig() {
-  const base = process.env.AI_BASE_URL?.replace(/\/+$/, "");
-  const key = process.env.AI_API_KEY;
-  if (!base || !key) return null;
-  return {
-    base,
-    key,
-    model: process.env.AI_MODEL || "glm-4.5-flash",
-    managedFreeApi: /z\.ai$/i.test(new URL(base).hostname),
-  };
-}
-
-async function externalCompletion(
-  cfg: NonNullable<ReturnType<typeof externalProviderConfig>>,
-  system: string,
-  messages: TutorMessage[],
-): Promise<string> {
-  const body: Record<string, unknown> = {
-    model: cfg.model,
-    messages: [{ role: "system", content: system }, ...messages],
-    max_tokens: 700,
-  };
-  // The `thinking` switch is only accepted by the managed free endpoint;
-  // other providers may reject it.
-  if (cfg.managedFreeApi) body.thinking = { type: "disabled" };
-
-  const res = await withTimeout(
-    fetch(`${cfg.base}/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.key}` },
-      body: JSON.stringify(body),
-    }),
-    EXTERNAL_TIMEOUT_MS,
-    "external-completion",
-  );
-  if (!res.ok) throw new Error(`provider responded ${res.status}`);
-  const data = (await res.json()) as { choices?: { message?: { content?: unknown } }[] };
-  const raw = data?.choices?.[0]?.message?.content;
-  const reply = typeof raw === "string" ? raw.trim() : "";
-  if (!reply) throw new Error("empty provider reply");
-  return reply;
-}
 
 // ─── Handler ─────────────────────────────────────────────────
 

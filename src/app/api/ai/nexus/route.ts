@@ -19,6 +19,12 @@ import AiSdk from "z-ai-web-dev-sdk";
 
 import { db } from "@/lib/db";
 import { handle, HttpError, ok, requireUser } from "@/lib/server";
+import {
+  SDK_TIMEOUT_MS,
+  externalCompletion,
+  externalProviderConfig,
+  withTimeout,
+} from "@/lib/ai-provider";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -32,7 +38,7 @@ const MessageSchema = z.object({
 
 const Body = z.object({
   messages: z.array(MessageSchema).min(1).max(16),
-  locale: z.enum(["en", "fa", "es", "zh", "ar", "fr"]).optional(),
+  locale: z.enum(["en", "fa", "es", "zh", "ar", "fr", "ru"]).optional(),
 });
 
 type NexusMessage = z.infer<typeof MessageSchema>;
@@ -245,58 +251,6 @@ Abilities & duties:
 STYLE: concise plain text (no markdown headings), short bullets, under 220 words unless depth is requested.
 LIMITS: politely decline topics unrelated to building/learning. Never claim you can execute code or query a live database — you only have the moment's snapshot.`;
 
-// ─── Providers ───────────────────────────────────────────────
-
-const SDK_TIMEOUT_MS = 15_000;
-const EXTERNAL_TIMEOUT_MS = 30_000;
-
-function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
-  return Promise.race([
-    p,
-    new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`${label}-timeout`)), ms)),
-  ]);
-}
-
-function externalProviderConfig() {
-  const base = process.env.AI_BASE_URL?.replace(/\/+$/, "");
-  const key = process.env.AI_API_KEY;
-  if (!base || !key) return null;
-  return {
-    base,
-    key,
-    model: process.env.AI_MODEL || "glm-4.5-flash",
-    managedFreeApi: /z\.ai$/i.test(new URL(base).hostname),
-  };
-}
-
-async function externalCompletion(
-  cfg: NonNullable<ReturnType<typeof externalProviderConfig>>,
-  system: string,
-  messages: NexusMessage[],
-): Promise<string> {
-  const body: Record<string, unknown> = {
-    model: cfg.model,
-    messages: [{ role: "system", content: system }, ...messages],
-    max_tokens: 900,
-  };
-  if (cfg.managedFreeApi) body.thinking = { type: "disabled" };
-  const res = await withTimeout(
-    fetch(`${cfg.base}/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.key}` },
-      body: JSON.stringify(body),
-    }),
-    EXTERNAL_TIMEOUT_MS,
-    "nexus-external",
-  );
-  if (!res.ok) throw new Error(`provider responded ${res.status}`);
-  const data = (await res.json()) as { choices?: { message?: { content?: unknown } }[] };
-  const raw = data?.choices?.[0]?.message?.content;
-  const reply = typeof raw === "string" ? raw.trim() : "";
-  if (!reply) throw new Error("empty provider reply");
-  return reply;
-}
-
 // ─── Offline fallback (real data, zero fabrication) ──────────
 
 function offlineReply(s: Snapshot, locale: string, question: string): string {
@@ -368,7 +322,10 @@ export async function POST(req: Request) {
       // 1) Explicitly configured provider (production hosting, e.g. Vercel).
       if (ext) {
         try {
-          const reply = await externalCompletion(ext, system, body.messages);
+          const reply = await externalCompletion(ext, system, body.messages, {
+            maxTokens: 900,
+            label: "nexus-external",
+          });
           return ok({ reply });
         } catch (extErr) {
           console.error(

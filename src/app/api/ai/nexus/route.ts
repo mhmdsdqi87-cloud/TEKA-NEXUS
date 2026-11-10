@@ -18,13 +18,14 @@ import { z } from "zod";
 import AiSdk from "z-ai-web-dev-sdk";
 
 import { db } from "@/lib/db";
-import { handle, HttpError, ok, requireUser } from "@/lib/server";
+import { handle, HttpError, ok, parseBody, requireUser } from "@/lib/server";
 import {
   SDK_TIMEOUT_MS,
   externalCompletion,
   externalProviderConfig,
   withTimeout,
 } from "@/lib/ai-provider";
+import { levelFromXp } from "@/lib/xp";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -154,7 +155,7 @@ async function buildSnapshot(userId: string): Promise<Snapshot> {
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
 
-  const level = me ? Math.floor(Math.sqrt(me.xp / 100)) + 1 : 0;
+  const level = me ? levelFromXp(me.xp) : 0;
 
   return {
     users,
@@ -303,7 +304,7 @@ function offlineReply(s: Snapshot, locale: string, question: string): string {
 export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireUser();
-    const body = Body.parse(await req.json());
+    const body = await parseBody(req, Body);
     rateLimit(user.id);
 
     const locale = body.locale ?? "fa";

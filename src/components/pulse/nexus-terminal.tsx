@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Maximize2, Minimize2, TerminalSquare } from "lucide-react";
 
-import { get, post } from "@/lib/api";
+import { AI_TIMEOUT_MS, get, post } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n/store";
 import { cn } from "@/lib/utils";
@@ -330,7 +330,8 @@ export function NexusTerminal({ className }: { className?: string }) {
           try {
             const res = await post<{ reply: string; offline?: boolean }>(
               "/api/ai/nexus",
-              { messages: [{ role: "user", content: arg }], locale }
+              { messages: [{ role: "user", content: arg }], locale },
+              AI_TIMEOUT_MS,
             );
             for (const seg of res.reply.split("\n")) {
               push(res.offline ? "sys" : "out", seg);

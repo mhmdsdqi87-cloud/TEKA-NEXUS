@@ -9,7 +9,7 @@
 import { z } from "zod";
 import AiSdk from "z-ai-web-dev-sdk";
 
-import { handle, HttpError, ok, requireUser } from "@/lib/server";
+import { handle, HttpError, ok, parseBody, requireUser } from "@/lib/server";
 import { PROJECT_CATEGORIES, SKILLS } from "@/lib/constants";
 import {
   SDK_TIMEOUT_MS,
@@ -102,13 +102,23 @@ const SuggestionSchema = z.object({
 
 type Suggestion = z.infer<typeof SuggestionSchema>;
 
+// Marker for a model reply that contains no parseable JSON object — a
+// malformed-reply case (502), not a provider outage (503).
+class ReplyExtractionError extends Error {}
+
 function extractJsonObject(raw: string): unknown {
   // Strip markdown fences if the model added them, then take the outermost braces.
   const cleaned = raw.replace(/```(?:json)?/gi, "").trim();
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}");
-  if (start === -1 || end === -1 || end <= start) throw new Error("no JSON object in reply");
-  return JSON.parse(cleaned.slice(start, end + 1));
+  if (start === -1 || end === -1 || end <= start) throw new ReplyExtractionError("no JSON object in reply");
+  try {
+    return JSON.parse(cleaned.slice(start, end + 1));
+  } catch (e) {
+    throw new ReplyExtractionError(
+      `invalid JSON in reply: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
 }
 
 function sanitizeSuggestion(raw: unknown): Suggestion {
@@ -144,7 +154,7 @@ function sanitizeSuggestion(raw: unknown): Suggestion {
 export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireUser();
-    const body = Body.parse(await req.json());
+    const body = await parseBody(req, Body);
     rateLimit(user.id);
 
     const locale = body.locale ?? "en";
@@ -189,7 +199,7 @@ export async function POST(req: Request) {
     } catch (err) {
       if (err instanceof HttpError) throw err;
       console.error("[ai-assist] failed:", err instanceof Error ? err.message : err);
-      if (err instanceof z.ZodError) {
+      if (err instanceof z.ZodError || err instanceof ReplyExtractionError) {
         throw new HttpError("The assistant returned a malformed draft — try rephrasing your idea.", 502);
       }
       throw new HttpError("The AI assistant is unavailable right now. Please try again shortly.", 503);

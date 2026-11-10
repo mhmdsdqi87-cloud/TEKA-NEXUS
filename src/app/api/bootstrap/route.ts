@@ -108,6 +108,9 @@ END $$`,
   // Safety nets in case the production schema ever lags behind the repo:
   { name: "column User.xp", sql: `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "xp" INTEGER NOT NULL DEFAULT 0` },
   { name: "column User.reputation", sql: `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "reputation" INTEGER NOT NULL DEFAULT 0` },
+  // NEXUS 2.0 Phase 1 — Live Universe (self-declared country, "" = undeclared).
+  // Also applied on cold start by instrumentation.ts (same idempotent DDL).
+  { name: "column User.country", sql: `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "country" TEXT NOT NULL DEFAULT ''` },
   { name: "column Project.repositoryUrl", sql: `ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "repositoryUrl" TEXT NOT NULL DEFAULT ''` },
   { name: "column Project.bgImage", sql: `ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "bgImage" TEXT NOT NULL DEFAULT ''` },
   // ── Task ws-1: Project Workspace (files / revisions / debug logs) ──

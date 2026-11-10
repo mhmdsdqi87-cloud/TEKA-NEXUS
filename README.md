@@ -1,36 +1,44 @@
-**English** | [فارسی](README.fa.md)
+**English** · [فارسی](README.fa.md) · [العربية](README.ar.md) · [Español](README.es.md) · [Français](README.fr.md) · [Русский](README.ru.md) · [中文](README.zh.md)
 
 <div align="center">
 
-# ⚡ TEKA NEXUS
+<img src=".github/assets/banner.svg" alt="TEKA NEXUS — where ideas become real technology" width="100%">
 
-### *Where ideas become real technology.*
+<a href="https://teka-nexus.vercel.app/">
+  <img src="https://readme-typing-svg.demolab.com?font=Orbitron&weight=600&size=22&duration=3200&pause=900&color=F5D678&center=true&vCenter=true&width=760&height=52&lines=Learn+to+code.+Find+your+team.+Ship+real+projects.;300+lessons.+12+arena+modules.+7+languages.;A+developer+empire+in+one+installable+PWA.;Built+by+one+person.+Open+to+everyone." alt="TEKA NEXUS taglines">
+</a>
 
-**A developer-first social platform · a free 300-lesson coding academy · an arena of 12 game modules — in one installable PWA.**
+<br>
 
-[![Live](https://img.shields.io/badge/LIVE-teka--nexus.vercel.app-FF6B35?logo=vercel)](https://teka-nexus.vercel.app/)
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs&logoColor=white)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-3ECF8E?logo=postgresql&logoColor=white)](https://supabase.com)
-[![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)](https://developer.mozilla.org/docs/Web/Progressive_web_apps)
-[![i18n](https://img.shields.io/badge/locales-7-FF6B35)](#internationalization)
-[![Release](https://img.shields.io/github/v/release/mhmdsdqi87-cloud/TEKA-NEXUS?logo=github)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases)
-[![Stars](https://img.shields.io/github/stars/mhmdsdqi87-cloud/TEKA-NEXUS?logo=github&label=stars&color=yellow)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/stargazers)
-[![Views](https://komarev.com/ghpvc/?username=mhmdsdqi87-cloud&label=views&color=FF6B35)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS)
+[![Live](https://img.shields.io/badge/LIVE-teka--nexus.vercel.app-D4AF37?style=for-the-badge&labelColor=0A0A0A&logo=vercel&logoColor=D4AF37)](https://teka-nexus.vercel.app/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-0A0A0A?style=for-the-badge&logo=nextdotjs&logoColor=D4AF37)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-0A0A0A?style=for-the-badge&logo=typescript&logoColor=D4AF37)](https://www.typescriptlang.org)
+[![PWA](https://img.shields.io/badge/PWA-Installable-0A0A0A?style=for-the-badge&logo=pwa&logoColor=D4AF37)](https://developer.mozilla.org/docs/Web/Progressive_web_apps)
+[![License](https://img.shields.io/badge/License-MIT-D4AF37?style=for-the-badge&labelColor=0A0A0A)](LICENSE)
 
-[🚀 Live Platform](https://teka-nexus.vercel.app/) · [📱 Android APK](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.1) · [👤 GitHub](https://github.com/mhmdsdqi87-cloud) · [✉️ Contact](mailto:mhmdsdqi87@gmail.com)
+<br>
 
-<img src="public/screenshots/landing-wide.png" alt="TEKA NEXUS — the landing experience" width="860">
+[![Release](https://img.shields.io/github/v/release/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=0A0A0A&color=D4AF37&logo=github)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases)
+[![Stars](https://img.shields.io/github/stars/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=0A0A0A&color=D4AF37&logo=github&logoColor=D4AF37)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/stargazers)
+[![Forks](https://img.shields.io/github/forks/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=0A0A0A&color=D4AF37&logo=github&logoColor=D4AF37)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/forks)
+[![Issues](https://img.shields.io/github/issues/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=0A0A0A&color=D4AF37&logo=github&logoColor=D4AF37)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues)
+[![Commits](https://img.shields.io/github/commit-activity/m/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=0A0A0A&color=D4AF37&logo=git&logoColor=D4AF37)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/commits/main)
+[![Views](https://komarev.com/ghpvc/?username=mhmdsdqi87-cloud&repo=TEKA-NEXUS&style=flat-square&labelColor=0A0A0A&color=D4AF37&label=VIEWS)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS)
+[![Locales](https://img.shields.io/badge/locales-7-D4AF37?style=flat-square&labelColor=0A0A0A)](#internationalization)
 
-<sub><b>Social feed · free 300-lesson academy · 12 game modules — 7 languages, one platform.</b></sub>
+<br>
+
+[🚀 Live Platform](https://teka-nexus.vercel.app/) · [📱 Android APK](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.1) · [🤝 Contributing](CONTRIBUTING.md) · [🐛 Issues](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues) · [👤 GitHub](https://github.com/mhmdsdqi87-cloud) · [✉️ Contact](mailto:mhmdsdqi87@gmail.com)
+
+<img src="public/screenshots/landing-wide.png" alt="TEKA NEXUS — the landing experience" width="880">
+
+<sub><b>Social feed · free 300-lesson academy · 12 arena modules · Live Universe · Project DNA — 7 languages, one platform.</b></sub>
 
 </div>
 
----
+<img src=".github/assets/divider.svg" width="100%">
 
-## 👤 About the maker
+## 👤 Built by one human
 
 > **TEKA NEXUS was designed, engineered, tested and operated end-to-end by one person — not out of pride, but out of necessity: there was no one else.**
 
@@ -43,115 +51,133 @@
 
 There was no teacher to ask at 2 AM, no team to share the weight with, no degree
 to open doors — only the internet, long nights and more stubbornness than
-credentials. So every layer of this product — the UX language, the 45-model
-database schema, four auto-grading code engines, 300 lessons of bilingual
-course content, an arena of 12 game modules, and seven fully localized
-interfaces — was learned and built the only way its maker knows: by building,
-breaking, and rebuilding until it finally works.
+credentials. Every layer of this product — the UX language, the 45-model database
+schema, four auto-grading code engines, 300 lessons of bilingual course content,
+an arena of 12 game modules, and seven fully localized interfaces — was learned
+the only way its maker knows: by building, breaking, and rebuilding until it works.
 
-> 🎓 *This repository serves as a living portfolio — not proof of knowing, but
-> evidence of wanting. I am open to academic and professional opportunities —
-> feel free to reach out.*
+> 🎓 *This repository is a living portfolio — not proof of knowing, but evidence
+> of wanting. Open to academic and professional opportunities.*
 >
-> 🇷🇺 *I am a self-taught developer with no degree — yet. What I have instead:
-> nights, mistakes, and a platform that actually works. **My dream is to
-> continue my education in Russia**, and TEKA NEXUS is my quiet letter of
-> intent. The letter itself — written in Russian, humble and honest — lives in
-> the platform's About page («В надежде на учёбу в России»).*
+> 🇷🇺 *My dream is to continue my education in Russia. The letter itself —
+> written in Russian, humble and honest — lives on the platform's About page
+> («В надежде на учёбу в России»).*
 
----
+<img src=".github/assets/divider.svg" width="100%">
 
 ## 🌍 What is TEKA NEXUS?
 
 TEKA NEXUS started with one question: **why should learning to code be hard?**
 
-It is a complete ecosystem that blends **networking, building and learning** into a
-single seamless experience — not a course site with a forum bolted on, but a
-**social arena** for the next generation of Iranian (and global) developers:
-
-| Pillar | What it delivers |
-|---|---|
-| 🧭 **Discover** | A real technology feed — projects, builders, verified reputation earned by *actions*, not clicks |
-| 🤝 **Build** | Project workspaces: kanban tasks, milestones, threaded comments, collaboration requests, **real-time team chat** (socket.io) |
-| 🎓 **Learn** | A free-forever academy: 300 hands-on lessons, in-browser Python, live HTML/CSS preview, auto-graded challenges, proctored certification |
-| 🏆 **Arena** | 12 game modules promoted to first-class views in the main navigation — Boss Fights, Skill Tree, Code Pet, Cards, Red-vs-Blue War, and more |
-| 🎮 **Play** | XP economy, collectible cards, speedruns, monthly TEKA Nights — a small game economy to keep you coming back |
+It is a complete ecosystem that blends **networking, building and learning**
+into one seamless, installable experience — not a course site with a forum
+bolted on, but a **social arena** for the next generation of developers,
+Persian-first, open to the world.
 
 <div align="center">
-  <img src="docs/screenshots/boss-arena.png" alt="TEKA Arena — Boss Fight" width="820">
-  <p><sub>TEKA Arena — every module is a full-screen, first-class destination.</sub></p>
+
+| | | |
+|:---:|:---:|:---:|
+| 🧭 **Discover**<br><sub>A real tech feed — projects, builders, reputation earned by *actions*</sub> | 🤝 **Build**<br><sub>Project workspaces: kanban, milestones, **real-time team chat**</sub> | 🎓 **Learn**<br><sub>300 hands-on lessons, in-browser Python, auto-graded challenges</sub> |
+| 🏆 **Arena**<br><sub>12 game modules as first-class views in the main nav</sub> | 🌌 **Live Universe**<br><sub>A 3D globe of real community data — no fake numbers, ever</sub> | 🧬 **Project DNA**<br><sub>A verified digital identity for every project</sub> |
+| 🎮 **Play**<br><sub>XP economy, collectible cards, streaks, monthly TEKA Nights</sub> | 🔐 **Secure**<br><sub>scrypt auth, zod-validated APIs, server-side anti-cheat</sub> | 🌐 **Speak**<br><sub>7 full locales with true RTL for Persian & Arabic</sub> |
+
 </div>
 
----
-
-## 🏆 TEKA Arena — the game layer
-
-The old desktop shell is gone — every module now lives **directly in the main
-navigation bar**, one click away at all times. No windows, no metafloor: each
-game is a first-class, full-screen experience:
-
-```
-help · apps · open <app> · status · whoami · neofetch · date · echo
-matrix [on|off] · clear
-teka learn <course>     # jump straight into a course
-teka <app>              # open any arena module by name (teka boss, teka pet …)
-battle @user            # challenge someone (for glory)
-…and maybe one secret. maybe.
-```
-
-- 🟢 **Matrix mode** — full-screen falling code overlay (`Ctrl+Shift+M`)
-- 🌌 **TEKA NIGHTS strip** — live countdown to the next monthly event, red-alert theming when it's live
-- 🔗 **Deep links** — `teka learn css` opens the academy scrolled to the CSS course
-- 🗺️ **Arena Hub** — a launcher grid with all 12 modules, records and stats
-
 <details>
-<summary><b>The 12 Arena modules</b></summary>
+<summary><b>🖼️ Feel the product — gallery</b></summary>
 
-| App | What it does |
-|---|---|
-| 🗺️ **Skill Tree** | Galaxy-map progression — nodes unlock as you complete prerequisites |
-| ⚔️ **Boss Fight** | A boss at the end of every course: correct answers deal damage, mistakes hurt you. Beat the final boss → earn a title like *“Python Slayer”* |
-| 🐣 **Code Pet** | An egg that hatches and evolves as you learn. Skip 3 days and it gets hungry — a streak system that holds a gentle grudge |
-| 🔴🔵 **Red vs Blue War** | Pick a side at signup; weekly war events with live team scoring |
-| 🃏 **Coder Cards** | Collectible profile cards with unique serial numbers and rarities (Legendary cards for boss slayers & 100-day streaks) |
-| 🪙 **Shop** | Spend TEKA Coins on profile frames, boosts and card packs |
-| 🕵️ **Crime Scene** | Digital forensics mini-games: analyze logs, trace IPs, close the case |
-| ⏱️ **Speedrun** | Global module timers with a record board |
-| ⏳ **Time Machine** | Animated replay of your entire learning journey |
-| 🔥 **Heatmap** | GitHub-style daily activity grid |
-| 🎙️ **Voice Rooms** | Topic rooms with AI-narrated messages (server-side TTS) |
-| ⌨️ **Terminal** | A real shell with live commands: `teka boss`, `matrix on`, `neofetch`, one secret easter egg |
+<div align="center">
+
+| Arena Boss Fight | Skill Tree | Code Pet |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/boss-arena.png" alt="Boss Fight" width="270"> | <img src="docs/screenshots/skill-tree.png" alt="Skill Tree" width="270"> | <img src="docs/screenshots/code-pet.png" alt="Code Pet" width="270"> |
+
+| Coder Cards | Matrix Mode | Terminal |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/coder-cards.png" alt="Coder Cards" width="270"> | <img src="docs/screenshots/matrix-mode.png" alt="Matrix mode" width="270"> | <img src="docs/screenshots/teka-os-terminal.png" alt="Terminal" width="270"> |
+
+</div>
 
 </details>
 
----
+<img src=".github/assets/divider.svg" width="100%">
+
+## 🧬 The Global Engine — eight systems, one nexus
+
+The next generation of TEKA NEXUS is an **eight-system expansion** — and the
+build log is public, commit by commit:
+
+| # | System | Status |
+|:---:|---|---|
+| 1 | 🌌 **Live Universe** — a WebGL 3D globe rendering *real* community aggregates via `/api/universe` | ✅ **Shipped** — `v1.74.0` |
+| 2 | 🧬 **Project DNA** — a verified digital identity & history for every project | ✅ **Shipped** — `v1.75.0` |
+| 3 | 🤖 **AI Autonomous Studio** — six specialized agents with human approval checkpoints | 🚧 Planned |
+| 4 | ⚔️ **War Room** — permanent decision records: context, options, verdicts | 🚧 Planned |
+| 5 | 🧠 **Code Intelligence** — GitHub *OAuth-only* repo intelligence; never passwords, never untrusted code execution | 🚧 Planned |
+| 6 | 🏅 **Global Challenges** — judged engineering competitions | 🚧 Planned |
+| 7 | 🕸️ **Knowledge Graph** — semantic search over real indexed data | 🚧 Planned |
+| 8 | 👯 **Digital Twin** — telemetry that is always labeled: *actual / calculated / simulated / AI-predicted* | 🚧 Planned |
+
+> ⚠️ **Integrity rule of the house:** we never present estimates as facts, never
+> ship mock data as real information, and never mark anything "done" that
+> wasn't tested end-to-end. What you see checked above is exactly what exists.
+
+<img src=".github/assets/divider.svg" width="100%">
 
 ## 🎓 TEKA Academy — 300 lessons, zero setup
 
 Four tracks, each engineered around **doing**, not watching:
 
 | Track | Lessons | Engine |
-|---|---|---|
-| 🐍 **Python** | 76 | Custom **pylite interpreter** — a Python subset that runs entirely in the browser (variables, control flow, functions, loops, lists, dicts, strings) |
-| 🌐 **HTML** | 73 | Live preview + **DOM assertions** (element presence, text, nesting, attributes) |
-| 🎨 **CSS** | 81 | Live preview + **computed-style grading** (`display: flex` etc. verified against the rendered DOM) |
-| ⚡ **JavaScript** | 70 | Sandboxed iframe runtime with **synchronous deterministic tests** (no fetch/timers/random in challenges) |
+|---|:---:|---|
+| 🐍 **Python** | 76 | Custom **pylite interpreter** — a Python subset running entirely in the browser |
+| 🌐 **HTML** | 73 | Live preview + **DOM assertions** |
+| 🎨 **CSS** | 81 | Live preview + **computed-style grading** against the rendered DOM |
+| ⚡ **JavaScript** | 70 | Sandboxed iframe runtime with **deterministic tests** |
 
-**300 lessons total** — every one bilingual, compact and practical.
-
-Every lesson follows the same pedagogy: **2 theory steps → quiz → auto-graded challenge**
-(starter code, solution, 3 progressive hints).
+**300 lessons total** — every one bilingual, compact, practical. Pedagogy:
+**2 theory steps → quiz → auto-graded challenge** (starter code, solution,
+3 progressive hints).
 
 Plus the **Learning Portal**: learning paths, Bug Detective, Error Encyclopedia,
-Predict-the-Output, a bilingual glossary, per-lesson notes, bookmarks, daily streak,
-12 achievements, a Ctrl+K lesson explorer with full-text search & filters, and a
-**Socratic AI Tutor** (server-side LLM — keys never touch the client).
+Predict-the-Output, bilingual glossary, bookmarks, daily streak, 12 achievements,
+a `Ctrl+K` explorer with full-text search, and a **Socratic AI Tutor** (server-side
+LLM — keys never touch the client).
 
 ### 🏅 Official TEKA License
 A **proctored final exam** (15 minutes, server-graded, max 3 attempts, server-side
-anti-cheat) → a verifiable license certificate with a unique ID per track.
+anti-cheat) → a verifiable certificate with a unique ID per track.
 
----
+## 🏆 TEKA Arena — the game layer
+
+Every module lives **directly in the main navigation bar** — no windows, no
+metafloor, each game a first-class, full-screen experience:
+
+- 🟢 **Matrix mode** — full-screen falling code overlay (`Ctrl+Shift+M`)
+- 🌌 **TEKA NIGHTS strip** — live countdown to the next monthly event
+- 🔗 **Deep links** — `teka learn css` opens the academy at the CSS course
+- ⌨️ **Terminal** — a real shell: `teka boss`, `matrix on`, `neofetch`… and one secret
+
+<details>
+<summary><b>The 12 Arena modules</b></summary>
+
+| App | What it does |
+|---|---|
+| 🗺️ **Skill Tree** | Galaxy-map progression — nodes unlock as prerequisites complete |
+| ⚔️ **Boss Fight** | A boss at the end of every course; beat it → earn titles like *“Python Slayer”* |
+| 🐣 **Code Pet** | An egg that hatches as you learn; skip 3 days and it gets hungry |
+| 🔴🔵 **Red vs Blue War** | Pick a side at signup; weekly wars with live team scoring |
+| 🃏 **Coder Cards** | Collectible cards with serial numbers & rarities |
+| 🪙 **Shop** | Spend TEKA Coins on frames, boosts, card packs |
+| 🕵️ **Crime Scene** | Digital forensics mini-games: logs, IPs, close the case |
+| ⏱️ **Speedrun** | Global module timers with a record board |
+| ⏳ **Time Machine** | Animated replay of your entire learning journey |
+| 🔥 **Heatmap** | GitHub-style daily activity grid |
+| 🎙️ **Voice Rooms** | Topic rooms with AI-narrated messages (server-side TTS) |
+| ⌨️ **Terminal** | A real shell with live commands |
+
+</details>
 
 ## ✨ Feature tour
 
@@ -173,7 +199,7 @@ anti-cheat) → a verifiable license certificate with a unique ID per track.
 <summary><b>Authentication & security</b></summary>
 
 - Email/password with **scrypt** hashing (per-user salt, `timingSafeEqual`)
-- httpOnly session cookies, 30-day server-side sessions (Session table)
+- httpOnly session cookies, 30-day server-side sessions
 - All 60+ REST endpoints zod-validated; authorization checked per-request server-side
 - Anti-cheat for exams and speedruns enforced **server-side**
 - AI & TTS proxied through server routes only — no key ever reaches the browser
@@ -191,7 +217,7 @@ anti-cheat) → a verifiable license certificate with a unique ID per track.
 
 </details>
 
----
+<img src=".github/assets/divider.svg" width="100%">
 
 ## 🏗️ Architecture
 
@@ -204,8 +230,8 @@ anti-cheat) → a verifiable license certificate with a unique ID per track.
                                │  REST (zod-validated, session cookie)
 ┌──────────────────────────────▼─────────────────────────────────────┐
 │                     Next.js API routes (60+)                       │
-│  auth · social · projects · academy · exam · arena (12 modules) · tts│
-│  server-side grading · anti-cheat · LLM proxy (keys stay server)   │
+│  auth · social · projects · academy · exam · arena (12 modules) ·  │
+│  universe · dna · tts · server-side grading · anti-cheat · LLM proxy│
 └───────────────┬────────────────────────────────┬───────────────────┘
                 │ Prisma ORM                     │ socket.io client
 ┌───────────────▼────────────────┐  ┌────────────▼───────────────────┐
@@ -219,6 +245,12 @@ anti-cheat) → a verifiable license certificate with a unique ID per track.
 
 ### Tech stack
 
+<div align="center">
+  <a href="https://skillicons.dev">
+    <img src="https://skillicons.dev/icons?i=ts,nextjs,tailwind,prisma,postgres,bun,vercel,github&theme=dark" alt="Tech stack icons">
+  </a>
+</div>
+
 | Layer | Choice | Why |
 |---|---|---|
 | Framework | **Next.js 16** (App Router, standalone output) | RSC-ready SPA shell, one deploy target |
@@ -230,17 +262,19 @@ anti-cheat) → a verifiable license certificate with a unique ID per track.
 | AI | Server-side LLM tutor + TTS narration | Personalized help, audio lessons |
 | Hosting | Vercel (frontend+API) · Supabase (DB) | CI/CD on push, zero-ops |
 
----
-
 ## 🌐 Internationalization
 
-**English · فارسی · العربية · Español · Français · Русский · 中文** — typed
-dictionaries, locale-aware dates & numbers, full RTL mirroring for Persian &
-Arabic, browser-language detection with persistence. Russian (🇷🇺 Русский)
-joined as the seventh locale — the language of the universities this project
-is addressed to.
+<div align="center">
 
----
+**English** 🇬🇧 · فارسی 🇮🇷 · العربية 🇸🇦 · Español 🇪🇸 · Français 🇫🇷 · Русский 🇷🇺 · 中文 🇨🇳
+
+</div>
+
+Typed dictionaries, locale-aware dates & numbers, full RTL mirroring for
+Persian & Arabic, browser-language detection with persistence. This README
+speaks all seven too — switch at the very top. ⬆️
+
+<img src=".github/assets/divider.svg" width="100%">
 
 ## 🚀 Quick start
 
@@ -266,56 +300,67 @@ cd mini-services/chat-service && bun run dev
 > 📦 **Production**: Vercel + Supabase — full runbook in [`docs/DEPLOY.md`](docs/DEPLOY.md)
 > (including Android AAB packaging via TWA for app stores).
 
----
-
-## 📁 Repository map
-
-```text
-src/
-  app/                  # "/" SPA shell + /api/** route handlers (REST, zod)
-    api/auth/           #   session auth (login/register/me/logout)
-    api/academy/        #   grading, exam, tutor
-    api/arena/          #   12 arena module backends (boss, pet, war, cards, …)
-  views/                # one client view per product area (SPA router = zustand)
-  components/
-    os/                 # TEKA Arena: terminal, matrix, 12 game modules
-    academy/            # lesson player, explorer, achievements
-    landing/ auth/ shell/ shared/ pulse/ project/
-  lib/
-    academy/            # course data + pylite interpreter + exam engine
-    os/                 # economy, boss/tree/war logic, session store, strings
-    i18n/               # 7 typed locales (fa en ar es fr ru zh)
-mini-services/          # socket.io chat service (own port, own package.json)
-docs/                   # API contract, deploy, Supabase, SEO, OAuth guides
-```
-
----
-
-## ✅ Honest status
-
-**Implemented & end-to-end browser-tested:** auth + onboarding, TEKA Arena (terminal
-with live commands, matrix mode, all 12 modules as first-class main-nav views),
-academy 300 lessons with auto-grading (Python interpreter, HTML/CSS/JS engines),
-proctored exam → license, social feed/projects/tasks/milestones/team chat/DM/notifications,
-XP + coins + cards + war + pet economy, heatmap + time machine + speedrun,
-AI tutor + TTS, 7 locales, PWA.
-
-**Known trade-offs:** sockets for chat run as a separate mini-service (by design);
-voice rooms use AI narration clips rather than full WebRTC audio (deliberate scope cut);
-the desktop window manager was retired on purpose — every module deserves the full screen.
-
----
-
 ## 🗺️ Roadmap
 
+- [x] 🌌 **Live Universe** — real-data WebGL globe (`v1.74.0`)
+- [x] 🧬 **Project DNA** — verified project identity (`v1.75.0`)
+- [ ] 🤖 **AI Autonomous Studio** — 6 agents, human approval checkpoints
+- [ ] ⚔️ **War Room** — decision records
+- [ ] 🧠 **Code Intelligence** — GitHub OAuth-only repo intelligence
+- [ ] 🏅 **Global Challenges** — judged competitions
+- [ ] 🕸️ **Knowledge Graph** — semantic search
+- [ ] 👯 **Digital Twin** — labeled telemetry
 - [ ] **Hack Zone** — CTF-style security challenges with a hacker rank ladder
-- [ ] WebRTC audio in Voice Rooms (live voice, not just narration)
-- [ ] Season-based leaderboards with placement rewards
-- [ ] Code Battle — 1v1 live duels on the same problem
-- [ ] More tracks: Git, SQL, React, and a full **Security** curriculum
-- [ ] 🇷🇺 Russian scholarship chapter — adapt TEKA NEXUS into a bilingual (ru/en) admissions dossier for Russian universities
+- [ ] WebRTC audio in Voice Rooms · season leaderboards · Code Battle 1v1 duels
+- [ ] More tracks: Git, SQL, React, full **Security** curriculum
+- [ ] 🇷🇺 Russian scholarship chapter — bilingual (ru/en) admissions dossier
 
----
+## 🤝 Contributing
+
+This project is built by one person — **contributions are not just welcome, they are the future**.
+
+| Way in | Start here |
+|---|---|
+| 💻 Code | [`CONTRIBUTING.md`](CONTRIBUTING.md) → pick an issue → PR |
+| 🌍 Translation | Improve any of the 7 locales in `src/lib/i18n/` or translate docs |
+| 🎓 Content | Propose lessons or challenge ideas for the academy |
+| 🐛 Bug hunts | Report in [Issues](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues) — repro steps win hearts |
+| ⭐ Support | Star the repo, share it with one friend who's learning to code |
+
+Read our [Code of Conduct](CODE_OF_CONDUCT.md). Security issues → [`SECURITY.md`](SECURITY.md) (responsible disclosure).
+
+<img src=".github/assets/divider.svg" width="100%">
+
+## 📊 Repository metrics
+
+<div align="center">
+
+<a href="https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS">
+  <img src="https://github-readme-stats.vercel.app/api?username=mhmdsdqi87-cloud&show_icons=true&hide_title=false&title_color=F5D678&icon_color=D4AF37&text_color=C9C9C9&bg_color=0D0D0D&border_color=8A6D1F&hide_rank=false&show_owner=false" alt="Mohammad Sadeghi's GitHub stats" height="165">
+</a>
+<a href="https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS">
+  <img src="https://streak-stats.demolab.com?user=mhmdsdqi87-cloud&background=0D0D0D&border=8A6D1F&ring=D4AF37&fire=F5D678&currStreakLabel=D4AF37&sideLabels=C9C9C9&currStreakNum=FFFFFF&dates=8A8A8A" alt="Contribution streak" height="165">
+</a>
+
+<a href="https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS">
+  <img src="https://github-readme-stats.vercel.app/api/pin/?username=mhmdsdqi87-cloud&repo=TEKA-NEXUS&title_color=F5D678&icon_color=D4AF37&text_color=C9C9C9&bg_color=0D0D0D&border_color=8A6D1F" alt="TEKA NEXUS repo card" width="480">
+</a>
+
+<img src="https://github-profile-trophy.vercel.app/?username=mhmdsdqi87-cloud&theme=onedark&no-frame=true&row=1&column=7&margin-w=8" alt="GitHub trophies" width="880">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mhmdsdqi87-cloud/TEKA-NEXUS/output/github-contribution-grid-snake-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/mhmdsdqi87-cloud/TEKA-NEXUS/output/github-contribution-grid-snake.svg">
+  <img src="https://raw.githubusercontent.com/mhmdsdqi87-cloud/TEKA-NEXUS/output/github-contribution-grid-snake.svg" alt="Contribution snake" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=mhmdsdqi87-cloud/TEKA-NEXUS&type=Date&theme=dark">
+  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=mhmdsdqi87-cloud/TEKA-NEXUS&type=Date">
+  <img src="https://api.star-history.com/svg?repos=mhmdsdqi87-cloud/TEKA-NEXUS&type=Date" alt="Star history chart" width="620">
+</picture>
+
+</div>
 
 ## 📜 License & credits
 
@@ -327,22 +372,14 @@ Released under the [MIT License](LICENSE).
 
 ---
 
-## 📊 Repository stats
-
 <div align="center">
 
-<a href="https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS">
-  <img src="https://github-readme-stats.vercel.app/api/pin/?username=mhmdsdqi87-cloud&repo=TEKA-NEXUS&theme=tokyonight&show_owner=true" alt="TEKA NEXUS — repository stats card">
-</a>
+<img src=".github/assets/divider.svg" width="100%">
 
-<br>
+<sub><i>Designed · engineered · tested · operated by one person. Open to everyone.</i></sub>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=mhmdsdqi87-cloud/TEKA-NEXUS&type=Date&theme=dark">
-  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=mhmdsdqi87-cloud/TEKA-NEXUS&type=Date">
-  <img src="https://api.star-history.com/svg?repos=mhmdsdqi87-cloud/TEKA-NEXUS&type=Date" alt="Star history chart" width="620">
-</picture>
+⭐ **If this project inspires you, a star means the world to a solo builder.**
 
-  <sub>⭐ If this project inspires you, a star on GitHub means a lot.</sub><br>
-  <a href="https://github.com/mhmdsdqi87-cloud">GitHub</a> · <a href="mailto:mhmdsdqi87@gmail.com">mhmdsdqi87@gmail.com</a>
+<a href="https://github.com/mhmdsdqi87-cloud">GitHub</a> · <a href="https://teka-nexus.vercel.app/">Live Platform</a> · <a href="mailto:mhmdsdqi87@gmail.com">mhmdsdqi87@gmail.com</a>
+
 </div>

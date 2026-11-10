@@ -11,7 +11,6 @@ import {
   AuthUser,
 } from "@/lib/auth";
 import { ensureFounderRole, isFounderEmail } from "@/lib/founder";
-import { mirrorUserToSupabaseAuth } from "@/lib/supabase/server";
 import { handle, HttpError, ok, parseBody } from "@/lib/server";
 
 const loginSchema = z.object({
@@ -80,14 +79,6 @@ export async function POST(req: NextRequest) {
     const { token, expiresAt } = await createSession(user.id);
     await setSessionCookie(token, expiresAt);
 
-    // Best-effort backfill mirror into Supabase Auth for accounts created
-    // before the Supabase integration went live (never blocks login).
-    const supabaseMirror = await mirrorUserToSupabaseAuth({
-      email,
-      password: body.password,
-      username: user.username,
-    });
-
-    return ok({ user: toSessionUser(finalUser), token, supabaseMirror });
+    return ok({ user: toSessionUser(finalUser), token });
   });
 }

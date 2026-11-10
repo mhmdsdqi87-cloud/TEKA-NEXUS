@@ -1,12 +1,9 @@
 // TEKA NEXUS — Supabase integration (server-only).
-// Uses the project URL + publishable key for:
-//   1. Live health probes (auth / REST / realtime reachability)
-//   2. Mirroring TEKA registrations into Supabase Auth (GoTrue)
-// Full Postgres (Prisma) access activates when SUPABASE_DB_PASSWORD is set —
-// see prisma/schema.postgres.prisma and supabase/migrations/teka_schema.sql.
+// Uses the project URL + publishable key for live health probes, and the
+// secret key for Storage (avatars) + admin probes. TEKA accounts are NOT
+// mirrored into Supabase Auth — user passwords never leave this server
+// (the plaintext mirror was removed for security in v1.74.0).
 // NEVER import this module from client code.
-
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL ?? "";
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY ?? "";
@@ -25,19 +22,6 @@ export function supabaseSecretConfigured(): boolean {
 
 export function supabaseDbConfigured(): boolean {
   return Boolean(supabaseConfigured() && SUPABASE_DB_PASSWORD);
-}
-
-// Lazily-created singleton for Auth mirroring + future Data API calls.
-let client: SupabaseClient | null = null;
-
-export function getSupabase(): SupabaseClient | null {
-  if (!supabaseConfigured()) return null;
-  if (!client) {
-    client = createClient(SUPABASE_URL, SUPABASE_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-  }
-  return client;
 }
 
 // Compose the full Postgres connection string (only valid once the
@@ -125,32 +109,6 @@ export async function probeJwks(): Promise<JwksProbe> {
     };
   } catch (err) {
     return { ...base, error: err instanceof Error ? err.message : "jwks-probe-failed" };
-  }
-}
-
-// Best-effort mirror: create the same account inside Supabase Auth so the
-// founder can see every TEKA registration in the Supabase dashboard too.
-// Never throws — the local account is the source of truth.
-export async function mirrorUserToSupabaseAuth(input: {
-  email: string;
-  password: string;
-  username: string;
-}): Promise<{ mirrored: boolean; reason?: string }> {
-  const supabase = getSupabase();
-  if (!supabase) return { mirrored: false, reason: "not-configured" };
-  try {
-    const { error } = await supabase.auth.signUp({
-      email: input.email,
-      password: input.password,
-      options: { data: { username: input.username, source: "teka-nexus" } },
-    });
-    if (error) {
-      const alreadyExists = /already|registered|exists/i.test(error.message);
-      return { mirrored: alreadyExists, reason: alreadyExists ? "already-exists" : error.message };
-    }
-    return { mirrored: true };
-  } catch (err) {
-    return { mirrored: false, reason: err instanceof Error ? err.message : "mirror-failed" };
   }
 }
 
@@ -277,29 +235,4 @@ export async function listSupabaseAuthUsers(
   }
 }
 
-// Delete an account from Supabase Auth (admin cleanup, e.g. probe accounts).
-export async function deleteSupabaseAuthUser(userId: string): Promise<boolean> {
-  try {
-    const res = await secretFetch(`/auth/v1/admin/users/${userId}`, { method: "DELETE" });
-    return res.ok || res.status === 404;
-  } catch {
-    return false;
-  }
-}
 
-// Look up a Supabase Auth user by email (admin).
-export async function findSupabaseAuthUserByEmail(
-  email: string
-): Promise<{ id: string } | null> {
-  try {
-    const res = await secretFetch(
-      `/auth/v1/admin/users?per_page=50&query=${encodeURIComponent(email)}`
-    );
-    if (!res.ok) return null;
-    const body = (await res.json()) as { users?: Array<{ id: string; email?: string | null }> };
-    const hit = (body.users ?? []).find((u) => (u.email ?? "").toLowerCase() === email.toLowerCase());
-    return hit ? { id: hit.id } : null;
-  } catch {
-    return null;
-  }
-}

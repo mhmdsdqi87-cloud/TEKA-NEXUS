@@ -14,7 +14,7 @@
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { handle, HttpError, ok, requireUser } from "@/lib/server";
+import { handle, HttpError, ok, parseBody, requireUser } from "@/lib/server";
 import {
   EXAM_COURSES,
   EXAM_RULES,
@@ -148,7 +148,7 @@ const SubmitBody = z.object({
 export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireUser();
-    const body = SubmitBody.parse(await req.json());
+    const body = await parseBody(req, SubmitBody);
 
     const exam = await db.academyExam.findUnique({ where: { id: body.examId } });
     if (!exam || exam.userId !== user.id) throw new HttpError("Exam not found.", 404);

@@ -198,7 +198,7 @@ function Quiz({ questions, locale, t }: { questions: QuizQuestion[]; locale: str
 // Blob URLs are cached per lesson for instant replay; the cache is capped.
 
 const TTS_URL_CACHE_MAX = 20;
-const ttsUrlCache = new Map<string, string>(); // lessonId → blob URL
+const ttsUrlCache = new Map<string, string>(); // "lessonId:ttsLang" → blob URL
 
 // The narrator synthesizes on a serverless backend that can legitimately need
 // ~50s (cold start + speech provider) — the abort window must outlive that.
@@ -418,7 +418,7 @@ export function LessonPlayer({
     if (ttsState === "loading") return;
 
     // Instant replay from the per-lesson blob cache.
-    const cachedUrl = ttsUrlCache.get(lesson.id);
+    const cachedUrl = ttsUrlCache.get(`${lesson.id}:${ttsLang}`);
     if (cachedUrl) {
       playNarrationUrl(cachedUrl);
       return;
@@ -427,7 +427,7 @@ export function LessonPlayer({
     setTtsState("loading");
     try {
       // Session header mirrors lib/api.ts: in the cross-origin preview iframe
-      // cookies are dropped and the middleware needs the token mirror.
+      // cookies are dropped and the proxy needs the token mirror.
       const token = getSessionToken();
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), TTS_TIMEOUT_MS);
@@ -459,7 +459,7 @@ export function LessonPlayer({
       }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      ttsUrlCache.set(lesson.id, url);
+      ttsUrlCache.set(`${lesson.id}:${ttsLang}`, url);
       if (ttsUrlCache.size > TTS_URL_CACHE_MAX) {
         const oldest = ttsUrlCache.keys().next().value;
         if (oldest !== undefined) {

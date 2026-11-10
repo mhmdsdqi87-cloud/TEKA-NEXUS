@@ -8,7 +8,7 @@
 import { z } from "zod";
 import AiSdk from "z-ai-web-dev-sdk";
 
-import { handle, HttpError, ok, requireUser } from "@/lib/server";
+import { handle, HttpError, ok, parseBody, requireUser } from "@/lib/server";
 import { getCourse, pick } from "@/lib/academy";
 import {
   SDK_TIMEOUT_MS,
@@ -171,7 +171,10 @@ type OfflineLesson = {
   courseTitle?: string;
 };
 
-function extractLesson(context: { courseId?: string; lessonId?: string } | undefined): OfflineLesson {
+function extractLesson(
+  context: { courseId?: string; lessonId?: string } | undefined,
+  locale: string,
+): OfflineLesson {
   const out: OfflineLesson = { theory: "" };
   if (!context?.courseId) return out;
   const course = getCourse(context.courseId);
@@ -185,22 +188,22 @@ function extractLesson(context: { courseId?: string; lessonId?: string } | undef
       break;
     }
   }
-  if (!lesson) return { courseTitle: pick(course.title, "en"), theory: "" };
+  if (!lesson) return { courseTitle: pick(course.title, locale), theory: "" };
 
   let theory = "";
   outer: for (const step of lesson.steps) {
     if (step.kind !== "theory") continue;
     for (const block of step.blocks) {
       if (block.type === "text" || block.type === "tip") {
-        theory += (theory ? " " : "") + pick(block, "en");
+        theory += (theory ? " " : "") + pick(block, locale);
         if (theory.length >= OFFLINE_THEORY_CAP) break outer;
       }
     }
   }
   return {
-    courseTitle: pick(course.title, "en"),
-    lessonTitle: pick(lesson.title, "en"),
-    lessonGoal: pick(lesson.goal, "en"),
+    courseTitle: pick(course.title, locale),
+    lessonTitle: pick(lesson.title, locale),
+    lessonGoal: pick(lesson.goal, locale),
     theory: theory.slice(0, OFFLINE_THEORY_CAP),
   };
 }
@@ -327,7 +330,7 @@ function localTopicReply(locale: string, question: string): string | null {
 export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireUser();
-    const body = Body.parse(await req.json());
+    const body = await parseBody(req, Body);
     rateLimit(user.id);
 
     const locale = body.context?.locale ?? "en";
@@ -379,7 +382,7 @@ export async function POST(req: Request) {
       const question = lastUser?.content ?? "";
       const local = localTopicReply(locale, question);
       if (local) return ok({ reply: local, offline: true });
-      const lesson = extractLesson(body.context);
+      const lesson = extractLesson(body.context, locale);
       const reply = locale === "fa"
         ? offlineReplyFa(lesson, question)
         : offlineReplyEn(lesson, question);

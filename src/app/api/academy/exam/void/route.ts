@@ -8,7 +8,7 @@
 
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { handle, HttpError, ok, requireUser } from "@/lib/server";
+import { handle, HttpError, ok, parseBody, requireUser } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ const VoidBody = z.object({
 export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireUser();
-    const body = VoidBody.parse(await req.json());
+    const body = await parseBody(req, VoidBody);
 
     const exam = await db.academyExam.findUnique({ where: { id: body.examId } });
     if (!exam || exam.userId !== user.id) throw new HttpError("Exam not found.", 404);

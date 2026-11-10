@@ -15,7 +15,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import AiSdk from "z-ai-web-dev-sdk";
 
-import { fail, handle, HttpError, requireUser } from "@/lib/server";
+import { fail, handle, HttpError, parseBody, requireUser } from "@/lib/server";
 import { withTimeout } from "@/lib/ai-provider";
 
 export const dynamic = "force-dynamic";
@@ -154,7 +154,7 @@ async function externalSpeech(
 export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireUser();
-    const { text, lang = "en" } = Body.parse(await req.json());
+    const { text, lang = "en" } = await parseBody(req, Body);
     rateLimit(user.id);
 
     const key = createHash("sha1").update(`${lang}|${text}`).digest("hex");
@@ -179,13 +179,17 @@ export async function POST(req: Request) {
     // 2) Sandbox SDK (private endpoint — works in this dev environment).
     try {
       const sdk = await AiSdk.create();
-      const response = await sdk.audio.tts.create({
-        input: text,
-        voice: "tongtong",
-        speed: 1.0,
-        response_format: "wav",
-        stream: false,
-      });
+      const response = await withTimeout(
+        sdk.audio.tts.create({
+          input: text,
+          voice: "tongtong",
+          speed: 1.0,
+          response_format: "wav",
+          stream: false,
+        }),
+        EXTERNAL_TTS_TIMEOUT_MS,
+        "sdk-tts",
+      );
       const arrayBuffer = await response.arrayBuffer();
       const entry: CachedAudio = {
         buffer: Buffer.from(new Uint8Array(arrayBuffer)),

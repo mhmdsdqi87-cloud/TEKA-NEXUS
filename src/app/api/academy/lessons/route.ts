@@ -7,7 +7,7 @@ import { randomBytes } from "crypto";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { handle, HttpError, ok, requireUser } from "@/lib/server";
+import { handle, HttpError, ok, parseBody, requireUser } from "@/lib/server";
 import { XP_RULES } from "@/lib/constants";
 import { courseLessons, getCourse } from "@/lib/academy";
 import { awardCoins, logActivity } from "@/lib/os/economy"; // Task 19: TEKA OS hooks
@@ -55,7 +55,7 @@ async function award(userId: string, eventType: string, sourceType: string, sour
 export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireUser();
-    const body = Body.parse(await req.json());
+    const body = await parseBody(req, Body);
 
     const course = getCourse(body.courseId);
     if (!course) throw new HttpError("Unknown course.", 404);

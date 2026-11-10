@@ -9,16 +9,24 @@
 //   • column additions guarded by ADD COLUMN IF NOT EXISTS
 //   • current-week challenge auto-created through the normal Prisma path
 //
-// Guard: requires ?key=<BOOTSTRAP_KEY> (constant below, private repo).
+// Guard: requires ?key=<BOOTSTRAP_KEY>. The secret never lives in source
+// (this repo is public): an env override wins, otherwise the key is derived
+// from DATABASE_URL — anyone holding DB credentials already owns the DB, and
+// the derived value cannot be reconstructed from the public repo.
 
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { ok, fail, handle } from "@/lib/server";
+import { createHash } from "node:crypto";
 import { ensureCurrentChallenge } from "@/lib/challenge";
 
 export const dynamic = "force-dynamic";
 
-const BOOTSTRAP_KEY = "teka-pulse-2026-x7k9m2";
+const BOOTSTRAP_KEY =
+  process.env.BOOTSTRAP_KEY ??
+  createHash("sha256")
+    .update(`teka-bootstrap-v2:${process.env.DATABASE_URL ?? ""}`)
+    .digest("hex");
 
 const STEPS: { name: string; sql: string }[] = [
   {

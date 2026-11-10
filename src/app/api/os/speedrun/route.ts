@@ -3,7 +3,7 @@
 // enforces a humanly-possible floor and complete lessons, then stores the
 // best time per user per module. GET serves the global leaderboard.
 
-import { createHmac } from "crypto";
+import { createHash, createHmac } from "crypto";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { handle, ok, requireUser, parseBody, HttpError } from "@/lib/server";
@@ -12,7 +12,14 @@ import { awardXp, awardCoins, logActivity } from "@/lib/os/economy";
 
 export const dynamic = "force-dynamic";
 
-const SECRET = "teka-speedrun-hmac-2026";
+// HMAC secret must never live in source (this repo is public). Env override
+// wins; otherwise derive from DATABASE_URL — stable per deployment, and not
+// forgeable from anything public. (The old hardcoded value is dead on purpose.)
+const SECRET =
+  process.env.SPEEDRUN_HMAC_SECRET ??
+  createHash("sha256")
+    .update(`teka-speedrun-v2:${process.env.DATABASE_URL ?? ""}`)
+    .digest("hex");
 
 /** ISO week key like "2026-W07" (Monday-based, UTC) — matches WarAction.weekKey. */
 function currentIsoWeek(d = new Date()): string {

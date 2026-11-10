@@ -38,7 +38,7 @@ model User {
   bio                 String    @default("")
   avatarColor         String    @default("cyan") // brand gradient key: cyan|violet|ember|lime|rose|gold
   avatarUrl           String?   // optional external avatar
-  googleId            String?   @unique // Google OAuth subject (linked accounts)
+  googleId            String?   @unique // LEGACY: Google OAuth was removed in v1.70.0 — column kept (nullable, unused) to avoid a destructive migration; safe to drop in a future cleanup
   websiteUrl          String    @default("")
   role                String    @default("user") // user | moderator | admin
   goals               String    @default("[]") // JSON: build|contribute|learn|discover

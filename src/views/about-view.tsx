@@ -183,7 +183,7 @@ const FEATURES = [
 const STACK = [
   "Next.js 16", "TypeScript 5", "Tailwind CSS 4", "shadcn/ui", "Prisma ORM",
   "PostgreSQL · Supabase", "socket.io", "framer-motion", "PWA",
-  "z-ai LLM & TTS", "Vercel",
+  "LLM Tutoring & TTS", "Vercel",
 ];
 
 const GITHUB_URL = "https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS.git";

@@ -1,8 +1,8 @@
 // GET /api/supabase/status — live Supabase connection status.
-// Public read-only probe so the founder panel can show real connectivity.
+// FOUNDER-ONLY probe (infra details + auth-user counts must not be public).
 
 import { NextRequest } from "next/server";
-import { handle, ok } from "@/lib/server";
+import { fail, handle, ok, requireUser } from "@/lib/server";
 import {
   probeSupabase,
   probeJwks,
@@ -13,6 +13,9 @@ import {
 
 export async function GET(_req: NextRequest) {
   return handle(async () => {
+    const me = await requireUser();
+    if (me.role !== "FOUNDER") return fail("Not found.", 404);
+
     const probe = await probeSupabase();
     const secretReady = supabaseSecretConfigured();
     const jwks = await probeJwks();

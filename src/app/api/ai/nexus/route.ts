@@ -8,14 +8,14 @@
 //
 // Provider chain (mirrors /api/academy/tutor):
 //   1. External OpenAI-compatible provider (AI_BASE_URL/AI_API_KEY on prod)
-//   2. Sandbox SDK (z-ai-web-dev-sdk — backend only)
+//   2. Sandbox SDK (backend only)
 //   3. Honest offline fallback built from REAL platform data (never fabricates)
 //
 // Stateless: the client re-sends capped history each turn. Per-user sliding
 // window rate limit. maxDuration=60.
 
 import { z } from "zod";
-import ZAI from "z-ai-web-dev-sdk";
+import AiSdk from "z-ai-web-dev-sdk";
 
 import { db } from "@/lib/db";
 import { handle, HttpError, ok, requireUser } from "@/lib/server";
@@ -265,7 +265,7 @@ function externalProviderConfig() {
     base,
     key,
     model: process.env.AI_MODEL || "glm-4.5-flash",
-    isZai: /z\.ai$/i.test(new URL(base).hostname),
+    managedFreeApi: /z\.ai$/i.test(new URL(base).hostname),
   };
 }
 
@@ -279,7 +279,7 @@ async function externalCompletion(
     messages: [{ role: "system", content: system }, ...messages],
     max_tokens: 900,
   };
-  if (cfg.isZai) body.thinking = { type: "disabled" };
+  if (cfg.managedFreeApi) body.thinking = { type: "disabled" };
   const res = await withTimeout(
     fetch(`${cfg.base}/chat/completions`, {
       method: "POST",
@@ -378,14 +378,14 @@ export async function POST(req: Request) {
         }
       }
       // 2) Sandbox SDK (private endpoint — works in this dev environment).
-      const zai = await withTimeout(ZAI.create(), SDK_TIMEOUT_MS, "zai-create");
+      const sdk = await withTimeout(AiSdk.create(), SDK_TIMEOUT_MS, "sdk-create");
       const completion = await withTimeout(
-        zai.chat.completions.create({
+        sdk.chat.completions.create({
           messages: sdkMessages,
           thinking: { type: "disabled" },
         }),
         SDK_TIMEOUT_MS,
-        "zai-completion",
+        "sdk-completion",
       );
       const raw = completion?.choices?.[0]?.message?.content;
       const reply = typeof raw === "string" ? raw.trim() : "";

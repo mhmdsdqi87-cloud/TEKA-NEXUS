@@ -818,7 +818,10 @@ export function LandingView() {
               <StaggerItem>
                 <h1 className="relative mt-4 font-display text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
                   {t("landing.hero.title1")}
-                  <span className="relative inline-block text-gradient">
+                  {/* inline (not inline-block): keeps trailing punctuation glued to
+                      the gradient run — an inline-block here wraps a lone "." or
+                      "!" onto its own line in Latin locales. */}
+                  <span className="relative inline text-gradient">
                     {t("landing.hero.title2")}
                     <span
                       aria-hidden

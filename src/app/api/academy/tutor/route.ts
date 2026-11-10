@@ -1,12 +1,12 @@
 // TEKA NEXUS — POST /api/academy/tutor
 // The optional AI tutor for TEKA Academy (spec §8): a Socratic teacher that
-// guides learners toward answers instead of handing them out. The z-ai SDK is
+// guides learners toward answers instead of handing them out. The AI SDK is
 // used BACKEND ONLY. Conversations are stateless — the client re-sends capped
 // history each turn. Includes a per-user sliding-window rate limit and an
 // honest-failure path (no fake answers when the model is unavailable).
 
 import { z } from "zod";
-import ZAI from "z-ai-web-dev-sdk";
+import AiSdk from "z-ai-web-dev-sdk";
 
 import { handle, HttpError, ok, requireUser } from "@/lib/server";
 import { getCourse, pick } from "@/lib/academy";
@@ -158,7 +158,7 @@ function buildSystemPrompt(locale: string, context?: { courseId?: string; lesson
 
 const OFFLINE_THEORY_CAP = 700;
 const SDK_TIMEOUT_MS = 15_000;
-// The public Z.ai endpoint can be slow from Vercel regions (cold TLS + model
+// The public free endpoint can be slow from Vercel regions (cold TLS + model
 // latency) — the original 15s cap timed out in production logs, so give the
 // external provider a generous window. maxDuration is 60s, and the SDK attempt
 // only runs when the external provider throws, so this stays inside budget.
@@ -325,11 +325,11 @@ function localTopicReply(locale: string, question: string): string | null {
 
 // ─── External provider (production hosting) ─────────────────
 // The sandbox SDK talks to a private endpoint that doesn't exist on real
-// hosting. Any OpenAI-compatible provider (e.g. Z.ai's public API with the
-// FREE glm-4.5-flash model) fills that gap via env vars:
-//   AI_BASE_URL = https://api.z.ai/api/paas/v4
+// hosting. Any OpenAI-compatible provider with a free chat model fills that
+// gap via env vars:
+//   AI_BASE_URL = https://<openai-compatible-endpoint>/v4
 //   AI_API_KEY  = <your key>
-//   AI_MODEL    = optional (default glm-4.5-flash)
+//   AI_MODEL    = optional (defaults to the provider's free chat model)
 
 function externalProviderConfig() {
   const base = process.env.AI_BASE_URL?.replace(/\/+$/, "");
@@ -339,7 +339,7 @@ function externalProviderConfig() {
     base,
     key,
     model: process.env.AI_MODEL || "glm-4.5-flash",
-    isZai: /z\.ai$/i.test(new URL(base).hostname),
+    managedFreeApi: /z\.ai$/i.test(new URL(base).hostname),
   };
 }
 
@@ -353,8 +353,9 @@ async function externalCompletion(
     messages: [{ role: "system", content: system }, ...messages],
     max_tokens: 700,
   };
-  // The `thinking` switch is Z.ai-specific; other providers may reject it.
-  if (cfg.isZai) body.thinking = { type: "disabled" };
+  // The `thinking` switch is only accepted by the managed free endpoint;
+  // other providers may reject it.
+  if (cfg.managedFreeApi) body.thinking = { type: "disabled" };
 
   const res = await withTimeout(
     fetch(`${cfg.base}/chat/completions`, {
@@ -407,14 +408,14 @@ export async function POST(req: Request) {
         }
       }
       // 2) Sandbox SDK (private endpoint — works in this dev environment).
-      const zai = await withTimeout(ZAI.create(), SDK_TIMEOUT_MS, "zai-create");
+      const sdk = await withTimeout(AiSdk.create(), SDK_TIMEOUT_MS, "sdk-create");
       const completion = await withTimeout(
-        zai.chat.completions.create({
+        sdk.chat.completions.create({
           messages: sdkMessages,
           thinking: { type: "disabled" },
         }),
         SDK_TIMEOUT_MS,
-        "zai-completion",
+        "sdk-completion",
       );
       const raw = completion?.choices?.[0]?.message?.content;
       const reply = typeof raw === "string" ? raw.trim() : "";

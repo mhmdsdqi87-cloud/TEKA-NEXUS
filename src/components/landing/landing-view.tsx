@@ -66,6 +66,7 @@ import {
   PulsingDot,
   Reveal,
   ScrollProgress,
+  SpotlightCard,
   Stagger,
   StaggerItem,
   TapScale,
@@ -360,6 +361,14 @@ function SectionHeading({
     <div className="max-w-2xl">
       <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-cyan-300/80">{eyebrow}</span>
       <h2 className="mt-3 font-display text-2xl font-bold tracking-tight sm:text-4xl">{title}</h2>
+      <motion.span
+        aria-hidden
+        className="mt-4 block h-px w-28 origin-left rounded-full bg-gradient-to-r from-cyan-400/80 via-violet-400/60 to-transparent rtl:origin-right"
+        initial={{ scaleX: 0, opacity: 0 }}
+        whileInView={{ scaleX: 1, opacity: 1 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.8, ease: EASE, delay: 0.15 }}
+      />
       {subtitle && <p className="mt-3 text-sm text-muted-foreground sm:text-base">{subtitle}</p>}
     </div>
   );
@@ -391,7 +400,7 @@ function ProductPreview() {
 
   return (
     <div>
-      <div className="aurora-border overflow-hidden rounded-2xl">
+      <div className="aurora-border aurora-shift overflow-hidden rounded-2xl">
         {/* browser chrome */}
         <div className="flex items-center gap-2 border-b border-white/[0.06] bg-white/[0.03] px-4 py-3">
           <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
@@ -499,7 +508,9 @@ function Footer() {
   ];
 
   return (
-    <footer className="mt-auto border-t border-white/[0.06] bg-white/[0.015]">
+    <footer className="relative mt-auto border-t border-white/[0.06] bg-white/[0.015]">
+      {/* glowing hairline on the footer seam */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <Reveal y={12}>
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
@@ -949,24 +960,26 @@ export function LandingView() {
             {FEATURES.map((f, i) => (
               <Reveal key={f.title} delay={0.08 * i} className="h-full">
                 <HoverLift className="h-full">
-                  <article className="glass-card flex h-full flex-col rounded-xl p-6">
-                    <div
-                      className={cn(
-                        "flex h-11 w-11 items-center justify-center rounded-xl",
-                        f.tone === "cyan" ? "bg-cyan-500/10 text-cyan-300" : "bg-violet-500/10 text-violet-300"
-                      )}
-                    >
-                      <f.icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="mt-4 font-display text-lg font-semibold">{f.title}</h3>
-                    <p className="mb-5 mt-2 text-sm leading-relaxed text-muted-foreground">{f.body}</p>
-                    <div className="mt-auto border-t border-white/[0.06] pt-4 text-xs text-muted-foreground/80">
-                      <span className="font-mono uppercase tracking-[0.18em] text-foreground/70">
-                        {t("landing.features.howLabel")}
-                      </span>
-                      <p className="mt-1.5">{f.how}</p>
-                    </div>
-                  </article>
+                  <SpotlightCard className="h-full rounded-xl">
+                    <article className="glass-card flex h-full flex-col rounded-xl p-6">
+                      <div
+                        className={cn(
+                          "flex h-11 w-11 items-center justify-center rounded-xl",
+                          f.tone === "cyan" ? "bg-cyan-500/10 text-cyan-300" : "bg-violet-500/10 text-violet-300"
+                        )}
+                      >
+                        <f.icon className="h-5 w-5" />
+                      </div>
+                      <h3 className="mt-4 font-display text-lg font-semibold">{f.title}</h3>
+                      <p className="mb-5 mt-2 text-sm leading-relaxed text-muted-foreground">{f.body}</p>
+                      <div className="mt-auto border-t border-white/[0.06] pt-4 text-xs text-muted-foreground/80">
+                        <span className="font-mono uppercase tracking-[0.18em] text-foreground/70">
+                          {t("landing.features.howLabel")}
+                        </span>
+                        <p className="mt-1.5">{f.how}</p>
+                      </div>
+                    </article>
+                  </SpotlightCard>
                 </HoverLift>
               </Reveal>
             ))}
@@ -999,7 +1012,8 @@ export function LandingView() {
           <div className="mt-10 grid gap-4 md:grid-cols-5 md:gap-6">
             <Reveal delay={0.05} className="h-full md:col-span-3">
               <HoverLift className="h-full">
-                <article className="glass-card relative flex h-full flex-col overflow-hidden rounded-2xl p-6">
+                <SpotlightCard className="h-full rounded-2xl">
+                  <article className="glass-card relative flex h-full flex-col overflow-hidden rounded-2xl p-6">
                   <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-300">
@@ -1014,6 +1028,7 @@ export function LandingView() {
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("landing.arena.cardBody")}</p>
                   <ArenaMini />
                 </article>
+                </SpotlightCard>
               </HoverLift>
             </Reveal>
             <Reveal delay={0.12} className="h-full md:col-span-2">
@@ -1061,7 +1076,8 @@ export function LandingView() {
           <div className="mt-10 grid gap-4 md:grid-cols-2 md:gap-6">
             <Reveal delay={0.05} className="h-full">
               <HoverLift className="h-full">
-                <article className="glass-card relative flex h-full flex-col overflow-hidden rounded-2xl p-6">
+                <SpotlightCard className="h-full rounded-2xl">
+                  <article className="glass-card relative flex h-full flex-col overflow-hidden rounded-2xl p-6">
                   <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-300">
@@ -1076,11 +1092,13 @@ export function LandingView() {
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("landing.academy.pythonBody")}</p>
                   <PythonMini />
                 </article>
+                </SpotlightCard>
               </HoverLift>
             </Reveal>
             <Reveal delay={0.12} className="h-full">
               <HoverLift className="h-full">
-                <article className="glass-card relative flex h-full flex-col overflow-hidden rounded-2xl p-6">
+                <SpotlightCard className="h-full rounded-2xl">
+                  <article className="glass-card relative flex h-full flex-col overflow-hidden rounded-2xl p-6">
                   <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/60 to-transparent" />
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300">
@@ -1095,6 +1113,7 @@ export function LandingView() {
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t("landing.academy.htmlBody")}</p>
                   <HtmlMini />
                 </article>
+                </SpotlightCard>
               </HoverLift>
             </Reveal>
           </div>
@@ -1136,17 +1155,19 @@ export function LandingView() {
             {HOW_STEPS.map((s, i) => (
               <Reveal key={s.title} delay={0.08 * i} className="h-full">
                 <HoverLift className="h-full">
-                  <article className="glass-card flex h-full flex-col rounded-xl p-6">
-                    <AnimatedNumber
-                      value={i + 1}
-                      duration={0.9}
-                      delay={0.2 + 0.08 * i}
-                      format={(n) => String(Math.round(n)).padStart(2, "0")}
-                      className="font-mono text-2xl font-medium text-gradient"
-                    />
-                    <h3 className="mt-3 font-display text-lg font-semibold">{s.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
-                  </article>
+                  <SpotlightCard className="h-full rounded-xl">
+                    <article className="glass-card flex h-full flex-col rounded-xl p-6">
+                      <AnimatedNumber
+                        value={i + 1}
+                        duration={0.9}
+                        delay={0.2 + 0.08 * i}
+                        format={(n) => String(Math.round(n)).padStart(2, "0")}
+                        className="font-mono text-2xl font-medium text-gradient"
+                      />
+                      <h3 className="mt-3 font-display text-lg font-semibold">{s.title}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+                    </article>
+                  </SpotlightCard>
                 </HoverLift>
               </Reveal>
             ))}

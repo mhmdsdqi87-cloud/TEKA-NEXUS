@@ -1,42 +1,57 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Space_Grotesk, JetBrains_Mono, Vazirmatn, Noto_Sans_Arabic } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+
+// All fonts are SELF-HOSTED (woff2 in ./fonts) instead of next/font/google.
+// Reason: Google-font fetching at build time made Vercel builds fail hard
+// (module-not-found inside generated font CSS when the fetch flakes).
+// Self-hosted files make the build hermetic — zero font network dependency.
+// Arabic-script fonts ship their Arabic subset; Latin glyphs inside Persian/
+// Arabic text fall back to Geist via the CSS stacks in globals.css.
 import { Toaster } from "@/components/ui/sonner";
 import { PWARegister } from "@/components/shared/pwa-register";
 
-const geistSans = Geist({
+const geistSans = localFont({
+  src: "./fonts/geist-latin-wght-normal.woff2",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  weight: "100 900",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "./fonts/geist-mono-latin-wght-normal.woff2",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: "100 800",
+  display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
+const spaceGrotesk = localFont({
+  src: "./fonts/space-grotesk-latin-wght-normal.woff2",
   variable: "--font-space-grotesk",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: "300 700",
+  display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const jetbrainsMono = localFont({
+  src: "./fonts/jetbrains-mono-latin-wght-normal.woff2",
   variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: "100 800",
+  display: "swap",
 });
 
 // RTL script fonts — Persian (Vazirmatn) and Arabic (Noto Sans Arabic).
-const vazirmatn = Vazirmatn({
+const vazirmatn = localFont({
+  src: "./fonts/vazirmatn-arabic-wght-normal.woff2",
   variable: "--font-vazirmatn",
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
+  weight: "100 900",
+  display: "swap",
 });
 
-const notoArabic = Noto_Sans_Arabic({
+const notoArabic = localFont({
+  src: "./fonts/noto-sans-arabic-arabic-wght-normal.woff2",
   variable: "--font-noto-arabic",
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
+  weight: "100 900",
+  display: "swap",
 });
 
 // Google Search Console / Bing / Yandex verification.

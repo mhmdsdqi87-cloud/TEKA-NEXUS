@@ -4,6 +4,8 @@
 // A full-bleed canvas behind the landing hero: warp starfield flying outward
 // from the hero core + occasional shooting stars. Pure canvas, DPR-aware,
 // pauses when the tab is hidden. Cyan/violet TEKA palette.
+// v1.73: pointer parallax — the warp core drifts toward the cursor and stars
+// twinkle; reduced-motion users get a single static starfield frame.
 
 import { useEffect, useRef } from "react";
 
@@ -36,6 +38,13 @@ export function HeroCanvas({ className }: { className?: string }) {
     let cx = 0;
     let cy = 0;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    // Pointer parallax state: raw target from the pointer + smoothed follower.
+    let tx = 0.5;
+    let ty = 0.5;
+    let px = 0.5;
+    let py = 0.5;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 
     const stars: Star[] = [];
     const shooters: Shooter[] = [];
@@ -96,10 +105,16 @@ export function HeroCanvas({ className }: { className?: string }) {
       if (!running) return;
       ctx.clearRect(0, 0, w, h);
 
+      // Smoothed pointer chase — the warp core leans toward the cursor.
+      px += (tx - px) * 0.035;
+      py += (ty - py) * 0.035;
+      const coreX = cx + (px - 0.5) * w * 0.07;
+      const coreY = cy + (py - 0.5) * h * 0.07;
+
       // ── warp stars ──
       for (const s of stars) {
-        const dx = s.x - cx;
-        const dy = s.y - cy;
+        const dx = s.x - coreX;
+        const dy = s.y - coreY;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
         const speed = (0.5 + s.z * 2.6) * (0.6 + dist / (Math.max(w, h) * 0.9));
         s.x += (dx / dist) * speed;
@@ -107,7 +122,9 @@ export function HeroCanvas({ className }: { className?: string }) {
 
         // trail: short streak pointing away from core
         const trail = Math.min(speed * 2.4, 26);
-        const alpha = 0.14 + s.z * 0.55;
+        // twinkle: gentle per-star brightness oscillation
+        const twinkle = 0.72 + 0.28 * Math.sin(now * 0.0016 + s.hue * 3.1 + s.z * 9);
+        const alpha = (0.14 + s.z * 0.55) * twinkle;
         ctx.strokeStyle = `hsla(${s.hue}, 90%, ${62 + s.z * 18}%, ${alpha})`;
         ctx.lineWidth = s.size;
         ctx.beginPath();
@@ -158,8 +175,29 @@ export function HeroCanvas({ className }: { className?: string }) {
       }
     };
 
+    const onPointerMove = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+      tx = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+      ty = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
+    };
+
     resize();
-    raf = requestAnimationFrame(tick);
+    if (reduced) {
+      // One static starfield frame — respectful of vestibular disorders.
+      for (const s of stars) {
+        const alpha = 0.2 + s.z * 0.5;
+        ctx.strokeStyle = `hsla(${s.hue}, 90%, ${62 + s.z * 18}%, ${alpha})`;
+        ctx.lineWidth = s.size;
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x, s.y - 2);
+        ctx.stroke();
+      }
+    } else {
+      raf = requestAnimationFrame(tick);
+      window.addEventListener("pointermove", onPointerMove, { passive: true });
+    }
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
     document.addEventListener("visibilitychange", onVisibility);
@@ -169,6 +207,7 @@ export function HeroCanvas({ className }: { className?: string }) {
       cancelAnimationFrame(raf);
       ro.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pointermove", onPointerMove);
     };
   }, []);
 

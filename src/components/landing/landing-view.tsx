@@ -62,11 +62,14 @@ import {
   EASE,
   FadeIn,
   HoverLift,
+  Magnetic,
   PulsingDot,
   Reveal,
+  ScrollProgress,
   Stagger,
   StaggerItem,
   TapScale,
+  TextReveal,
   staggerParent,
 } from "@/components/shared/motion";
 
@@ -103,11 +106,23 @@ function HeroOrbit() {
   const t = useT();
 
   return (
-    <div className="aurora-border relative overflow-hidden rounded-3xl p-5 sm:p-8">
-      <div aria-hidden className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-500/10 blur-3xl" />
-      <div aria-hidden className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-violet-500/10 blur-3xl" />
+    <div className="aurora-border relative overflow-hidden rounded-3xl">
+      {/* rotating conic rotor — the border glows and slowly spins (masked) */}
+      <div
+        aria-hidden
+        className="spin-border-rotor pointer-events-none absolute"
+        style={{
+          inset: "-130%",
+          background:
+            "conic-gradient(from 0deg, rgba(34,211,238,0.55), rgba(167,139,250,0.5) 22%, rgba(34,211,238,0.08) 48%, rgba(52,211,153,0.4) 72%, rgba(34,211,238,0.55))",
+        }}
+      />
+      {/* opaque inner panel sits 1.5px inside, covering the rotor center */}
+      <div className="relative m-[1.5px] overflow-hidden rounded-[calc(1.5rem-1.5px)] bg-[#0d0d15] p-5 sm:p-8">
+        <div aria-hidden className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-500/10 blur-3xl" />
+        <div aria-hidden className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-violet-500/10 blur-3xl" />
 
-      <div className="relative mx-auto aspect-square w-full max-w-[300px] sm:max-w-[380px]">
+        <div className="relative mx-auto aspect-square w-full max-w-[300px] sm:max-w-[380px]">
         {/* pulsing glow behind the core */}
         <div
           aria-hidden
@@ -141,6 +156,7 @@ function HeroOrbit() {
         <OrbitChip icon={Users} label={t("landing.orbit.teamUp")} tone="violet" className="right-[0%] top-[40%]" delay={1.2} />
         <OrbitChip icon={GitBranch} label={t("landing.orbit.fork")} tone="violet" className="bottom-[16%] left-[5%]" delay={2.1} />
         <OrbitChip icon={Trophy} label={t("landing.orbit.rankUp")} tone="cyan" className="bottom-[4%] right-[7%]" delay={0.6} />
+        </div>
       </div>
     </div>
   );
@@ -706,6 +722,8 @@ export function LandingView() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      {/* reading progress — thin gradient line pinned to the viewport top */}
+      <ScrollProgress />
       {/* ── Sticky glass top bar ── */}
       <header className="glass sticky top-0 z-40 pt-[env(safe-area-inset-top,0px)]">
         <FadeIn y={-8} duration={0.5}>
@@ -781,7 +799,7 @@ export function LandingView() {
                   >
                     <LogoMark size={22} />
                   </motion.span>
-                  <span className="font-mono text-sm font-semibold uppercase tracking-[0.42em] text-gradient">
+                  <span className="text-shimmer font-mono text-sm font-semibold uppercase tracking-[0.42em]">
                     TEKA&nbsp;NEXUS
                   </span>
                 </div>
@@ -802,30 +820,34 @@ export function LandingView() {
               </StaggerItem>
               <StaggerItem>
                 <p className="mt-5 max-w-lg text-base text-muted-foreground sm:text-lg">
-                  {t("landing.hero.subtitle")}
+                  <TextReveal text={t("landing.hero.subtitle")} delay={0.85} gap={0.035} />
                 </p>
               </StaggerItem>
               <StaggerItem>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <TapScale>
-                    <Button
-                      className="btn-hero h-12 px-7 text-base"
-                      onClick={() => navigate({ name: "academyPortal" })}
-                    >
-                      <GraduationCap className="h-5 w-5" />
-                      {t("landing.hero.startFree")}
-                    </Button>
-                  </TapScale>
-                  <TapScale>
-                    <Button
-                      variant="outline"
-                      className="h-12 border-white/15 bg-white/[0.03] px-6 backdrop-blur"
-                      onClick={() => navigate({ name: "explore" })}
-                    >
-                      <Compass className="h-4 w-4" />
-                      {t("landing.hero.exploreProjects")}
-                    </Button>
-                  </TapScale>
+                  <Magnetic strength={0.18}>
+                    <TapScale>
+                      <Button
+                        className="btn-hero h-12 px-7 text-base"
+                        onClick={() => navigate({ name: "academyPortal" })}
+                      >
+                        <GraduationCap className="h-5 w-5" />
+                        {t("landing.hero.startFree")}
+                      </Button>
+                    </TapScale>
+                  </Magnetic>
+                  <Magnetic strength={0.14}>
+                    <TapScale>
+                      <Button
+                        variant="outline"
+                        className="h-12 border-white/15 bg-white/[0.03] px-6 backdrop-blur"
+                        onClick={() => navigate({ name: "explore" })}
+                      >
+                        <Compass className="h-4 w-4" />
+                        {t("landing.hero.exploreProjects")}
+                      </Button>
+                    </TapScale>
+                  </Magnetic>
                 </div>
               </StaggerItem>
               <StaggerItem>

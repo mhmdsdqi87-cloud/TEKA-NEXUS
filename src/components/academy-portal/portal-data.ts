@@ -10,8 +10,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { get } from "@/lib/api";
 import { useApp, type SessionUser } from "@/lib/store";
 import { useI18n } from "@/lib/i18n/store";
-import { COURSES, courseLessons, pick } from "@/lib/academy";
-import type { Course } from "@/lib/academy/types";
+import { COURSES_META, metaLessons, type MetaCourse } from "@/lib/academy/meta";
+import { pick } from "@/lib/academy/types";
 
 import { PORTAL_DICT, type PortalDict } from "./portal-dict";
 
@@ -99,13 +99,13 @@ export function usePortalData(): PortalDataFull {
 
 // ─── Pure selectors (real progress only — no invented stats) ──
 
-export function courseOf(courseId: string): Course | undefined {
-  return COURSES.find((c) => c.id === courseId);
+export function courseOf(courseId: string): MetaCourse | undefined {
+  return COURSES_META.find((c) => c.id === courseId);
 }
 
 export function courseStat(courseId: string, progress: ProgressMap) {
   const course = courseOf(courseId);
-  const total = course ? courseLessons(course).length : 0;
+  const total = course ? metaLessons(course).length : 0;
   const done = progress[courseId]?.done.length ?? 0;
   return { course, total, done, pct: total ? done / total : 0 };
 }
@@ -120,9 +120,9 @@ export type NextUp = {
 
 /** First incomplete lesson across both courses, in curriculum order. */
 export function nextUpLesson(progress: ProgressMap, locale: string): NextUp {
-  for (const course of COURSES) {
+  for (const course of COURSES_META) {
     const done = new Set(progress[course.id]?.done ?? []);
-    const lesson = courseLessons(course).find((l) => !done.has(l.id));
+    const lesson = metaLessons(course).find((l) => !done.has(l.id));
     if (lesson) {
       return {
         courseId: course.id,
@@ -141,7 +141,7 @@ export function nextLessonInCourse(courseId: string, progress: ProgressMap): { l
   const course = courseOf(courseId);
   if (!course) return null;
   const done = new Set(progress[courseId]?.done ?? []);
-  const lessons = courseLessons(course);
+  const lessons = metaLessons(course);
   const next = lessons.find((l) => !done.has(l.id));
   if (next) return { lessonId: next.id, fresh: done.size === 0 };
   return lessons.length ? { lessonId: lessons[0].id, fresh: false } : null;
@@ -157,7 +157,7 @@ export function licenseCount(exams: ExamSummary[]): number {
 }
 
 /** Per-module progress for the module-chip paths. */
-export function moduleStats(course: Course, progress: ProgressMap) {
+export function moduleStats(course: MetaCourse, progress: ProgressMap) {
   const done = new Set(progress[course.id]?.done ?? []);
   return course.modules.map((m) => {
     const total = m.lessons.length;

@@ -26,7 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/store";
 import { EASE, AnimatedNumber, FadeIn, HoverLift, PulsingDot, Reveal, Stagger, StaggerItem, TapScale } from "@/components/shared/motion";
-import { COURSES, courseLessons } from "@/lib/academy";
+import { COURSES_META, metaLessons } from "@/lib/academy/meta";
 import { ACCENTS, pick } from "@/lib/academy/types";
 import { EmptyState } from "@/components/shared/atoms";
 
@@ -139,8 +139,8 @@ function Dashboard({ data, dict, onNavigate }: { data: PortalDataFull; dict: Por
   const navigate = useApp((s) => s.navigate);
   const nextUp = useNextUp(data.progress);
 
-  const totalLessons = COURSES.reduce((acc, c) => acc + courseLessons(c).length, 0);
-  const doneLessons = COURSES.reduce((acc, c) => acc + (data.progress[c.id]?.done.length ?? 0), 0);
+  const totalLessons = COURSES_META.reduce((acc, c) => acc + metaLessons(c).length, 0);
+  const doneLessons = COURSES_META.reduce((acc, c) => acc + (data.progress[c.id]?.done.length ?? 0), 0);
   const overall = totalLessons ? doneLessons / totalLessons : 0;
   const certs = data.certs.length;
   const licenses = licenseCount(data.exams);
@@ -229,7 +229,7 @@ function Dashboard({ data, dict, onNavigate }: { data: PortalDataFull; dict: Por
 
             <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{dict.stats.coursesHeading}</p>
             <div className="mt-3 space-y-4">
-              {COURSES.map((course) => {
+              {COURSES_META.map((course) => {
                 const stat = courseStat(course.id, data.progress);
                 return (
                   <button

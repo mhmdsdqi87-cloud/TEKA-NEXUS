@@ -14,7 +14,8 @@ import { CheckCircle2, ChevronRight, Compass, Route, ShieldCheck, Sparkles, Term
 import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/store";
 import { EASE, FadeIn, HoverLift, Stagger, StaggerItem, TapScale } from "@/components/shared/motion";
-import { COURSES, pick } from "@/lib/academy";
+import { COURSES_META } from "@/lib/academy/meta";
+import { pick } from "@/lib/academy/types";
 import { EmptyState } from "@/components/shared/atoms";
 
 import type { PortalDict } from "./portal-dict";
@@ -198,7 +199,7 @@ export function PathsSection({ data, dict, onNavigate }: { data: PortalDataFull;
     );
   }
 
-  const [py, web] = COURSES;
+  const [py, web] = COURSES_META;
   const pyStat = courseStat(py.id, data.progress);
   const webStat = courseStat(web.id, data.progress);
   const pyModules = moduleStats(py, data.progress);

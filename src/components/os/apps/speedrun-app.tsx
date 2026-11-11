@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ChevronLeft, Play, Square, Trophy } from "lucide-react";
 
-import { COURSES } from "@/lib/academy";
+import { COURSES_META } from "@/lib/academy/meta";
 import { pick } from "@/lib/academy/types";
 import { get, post, qs, ApiError } from "@/lib/api";
 import { useI18n } from "@/lib/i18n/store";
@@ -75,13 +75,13 @@ export function SpeedrunApp() {
   const [myBest, setMyBest] = useState<number | null>(null);
   const [entries, setEntries] = useState<LeaderEntry[] | null>(null);
 
-  const course = COURSES.find((c) => c.id === courseId) ?? null;
+  const course = COURSES_META.find((c) => c.id === courseId) ?? null;
   const mod = course?.modules.find((m) => m.id === moduleId) ?? null;
 
   // moduleId → label map for the leaderboard.
   const moduleLabels = useMemo(() => {
     const map = new Map<string, string>();
-    for (const c of COURSES) {
+    for (const c of COURSES_META) {
       for (const m of c.modules) map.set(m.id, pick(m.title, locale));
     }
     return map;
@@ -248,7 +248,7 @@ export function SpeedrunApp() {
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-white/40">{L("pick")}</p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {COURSES.map((c) => (
+              {COURSES_META.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => selectCourse(c.id)}

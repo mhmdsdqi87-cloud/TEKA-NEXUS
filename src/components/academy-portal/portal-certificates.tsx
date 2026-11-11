@@ -13,7 +13,8 @@ import { Award, BookOpenCheck, GraduationCap, ScrollText, ShieldCheck } from "lu
 import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/store";
 import { EASE, FadeIn, Stagger, StaggerItem, TapScale } from "@/components/shared/motion";
-import { COURSES, pick } from "@/lib/academy";
+import { COURSES_META } from "@/lib/academy/meta";
+import { pick } from "@/lib/academy/types";
 import { EmptyState } from "@/components/shared/atoms";
 import { CertificateDialog, type CertInfo } from "@/components/academy/certificate";
 import { useT } from "@/lib/i18n";
@@ -30,7 +31,7 @@ export function CertificatesSection({ data, dict }: { data: PortalDataFull; dict
   const rows = useMemo(
     () =>
       data.certs.map((c) => {
-        const course = COURSES.find((x) => x.id === c.courseId);
+        const course = COURSES_META.find((x) => x.id === c.courseId);
         const licensed = data.exams.some((e) => e.courseId === c.courseId && e.passed);
         return { cert: c, course, licensed };
       }),

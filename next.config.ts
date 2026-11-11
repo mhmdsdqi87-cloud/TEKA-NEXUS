@@ -26,6 +26,25 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
+  // Bandwidth contract: heavy public assets (covers, store shots, OG image,
+  // icons) are content we rarely change. Serving them with max-age=0 made
+  // every visit re-fetch them from the edge. A day of freshness plus a week
+  // of stale-while-revalidate keeps repeat visits nearly free without
+  // risking stale art for long. sw.js / manifest stay untouched (they need
+  // to revalidate quickly).
+  async headers() {
+    const dayCache = [
+      { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+    ];
+    return [
+      { source: "/covers/:path*", headers: dayCache },
+      { source: "/myket/:path*", headers: dayCache },
+      { source: "/screenshots/:path*", headers: dayCache },
+      { source: "/icons/:path*", headers: dayCache },
+      { source: "/og.png", headers: dayCache },
+      { source: "/favicon.svg", headers: dayCache },
+    ];
+  },
 };
 
 export default nextConfig;

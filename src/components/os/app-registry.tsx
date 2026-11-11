@@ -4,24 +4,42 @@
 // The TEKA OS desktop is gone: every game is now a first-class, full-page
 // view in the main navigation. This registry is the single source of truth
 // for the Arena Hub grid, the sidebar, the terminal and the landing page.
+//
+// BANDWIDTH CONTRACT: game components load lazily (next/dynamic). The
+// registry itself stays a tiny metadata table (ids, titles, icons) so the
+// main bundle never pulls the games — or the academy content some of them
+// import — until a game is actually opened.
 
+import dynamic from "next/dynamic";
 import {
   Activity, Gamepad2, HandCoins, Hourglass, IdCard, Map, Mic, Scale,
   Swords, TerminalSquare, Timer, Users, type LucideIcon,
 } from "lucide-react";
 
-import { TerminalApp } from "@/components/os/terminal-app";
-import { PetApp } from "@/components/os/apps/pet-app";
-import { BossApp } from "@/components/os/apps/boss-app";
-import { TreeApp } from "@/components/os/apps/tree-app";
-import { WarApp } from "@/components/os/apps/war-app";
-import { CardsApp } from "@/components/os/apps/cards-app";
-import { ShopApp } from "@/components/os/apps/shop-app";
-import { CrimeApp } from "@/components/os/apps/crime-app";
-import { TimeMachineApp } from "@/components/os/apps/timemachine-app";
-import { HeatmapApp } from "@/components/os/apps/heatmap-app";
-import { SpeedrunApp } from "@/components/os/apps/speedrun-app";
-import { VoiceApp } from "@/components/os/apps/voice-app";
+/** Minimal in-place loader shown while a lazy arena app chunk streams in. */
+export const GameLoader = () => (
+  <div className="grid min-h-[50vh] place-items-center" role="status" aria-live="polite">
+    <span className="sr-only">Loading</span>
+    <div className="h-10 w-10 animate-pulse rounded-xl bg-white/[0.06] ring-1 ring-white/10" />
+  </div>
+);
+
+/** All arena apps use named exports — normalize them for next/dynamic. */
+const lazyApp = <N extends string>(loader: () => Promise<Record<N, React.ComponentType<Record<string, never>>>>, name: N) =>
+  dynamic(() => loader().then((m) => ({ default: m[name] })), { loading: GameLoader });
+
+const TerminalApp = lazyApp(() => import("@/components/os/terminal-app"), "TerminalApp");
+const PetApp = lazyApp(() => import("@/components/os/apps/pet-app"), "PetApp");
+const BossApp = lazyApp(() => import("@/components/os/apps/boss-app"), "BossApp");
+const TreeApp = lazyApp(() => import("@/components/os/apps/tree-app"), "TreeApp");
+const WarApp = lazyApp(() => import("@/components/os/apps/war-app"), "WarApp");
+const CardsApp = lazyApp(() => import("@/components/os/apps/cards-app"), "CardsApp");
+const ShopApp = lazyApp(() => import("@/components/os/apps/shop-app"), "ShopApp");
+const CrimeApp = lazyApp(() => import("@/components/os/apps/crime-app"), "CrimeApp");
+const TimeMachineApp = lazyApp(() => import("@/components/os/apps/timemachine-app"), "TimeMachineApp");
+const HeatmapApp = lazyApp(() => import("@/components/os/apps/heatmap-app"), "HeatmapApp");
+const SpeedrunApp = lazyApp(() => import("@/components/os/apps/speedrun-app"), "SpeedrunApp");
+const VoiceApp = lazyApp(() => import("@/components/os/apps/voice-app"), "VoiceApp");
 
 export type GameAccent = "cyan" | "violet" | "ember" | "emerald";
 
@@ -44,7 +62,7 @@ export type ArenaGame = {
   titleKey: string;
   icon: LucideIcon;
   accent: GameAccent;
-  component: React.ComponentType;
+  component: React.ComponentType<Record<string, never>>;
   /** Featured games sit directly in the sidebar; the rest live under "More". */
   featured: boolean;
 };

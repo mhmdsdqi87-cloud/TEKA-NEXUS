@@ -5,6 +5,7 @@
 // (src/lib/store.ts). See docs/FRONTEND_GUIDE.md + docs/API_CONTRACT.md.
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "@/lib/store";
 import { get, setSessionToken } from "@/lib/api";
@@ -14,7 +15,6 @@ import { useT } from "@/lib/i18n";
 import { TekaDirectionProvider } from "@/components/shared/teka-direction";
 import { EASE } from "@/components/shared/motion";
 import { EnterPortal } from "@/components/auth/enter-portal";
-import { ArenaHubView } from "@/views/arena-hub-view";
 import { GameShell } from "@/components/arena/game-shell";
 import { getGame } from "@/components/os/app-registry";
 
@@ -22,26 +22,49 @@ import { LandingView } from "@/components/landing/landing-view";
 import { AuthView } from "@/components/auth/auth-view";
 import { OnboardingView } from "@/components/onboarding/onboarding-view";
 import { AppShell, SearchDialog } from "@/components/shell/app-shell";
-import { HomeView } from "@/views/home-view";
-import { ExploreView } from "@/views/explore-view";
-import { LiveView } from "@/views/live-view";
-import { UniverseView } from "@/components/universe/live-universe-view";
-import { DnaView } from "@/components/dna/dna-view";
-import { WorkspaceHubView } from "@/views/workspace-hub-view";
-import { ProjectNewView } from "@/views/project-new-view";
-import { ProjectView } from "@/views/project-view";
-import { TeamsView } from "@/views/teams-view";
-import { ProfileView } from "@/views/profile-view";
-import { NotificationsView } from "@/views/notifications-view";
-import { DmView } from "@/views/dm-view";
-import { SettingsView } from "@/views/settings-view";
-import { SavedView } from "@/views/saved-view";
-import { AcademyView } from "@/views/academy-view";
-import { AcademyPortalView } from "@/views/academy-portal-view";
-import { FounderView } from "@/views/founder-view";
-import { AboutView } from "@/views/about-view";
 import { LogoMark } from "@/components/brand/logo";
 import { MotionRoot, PageTransition } from "@/components/shared/motion";
+
+// ── Lazy views (bandwidth contract) ───────────────────────────
+// The SPA used to statically import EVERY view, so even a first-time
+// landing visitor downloaded the whole academy curriculum (megabytes of
+// course content), every arena game and the entire workspace before the
+// first pixel. Landing, auth and the shell stay static; everything else
+// streams in on first visit. The on-brand loader mirrors the boot screen
+// so a chunk load feels like part of the show, not a stall.
+function ViewLoader() {
+  return (
+    <div className="grid min-h-[60vh] place-items-center" role="status" aria-live="polite">
+      <span className="sr-only">Loading</span>
+      <div className="flex flex-col items-center gap-3">
+        <LogoMark size={36} />
+        <div className="h-1 w-28 overflow-hidden rounded-full bg-white/[0.07]">
+          <div className="h-full w-1/2 animate-pulse rounded-full bg-gradient-to-r from-cyan-400 to-violet-500" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const ArenaHubView = dynamic(() => import("@/views/arena-hub-view").then((m) => ({ default: m.ArenaHubView })), { loading: ViewLoader });
+const HomeView = dynamic(() => import("@/views/home-view").then((m) => ({ default: m.HomeView })), { loading: ViewLoader });
+const ExploreView = dynamic(() => import("@/views/explore-view").then((m) => ({ default: m.ExploreView })), { loading: ViewLoader });
+const LiveView = dynamic(() => import("@/views/live-view").then((m) => ({ default: m.LiveView })), { loading: ViewLoader });
+const UniverseView = dynamic(() => import("@/components/universe/live-universe-view").then((m) => ({ default: m.UniverseView })), { loading: ViewLoader });
+const DnaView = dynamic(() => import("@/components/dna/dna-view").then((m) => ({ default: m.DnaView })), { loading: ViewLoader });
+const WorkspaceHubView = dynamic(() => import("@/views/workspace-hub-view").then((m) => ({ default: m.WorkspaceHubView })), { loading: ViewLoader });
+const ProjectNewView = dynamic(() => import("@/views/project-new-view").then((m) => ({ default: m.ProjectNewView })), { loading: ViewLoader });
+const ProjectView = dynamic(() => import("@/views/project-view").then((m) => ({ default: m.ProjectView })), { loading: ViewLoader });
+const TeamsView = dynamic(() => import("@/views/teams-view").then((m) => ({ default: m.TeamsView })), { loading: ViewLoader });
+const ProfileView = dynamic(() => import("@/views/profile-view").then((m) => ({ default: m.ProfileView })), { loading: ViewLoader });
+const NotificationsView = dynamic(() => import("@/views/notifications-view").then((m) => ({ default: m.NotificationsView })), { loading: ViewLoader });
+const DmView = dynamic(() => import("@/views/dm-view").then((m) => ({ default: m.DmView })), { loading: ViewLoader });
+const SettingsView = dynamic(() => import("@/views/settings-view").then((m) => ({ default: m.SettingsView })), { loading: ViewLoader });
+const SavedView = dynamic(() => import("@/views/saved-view").then((m) => ({ default: m.SavedView })), { loading: ViewLoader });
+const AcademyView = dynamic(() => import("@/views/academy-view").then((m) => ({ default: m.AcademyView })), { loading: ViewLoader });
+const AcademyPortalView = dynamic(() => import("@/views/academy-portal-view").then((m) => ({ default: m.AcademyPortalView })), { loading: ViewLoader });
+const FounderView = dynamic(() => import("@/views/founder-view").then((m) => ({ default: m.FounderView })), { loading: ViewLoader });
+const AboutView = dynamic(() => import("@/views/about-view").then((m) => ({ default: m.AboutView })), { loading: ViewLoader });
 
 const AUTHOptional_VIEWS = new Set(["landing", "login", "signup", "onboarding"]);
 const AUTH_REQUIRED_VIEWS = new Set([

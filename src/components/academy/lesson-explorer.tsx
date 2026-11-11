@@ -10,7 +10,7 @@ import { CheckCircle2, CornerDownLeft, Search, Star } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/store";
-import { COURSES } from "@/lib/academy";
+import { COURSES_META } from "@/lib/academy/meta";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import type { TFunc } from "@/lib/i18n";
 
@@ -57,7 +57,7 @@ export function LessonExplorer({
 
   const index = useMemo<FlatLesson[]>(() => {
     const rows: FlatLesson[] = [];
-    for (const c of COURSES) {
+    for (const c of COURSES_META) {
       for (const m of c.modules) {
         for (const l of m.lessons) {
           rows.push({

@@ -53,7 +53,7 @@ import { useApp } from "@/lib/store";
 import { get } from "@/lib/api";
 import type { FeedEvent } from "@/lib/dto";
 import { useT, useRelativeTime } from "@/lib/i18n";
-import { COURSES, courseLessons } from "@/lib/academy";
+import { COURSES_META, metaLessons } from "@/lib/academy/meta";
 import { HeroCanvas } from "@/components/landing/hero-cinema";
 import { LiveActivityToasts } from "@/components/landing/live-activity-toasts";
 import { cn } from "@/lib/utils";
@@ -726,8 +726,8 @@ export function LandingView() {
 
   // Hero stats — real numbers from the course registry (never fabricated).
   const HERO_STATS = [
-    { value: COURSES.reduce((a, c) => a + courseLessons(c).length, 0), label: t("landing.hero.statLessons") },
-    { value: COURSES.length, label: t("landing.hero.statPaths") },
+    { value: COURSES_META.reduce((a, c) => a + metaLessons(c).length, 0), label: t("landing.hero.statLessons") },
+    { value: COURSES_META.length, label: t("landing.hero.statPaths") },
     { value: 100, label: t("landing.hero.statFree") },
   ];
 

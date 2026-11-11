@@ -26,7 +26,7 @@
 
 <br>
 
-[🚀 پلتفرم زنده](https://teka-nexus.vercel.app/) · [📱 نسخه اندروید](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.1) · [🤝 مشارکت](CONTRIBUTING.md) · [🐛 ایشوها](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues) · [👤 گیت‌هاب](https://github.com/mhmdsdqi87-cloud) · [✉️ تماس](mailto:mhmdsdqi87@gmail.com)
+[🚀 پلتفرم زنده](https://teka-nexus.vercel.app/) · [📱 نسخه اندروید](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.2) · [🤝 مشارکت](CONTRIBUTING.md) · [🐛 ایشوها](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues) · [👤 گیت‌هاب](https://github.com/mhmdsdqi87-cloud) · [✉️ تماس](mailto:mhmdsdqi87@gmail.com)
 
 <img src="public/screenshots/landing-wide.png" alt="تجربه‌ی لندینگ TEKA NEXUS" width="880">
 

@@ -1,0 +1,93 @@
+// TEKA NEXUS — ru dictionary: "dna" namespace (NEXUS 2.0 Phase 1).
+// Метки «Вычислено» — часть контракта честности данных: каждая производная
+// цифра честно помечена и никогда не выдаётся за реальное измерение.
+
+import type { DnaDict } from "../en/dna";
+
+export const dna: DnaDict = {
+  title: "ДНК проекта",
+  subtitle: "Полная цифровая идентичность каждого проекта — идентичность, архитектура, дорожная карта и проверенная история.",
+  searchPlaceholder: "Поиск проектов…",
+  error: "Не удалось загрузить ДНК этого проекта.",
+  noResults: "Нет проектов, подходящих под ваш поиск.",
+  empty: "Публичных проектов пока нет — создайте первый, и его ДНК начнёт расти.",
+  createFirst: "Создать проект",
+  openAria: "Открыть ДНК проекта {name}",
+  updated: "обновлено",
+  prevPage: "Назад",
+  nextPage: "Далее",
+  pageOf: "Страница {page} из {pages}",
+
+  notFoundTitle: "ДНК недоступна",
+  notFoundBody: "Этот проект не существует или приватен. Приватная ДНК видна только участникам проекта.",
+  backToPicker: "Все проекты",
+
+  privateBadge: "Приватный",
+  verifiedBadge: "Проверенные записи платформы",
+  created: "Создан",
+  linkRepo: "Репозиторий",
+  linkDemo: "Демо",
+  linkSite: "Сайт",
+  openWorkspace: "Открыть рабочее пространство",
+
+  countMembers: "Участники",
+  countLikes: "Нравится",
+  countUpdates: "Обновления",
+  countTasks: "Задачи",
+  countComments: "Комментарии",
+  countRequests: "Открытые заявки",
+
+  archTitle: "Карта архитектуры",
+  archRootLabel: "заявленные технологические слои",
+  archDeclaredNote: "Отрисована строго по заявленным тегам проекта — ничего не домысливается.",
+  emptyStack: "Стек пока не заявлен — владелец может добавить теги на странице проекта.",
+  layerFrontend: "Фронтенд",
+  layerBackend: "Бэкенд",
+  layerData: "Данные",
+  layerTools: "Инструменты",
+  layerOther: "Заявлено (без категории)",
+
+  healthTitle: "Показатели здоровья",
+  calculatedBadge: "Вычислено",
+  healthTaskRate: "Доля выполненных задач",
+  healthFormulaTasks: "выполнено / всего задач",
+  healthProgress: "Прогресс дорожной карты",
+  healthFormulaMilestones: "завершено / всего вех",
+  healthActivity: "Активность (30 дней)",
+  healthFormulaActivity: "реальные события активности",
+  healthMomentum: "Динамика",
+  healthFormulaMomentum: "активность ÷ активные дни",
+  healthDisclaimer: "Все показатели вычислены из реальных записей платформы — это не внешние измерения и не предсказания ИИ.",
+  healthLastActivity: "Последняя активность:",
+
+  milestonesTitle: "Дорожная карта и вехи",
+  milestoneAdd: "Добавить веху",
+  milestoneProgress: "{percent}% · {done}/{total} завершено",
+  milestoneTitleLabel: "Название",
+  milestoneDueLabel: "Срок (необязательно)",
+  milestoneSave: "Сохранить веху",
+  cancel: "Отмена",
+  emptyMilestones: "Вех пока нет. Участники могут добавить первую и запустить дорожную карту.",
+  overdue: "просрочено",
+  milestoneDone: "Завершена",
+  milestoneCompleteAria: "Отметить веху завершённой",
+  milestoneUncompleteAria: "Снять с вехи отметку завершения",
+  milestoneDeleteAria: "Удалить веху",
+
+  timelineTitle: "Хронология разработки",
+  timelineVerifiedNote: "только проверенные записи",
+  emptyTimeline: "Записанных событий пока нет.",
+  timelineKinds: {
+    PROJECT_CREATED: "Создан проект",
+    MEMBER_JOINED: "Присоединился участник",
+    UPDATE_POSTED: "Опубликовано обновление",
+    MILESTONE_CREATED: "Запланирована веха",
+    MILESTONE_COMPLETED: "Завершена веха",
+    TASK_COMPLETED: "Выполнена задача",
+  },
+
+  contributorsTitle: "Участники",
+  contributorsNote: "с проверенными счётчиками вклада",
+  joined: "Присоединился",
+  verifiedEvents: "проверенных событий",
+};

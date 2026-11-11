@@ -67,6 +67,12 @@ en construisant, en cassant, puis en reconstruisant jusqu'à ce que tout fonctio
 
 ## 🌍 Qu'est-ce que TEKA NEXUS ?
 
+<div align="center">
+
+<img src=".github/assets/galaxy-core.svg" alt="Une galaxie dorée en rotation — le cœur de TEKA NEXUS" width="700">
+
+</div>
+
 TEKA NEXUS est né d'une seule question : **pourquoi apprendre à coder devrait-il être difficile** ?
 
 C'est un écosystème complet qui fusionne **le réseautage, la création et l'apprentissage** en une
@@ -105,6 +111,12 @@ en persan, ouverte sur le monde entier.
 
 ## 🧬 Le Moteur Global — huit systèmes, un nexus
 
+<div align="center">
+
+<img src=".github/assets/orbit-systems.svg" alt="Huit systèmes en orbite autour du cœur de TEKA NEXUS" width="100%">
+
+</div>
+
 La prochaine génération de TEKA NEXUS est une **extension en huit systèmes** — et le journal de
 construction est public, commit par commit :
 
@@ -118,6 +130,12 @@ construction est public, commit par commit :
 | 6 | 🏅 **Global Challenges** — compétitions d'ingénierie avec jury | 🚧 Planifié |
 | 7 | 🕸️ **Knowledge Graph** — recherche sémantique sur des données réelles indexées | 🚧 Planifié |
 | 8 | 👯 **Digital Twin** — télémétrie toujours étiquetée : *réel / calculé / simulé / prédit par l'IA* | 🚧 Planifié |
+
+<div align="center">
+
+<img src=".github/assets/dna-helix.svg" alt="Une double hélice d'ADN dorée animée" width="680">
+
+</div>
 
 > ⚠️ **Règle d'intégrité de la maison** : nous ne présentons jamais des estimations comme des faits,
 > ne livrons jamais de données fictives comme de vraies informations, et ne marquons jamais rien
@@ -379,6 +397,8 @@ Publié sous [licence MIT](LICENSE).
 <img src=".github/assets/divider.svg" width="100%">
 
 <sub><i>Conçu · développé · testé · exploité par une seule personne. Ouvert à tous.</i></sub>
+
+<img src=".github/assets/starfield-cta.svg" alt="Un ciel étoilé vivant avec une étoile pulsante" width="100%">
 
 ⭐ **Si ce projet vous inspire, une étoile, c'est le monde entier pour un bâtisseur solitaire.**
 

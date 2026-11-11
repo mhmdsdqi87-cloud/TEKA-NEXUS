@@ -67,6 +67,12 @@ conoce: construyendo, rompiendo y volviendo a construir hasta que funciona.
 
 ## 🌍 ¿Qué es TEKA NEXUS?
 
+<div align="center">
+
+<img src=".github/assets/galaxy-core.svg" alt="Una galaxia dorada giratoria — el núcleo de TEKA NEXUS" width="700">
+
+</div>
+
 TEKA NEXUS nació de una sola pregunta: **¿por qué aprender a programar debería ser difícil?**
 
 Es un ecosistema completo que funde **conectar, construir y aprender** en una sola
@@ -105,6 +111,12 @@ abierta al mundo.
 
 ## 🧬 El Motor Global — ocho sistemas, un solo nexo
 
+<div align="center">
+
+<img src=".github/assets/orbit-systems.svg" alt="Ocho sistemas orbitando el núcleo de TEKA NEXUS" width="100%">
+
+</div>
+
 La próxima generación de TEKA NEXUS es una **expansión de ocho sistemas** — y el
 registro de construcción es público, commit a commit:
 
@@ -118,6 +130,12 @@ registro de construcción es público, commit a commit:
 | 6 | 🏅 **Global Challenges** — competencias de ingeniería con jurado | 🚧 Planificado |
 | 7 | 🕸️ **Knowledge Graph** — búsqueda semántica sobre datos reales indexados | 🚧 Planificado |
 | 8 | 👯 **Digital Twin** — telemetría siempre etiquetada: *real / calculada / simulada / predicha por IA* | 🚧 Planificado |
+
+<div align="center">
+
+<img src=".github/assets/dna-helix.svg" alt="Una doble hélice de ADN dorada animada" width="680">
+
+</div>
 
 > ⚠️ **Regla de integridad de la casa:** nunca presentamos estimaciones como hechos,
 > nunca enviamos datos ficticios como información real, y nunca marcamos nada como
@@ -379,6 +397,8 @@ Publicado bajo la [Licencia MIT](LICENSE).
 <img src=".github/assets/divider.svg" width="100%">
 
 <sub><i>Diseñado · desarrollado · probado · operado por una sola persona. Abierto a todos.</i></sub>
+
+<img src=".github/assets/starfield-cta.svg" alt="Un cielo estrellado vivo con una estrella palpitante" width="100%">
 
 ⭐ **Si este proyecto te inspira, una estrella vale el mundo para quien construye en solitario.**
 

@@ -65,6 +65,12 @@
 
 ## 🌍 TEKA NEXUS 是什么？
 
+<div align="center">
+
+<img src=".github/assets/galaxy-core.svg" alt="旋转的金色星系 —— TEKA NEXUS 的核心" width="700">
+
+</div>
+
 TEKA NEXUS 始于一个疑问：**学写代码，为什么非要这么难？**
 
 它是一个完整的生态系统，将**社交、构建与学习**融为一体，成为一套无缝且可安装的
@@ -102,6 +108,12 @@ TEKA NEXUS 始于一个疑问：**学写代码，为什么非要这么难？**
 
 ## 🧬 全球引擎——八大系统，一个枢纽
 
+<div align="center">
+
+<img src=".github/assets/orbit-systems.svg" alt="八大系统环绕 TEKA NEXUS 核心运行" width="100%">
+
+</div>
+
 下一代 TEKA NEXUS 是一次**八大系统的扩展**——而且构建日志完全公开，
 逐次提交、全程可见：
 
@@ -115,6 +127,12 @@ TEKA NEXUS 始于一个疑问：**学写代码，为什么非要这么难？**
 | 6 | 🏅 **Global Challenges**——设有评审的工程竞赛 | 🚧 计划中 |
 | 7 | 🕸️ **Knowledge Graph**——基于真实索引数据的语义搜索 | 🚧 计划中 |
 | 8 | 👯 **Digital Twin**——永远标注来源的遥测数据：*实测 / 计算 / 模拟 / AI 预测* | 🚧 计划中 |
+
+<div align="center">
+
+<img src=".github/assets/dna-helix.svg" alt="动画金色 DNA 双螺旋" width="680">
+
+</div>
 
 > ⚠️ **本仓库的诚信铁律：**绝不把估算包装成事实，绝不把 mock 数据当作真实信息发布，
 > 绝不给任何未经端到端测试的东西打上「已完成」。你看到的上面的勾选，
@@ -372,6 +390,8 @@ cd mini-services/chat-service && bun run dev
 <img src=".github/assets/divider.svg" width="100%">
 
 <sub><i>设计 · 工程 · 测试 · 运营，皆出一人之手。向所有人敞开。</i></sub>
+
+<img src=".github/assets/starfield-cta.svg" alt="跃动的星空与脉冲星" width="100%">
 
 ⭐ **如果这个项目打动了你，对一位独立构建者而言，一颗 Star 就是全世界。**
 

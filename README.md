@@ -67,6 +67,12 @@ the only way its maker knows: by building, breaking, and rebuilding until it wor
 
 ## 🌍 What is TEKA NEXUS?
 
+<div align="center">
+
+<img src=".github/assets/galaxy-core.svg" alt="A rotating golden galaxy — the TEKA NEXUS core" width="700">
+
+</div>
+
 TEKA NEXUS started with one question: **why should learning to code be hard?**
 
 It is a complete ecosystem that blends **networking, building and learning**
@@ -105,6 +111,12 @@ Persian-first, open to the world.
 
 ## 🧬 The Global Engine — eight systems, one nexus
 
+<div align="center">
+
+<img src=".github/assets/orbit-systems.svg" alt="Eight systems orbiting the TEKA NEXUS core" width="100%">
+
+</div>
+
 The next generation of TEKA NEXUS is an **eight-system expansion** — and the
 build log is public, commit by commit:
 
@@ -118,6 +130,12 @@ build log is public, commit by commit:
 | 6 | 🏅 **Global Challenges** — judged engineering competitions | 🚧 Planned |
 | 7 | 🕸️ **Knowledge Graph** — semantic search over real indexed data | 🚧 Planned |
 | 8 | 👯 **Digital Twin** — telemetry that is always labeled: *actual / calculated / simulated / AI-predicted* | 🚧 Planned |
+
+<div align="center">
+
+<img src=".github/assets/dna-helix.svg" alt="An animated golden DNA helix" width="680">
+
+</div>
 
 > ⚠️ **Integrity rule of the house:** we never present estimates as facts, never
 > ship mock data as real information, and never mark anything "done" that
@@ -377,6 +395,8 @@ Released under the [MIT License](LICENSE).
 <img src=".github/assets/divider.svg" width="100%">
 
 <sub><i>Designed · engineered · tested · operated by one person. Open to everyone.</i></sub>
+
+<img src=".github/assets/starfield-cta.svg" alt="A living starfield with a pulsing star" width="100%">
 
 ⭐ **If this project inspires you, a star means the world to a solo builder.**
 

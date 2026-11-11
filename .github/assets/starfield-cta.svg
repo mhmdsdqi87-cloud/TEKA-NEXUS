@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="150" viewBox="0 0 1200 150" role="img" aria-label="living starfield with a pulsing star">
+  <defs>
+    <radialGradient id="sGlow" cx="0.5" cy="0.5" r="0.6">
+      <stop offset="0" stop-color="#D4AF37" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#D4AF37" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="starHalo" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFF3C4" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#FFF3C4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sLine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#D4AF37" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#D4AF37" stop-opacity="1"/>
+      <stop offset="1" stop-color="#D4AF37" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="sTail" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#F7E394" stop-opacity="0"/>
+      <stop offset="1" stop-color="#FFF7D6" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="1" y="1" width="1198" height="148" rx="16" fill="#07070A"/>
+  <rect x="1" y="1" width="1198" height="148" rx="16" fill="url(#sGlow)"/>
+  <rect x="1.5" y="1.5" width="1197" height="147" rx="16" fill="none" stroke="#D4AF37" opacity="0.35"/>
+  <rect x="10" y="10" width="1180" height="130" rx="12" fill="none" stroke="#D4AF37" opacity="0.12"/>
+
+  <!-- star field -->
+  <g fill="#E9C75C">
+    <circle cx="90" cy="40" r="1.3"><animate attributeName="opacity" values="0.15;0.9;0.15" dur="3.2s" repeatCount="indefinite"/></circle>
+    <circle cx="170" cy="105" r="1.0"><animate attributeName="opacity" values="0.1;0.65;0.1" dur="4.4s" begin="0.6s" repeatCount="indefinite"/></circle>
+    <circle cx="260" cy="70" r="1.5"><animate attributeName="opacity" values="0.2;1;0.2" dur="2.9s" begin="1.1s" repeatCount="indefinite"/></circle>
+    <circle cx="350" cy="115" r="1.1"><animate attributeName="opacity" values="0.1;0.7;0.1" dur="4.0s" begin="2.0s" repeatCount="indefinite"/></circle>
+    <circle cx="440" cy="45" r="1.2"><animate attributeName="opacity" values="0.12;0.8;0.12" dur="3.6s" begin="0.3s" repeatCount="indefinite"/></circle>
+    <circle cx="560" cy="120" r="1.0"><animate attributeName="opacity" values="0.1;0.6;0.1" dur="5.1s" begin="1.7s" repeatCount="indefinite"/></circle>
+    <circle cx="680" cy="50" r="1.4"><animate attributeName="opacity" values="0.15;0.9;0.15" dur="3.4s" begin="2.4s" repeatCount="indefinite"/></circle>
+    <circle cx="790" cy="105" r="1.1"><animate attributeName="opacity" values="0.1;0.7;0.1" dur="4.7s" begin="0.9s" repeatCount="indefinite"/></circle>
+    <circle cx="900" cy="65" r="1.5"><animate attributeName="opacity" values="0.2;1;0.2" dur="3.1s" begin="1.4s" repeatCount="indefinite"/></circle>
+    <circle cx="1010" cy="115" r="1.1"><animate attributeName="opacity" values="0.1;0.7;0.1" dur="4.2s" begin="2.8s" repeatCount="indefinite"/></circle>
+    <circle cx="1110" cy="45" r="1.3"><animate attributeName="opacity" values="0.15;0.85;0.15" dur="3.8s" begin="0.2s" repeatCount="indefinite"/></circle>
+  </g>
+  <path d="M308 38 H318 M313 33 V43" stroke="#FFF3C4" stroke-width="1" fill="none"><animate attributeName="opacity" values="0.15;1;0.15" dur="4.5s" repeatCount="indefinite"/></path>
+  <path d="M962 100 H972 M967 95 V105" stroke="#FFF3C4" stroke-width="1" fill="none"><animate attributeName="opacity" values="0.15;1;0.15" dur="5.2s" begin="1.3s" repeatCount="indefinite"/></path>
+
+  <!-- shooting star -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.7;1" dur="11s" repeatCount="indefinite"/>
+    <animateMotion path="M -80 30 L 1280 110" dur="11s" repeatCount="indefinite" rotate="auto"/>
+    <rect x="-80" y="-1.2" width="80" height="2.4" fill="url(#sTail)" rx="1.2"/>
+    <circle r="2.6" fill="#FFF7D6"/>
+  </g>
+
+  <!-- pulsing star + orbit -->
+  <g transform="translate(600 75)">
+    <ellipse rx="96" ry="26" fill="none" stroke="#D4AF37" stroke-width="1" opacity="0.22" stroke-dasharray="3 6">
+      <animate attributeName="stroke-dashoffset" values="0;36" dur="7s" repeatCount="indefinite"/>
+    </ellipse>
+    <g>
+      <animateMotion dur="11s" repeatCount="indefinite" path="M 96,0 A 96 26 0 1 1 -96,0 A 96 26 0 1 1 96,0 Z"/>
+      <circle r="2.6" fill="#F7E394"/>
+    </g>
+    <ellipse rx="34" ry="34" fill="url(#starHalo)">
+      <animate attributeName="rx" values="30;42;30" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="ry" values="30;42;30" dur="4s" repeatCount="indefinite"/>
+    </ellipse>
+    <path d="M0 -22 L5 -5 L22 0 L5 5 L0 22 L-5 5 L-22 0 L-5 -5 Z" fill="#F7E394">
+      <animateTransform attributeName="transform" type="rotate" values="0;360" dur="24s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="4s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <line x1="60" y1="128" x2="380" y2="128" stroke="url(#sLine)" stroke-width="1" opacity="0.45"/>
+  <line x1="820" y1="128" x2="1140" y2="128" stroke="url(#sLine)" stroke-width="1" opacity="0.45"/>
+</svg>

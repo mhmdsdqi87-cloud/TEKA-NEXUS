@@ -5,26 +5,26 @@
 <img src=".github/assets/banner.svg" alt="TEKA NEXUS — حيث تتحول الأفكار إلى تقنية حقيقية" width="100%">
 
 <a href="https://teka-nexus.vercel.app/">
-  <img src="https://readme-typing-svg.demolab.com?font=Orbitron&weight=600&size=22&duration=3200&pause=900&color=F5D678&center=true&vCenter=true&width=760&height=52&lines=Learn+to+code.+Find+your+team.+Ship+real+projects.;300+lessons.+12+arena+modules.+7+languages.;A+developer+empire+in+one+installable+PWA.;Built+by+one+person.+Open+to+everyone." alt="شعارات TEKA NEXUS">
+  <img src="https://readme-typing-svg.demolab.com?font=Orbitron&weight=600&size=22&duration=3200&pause=900&color=67E8F9&center=true&vCenter=true&width=760&height=52&lines=Learn+to+code.+Find+your+team.+Ship+real+projects.;300+lessons.+12+arena+modules.+7+languages.;A+developer+empire+in+one+installable+PWA.;Built+by+one+person.+Open+to+everyone." alt="شعارات TEKA NEXUS">
 </a>
 
 <br>
 
-[![Live](https://img.shields.io/badge/LIVE-teka--nexus.vercel.app-D4AF37?style=for-the-badge&labelColor=0A0A0A&logo=vercel&logoColor=D4AF37)](https://teka-nexus.vercel.app/)
-[![Next.js](https://img.shields.io/badge/Next.js-16-0A0A0A?style=for-the-badge&logo=nextdotjs&logoColor=D4AF37)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-0A0A0A?style=for-the-badge&logo=typescript&logoColor=D4AF37)](https://www.typescriptlang.org)
-[![PWA](https://img.shields.io/badge/PWA-Installable-0A0A0A?style=for-the-badge&logo=pwa&logoColor=D4AF37)](https://developer.mozilla.org/docs/Web/Progressive_web_apps)
-[![License](https://img.shields.io/badge/License-MIT-D4AF37?style=for-the-badge&labelColor=0A0A0A)](LICENSE)
+[![Live](https://img.shields.io/badge/LIVE-teka--nexus.vercel.app-22D3EE?style=for-the-badge&labelColor=08080D&logo=vercel&logoColor=22D3EE)](https://teka-nexus.vercel.app/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-08080D?style=for-the-badge&logo=nextdotjs&logoColor=22D3EE)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-08080D?style=for-the-badge&logo=typescript&logoColor=22D3EE)](https://www.typescriptlang.org)
+[![PWA](https://img.shields.io/badge/PWA-Installable-08080D?style=for-the-badge&logo=pwa&logoColor=22D3EE)](https://developer.mozilla.org/docs/Web/Progressive_web_apps)
+[![License](https://img.shields.io/badge/License-MIT-22D3EE?style=for-the-badge&labelColor=08080D)](LICENSE)
 
 <br>
 
-[![Release](https://img.shields.io/github/v/release/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=0A0A0A&color=D4AF37&logo=github)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases)
-[![Stars](https://img.shields.io/github/stars/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=0A0A0A&color=D4AF37&logo=github&logoColor=D4AF37)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/stargazers)
-[![Forks](https://img.shields.io/github/forks/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=0A0A0A&color=D4AF37&logo=github&logoColor=D4AF37)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/forks)
-[![Issues](https://img.shields.io/github/issues/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=0A0A0A&color=D4AF37&logo=github&logoColor=D4AF37)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues)
-[![Commits](https://img.shields.io/github/commit-activity/m/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=0A0A0A&color=D4AF37&logo=git&logoColor=D4AF37)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/commits/main)
-[![Views](https://komarev.com/ghpvc/?username=mhmdsdqi87-cloud&repo=TEKA-NEXUS&style=flat-square&labelColor=0A0A0A&color=D4AF37&label=VIEWS)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS)
-[![Locales](https://img.shields.io/badge/locales-7-D4AF37?style=flat-square&labelColor=0A0A0A)](#internationalization)
+[![Release](https://img.shields.io/github/v/release/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=08080D&color=22D3EE&logo=github)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases)
+[![Stars](https://img.shields.io/github/stars/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=08080D&color=22D3EE&logo=github&logoColor=22D3EE)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/stargazers)
+[![Forks](https://img.shields.io/github/forks/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=08080D&color=22D3EE&logo=github&logoColor=22D3EE)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/forks)
+[![Issues](https://img.shields.io/github/issues/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=08080D&color=22D3EE&logo=github&logoColor=22D3EE)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues)
+[![Commits](https://img.shields.io/github/commit-activity/m/mhmdsdqi87-cloud/TEKA-NEXUS?style=flat-square&labelColor=08080D&color=22D3EE&logo=git&logoColor=22D3EE)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/commits/main)
+[![Views](https://komarev.com/ghpvc/?username=mhmdsdqi87-cloud&repo=TEKA-NEXUS&style=flat-square&labelColor=08080D&color=22D3EE&label=VIEWS)](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS)
+[![Locales](https://img.shields.io/badge/locales-7-22D3EE?style=flat-square&labelColor=08080D)](#internationalization)
 
 <br>
 
@@ -61,7 +61,7 @@
 
 <div align="center">
 
-<img src=".github/assets/galaxy-core.svg" alt="مجرة ذهبية دوّارة — نواة TEKA NEXUS" width="700">
+<img src=".github/assets/galaxy-core.svg" alt="مجرة سماوية-بنفسجية دوّارة — نواة TEKA NEXUS" width="700">
 
 </div>
 
@@ -121,7 +121,7 @@
 
 <div align="center">
 
-<img src=".github/assets/dna-helix.svg" alt="لولب DNA ذهبي متحرك" width="680">
+<img src=".github/assets/dna-helix.svg" alt="لولب DNA سماوي متحرك" width="680">
 
 </div>
 
@@ -330,14 +330,14 @@ cd mini-services/chat-service && bun run dev
 <div align="center">
 
 <a href="https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS">
-  <img src="https://github-readme-stats.vercel.app/api?username=mhmdsdqi87-cloud&show_icons=true&hide_title=false&title_color=F5D678&icon_color=D4AF37&text_color=C9C9C9&bg_color=0D0D0D&border_color=8A6D1F&hide_rank=false&show_owner=false" alt="إحصاءات GitHub لمحمد صادقي" height="165">
+  <img src="https://github-readme-stats.vercel.app/api?username=mhmdsdqi87-cloud&show_icons=true&hide_title=false&title_color=67E8F9&icon_color=22D3EE&text_color=C6C6D4&bg_color=0E0E16&border_color=0E7490&hide_rank=false&show_owner=false" alt="إحصاءات GitHub لمحمد صادقي" height="165">
 </a>
 <a href="https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS">
-  <img src="https://streak-stats.demolab.com?user=mhmdsdqi87-cloud&background=0D0D0D&border=8A6D1F&ring=D4AF37&fire=F5D678&currStreakLabel=D4AF37&sideLabels=C9C9C9&currStreakNum=FFFFFF&dates=8A8A8A" alt="سلسلة المساهمات المتتالية" height="165">
+  <img src="https://streak-stats.demolab.com?user=mhmdsdqi87-cloud&background=0E0E16&border=0E7490&ring=22D3EE&fire=67E8F9&currStreakLabel=22D3EE&sideLabels=C6C6D4&currStreakNum=FFFFFF&dates=8B8B9E" alt="سلسلة المساهمات المتتالية" height="165">
 </a>
 
 <a href="https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS">
-  <img src="https://github-readme-stats.vercel.app/api/pin/?username=mhmdsdqi87-cloud&repo=TEKA-NEXUS&title_color=F5D678&icon_color=D4AF37&text_color=C9C9C9&bg_color=0D0D0D&border_color=8A6D1F" alt="بطاقة مستودع TEKA NEXUS" width="480">
+  <img src="https://github-readme-stats.vercel.app/api/pin/?username=mhmdsdqi87-cloud&repo=TEKA-NEXUS&title_color=67E8F9&icon_color=22D3EE&text_color=C6C6D4&bg_color=0E0E16&border_color=0E7490" alt="بطاقة مستودع TEKA NEXUS" width="480">
 </a>
 
 <img src="https://github-profile-trophy.vercel.app/?username=mhmdsdqi87-cloud&theme=onedark&no-frame=true&row=1&column=7&margin-w=8" alt="جوائز GitHub" width="880">

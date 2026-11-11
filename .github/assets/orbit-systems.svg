@@ -1,30 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-label="eight systems orbiting the TEKA NEXUS core">
   <defs>
     <radialGradient id="oCore" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#FFF3C4" stop-opacity="0.95"/>
-      <stop offset="0.4" stop-color="#D4AF37" stop-opacity="0.4"/>
-      <stop offset="1" stop-color="#D4AF37" stop-opacity="0"/>
+      <stop offset="0" stop-color="#ECFEFF" stop-opacity="0.95"/>
+      <stop offset="0.4" stop-color="#22D3EE" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#22D3EE" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="oGlow" cx="0.5" cy="0.5" r="0.6">
-      <stop offset="0" stop-color="#D4AF37" stop-opacity="0.10"/>
-      <stop offset="1" stop-color="#D4AF37" stop-opacity="0"/>
+      <stop offset="0" stop-color="#22D3EE" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#22D3EE" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="nodeHalo" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#F7E394" stop-opacity="0.45"/>
-      <stop offset="1" stop-color="#F7E394" stop-opacity="0"/>
+      <stop offset="0" stop-color="#A5F3FC" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#A5F3FC" stop-opacity="0"/>
     </radialGradient>
     <path id="ring1" d="M 840,200 A 240 88 0 1 1 360,200 A 240 88 0 1 1 840,200 Z" fill="none"/>
     <path id="ring2" d="M 970,200 A 370 136 0 1 1 230,200 A 370 136 0 1 1 970,200 Z" fill="none"/>
     <path id="ring3" d="M 1100,200 A 500 184 0 1 1 100,200 A 500 184 0 1 1 1100,200 Z" fill="none"/>
   </defs>
 
-  <rect x="1" y="1" width="1198" height="428" rx="16" fill="#07070A"/>
+  <rect x="1" y="1" width="1198" height="428" rx="16" fill="#08080D"/>
   <rect x="1" y="1" width="1198" height="428" rx="16" fill="url(#oGlow)"/>
-  <rect x="1.5" y="1.5" width="1197" height="427" rx="16" fill="none" stroke="#D4AF37" opacity="0.35"/>
-  <rect x="10" y="10" width="1180" height="410" rx="12" fill="none" stroke="#D4AF37" opacity="0.12"/>
+  <rect x="1.5" y="1.5" width="1197" height="427" rx="16" fill="none" stroke="#22D3EE" opacity="0.35"/>
+  <rect x="10" y="10" width="1180" height="410" rx="12" fill="none" stroke="#22D3EE" opacity="0.12"/>
 
   <!-- ambient stars -->
-  <g fill="#E9C75C">
+  <g fill="#67E8F9">
     <circle cx="80" cy="60" r="1.2"><animate attributeName="opacity" values="0.12;0.8;0.12" dur="3.6s" repeatCount="indefinite"/></circle>
     <circle cx="1120" cy="70" r="1.4"><animate attributeName="opacity" values="0.15;0.9;0.15" dur="4.2s" begin="0.8s" repeatCount="indefinite"/></circle>
     <circle cx="150" cy="360" r="1.1"><animate attributeName="opacity" values="0.1;0.65;0.1" dur="4.8s" begin="1.4s" repeatCount="indefinite"/></circle>
@@ -33,60 +33,60 @@
     <circle cx="330" cy="50" r="1.0"><animate attributeName="opacity" values="0.1;0.6;0.1" dur="4.5s" begin="2.6s" repeatCount="indefinite"/></circle>
     <circle cx="930" cy="45" r="1.2"><animate attributeName="opacity" values="0.12;0.75;0.12" dur="3.9s" begin="1.0s" repeatCount="indefinite"/></circle>
   </g>
-  <path d="M1146 332 H1156 M1151 327 V337" stroke="#FFF3C4" stroke-width="1" fill="none"><animate attributeName="opacity" values="0.15;1;0.15" dur="4.6s" repeatCount="indefinite"/></path>
+  <path d="M1146 332 H1156 M1151 327 V337" stroke="#ECFEFF" stroke-width="1" fill="none"><animate attributeName="opacity" values="0.15;1;0.15" dur="4.6s" repeatCount="indefinite"/></path>
 
   <!-- orbital plane (slightly tilted) -->
   <g transform="rotate(-8 600 200)">
-    <ellipse cx="600" cy="200" rx="500" ry="184" fill="none" stroke="#D4AF37" opacity="0.12" stroke-width="1" stroke-dasharray="2 6">
+    <ellipse cx="600" cy="200" rx="500" ry="184" fill="none" stroke="#22D3EE" opacity="0.12" stroke-width="1" stroke-dasharray="2 6">
       <animate attributeName="stroke-dashoffset" values="0;64" dur="14s" repeatCount="indefinite"/>
     </ellipse>
-    <ellipse cx="600" cy="200" rx="370" ry="136" fill="none" stroke="#D4AF37" opacity="0.16" stroke-width="1" stroke-dasharray="2 6">
+    <ellipse cx="600" cy="200" rx="370" ry="136" fill="none" stroke="#22D3EE" opacity="0.16" stroke-width="1" stroke-dasharray="2 6">
       <animate attributeName="stroke-dashoffset" values="64;0" dur="11s" repeatCount="indefinite"/>
     </ellipse>
-    <ellipse cx="600" cy="200" rx="240" ry="88" fill="none" stroke="#D4AF37" opacity="0.20" stroke-width="1" stroke-dasharray="2 6">
+    <ellipse cx="600" cy="200" rx="240" ry="88" fill="none" stroke="#22D3EE" opacity="0.20" stroke-width="1" stroke-dasharray="2 6">
       <animate attributeName="stroke-dashoffset" values="0;48" dur="8s" repeatCount="indefinite"/>
     </ellipse>
 
     <!-- outer ring nodes (3 planned) -->
     <g>
       <animateMotion dur="66s" repeatCount="indefinite" rotate="auto"><mpath href="#ring3"/></animateMotion>
-      <circle r="5" fill="#0A0A0A" stroke="#D4AF37" stroke-width="1.6"/>
+      <circle r="5" fill="#08080D" stroke="#22D3EE" stroke-width="1.6"/>
     </g>
     <g>
       <animateMotion dur="66s" begin="-22s" repeatCount="indefinite" rotate="auto"><mpath href="#ring3"/></animateMotion>
-      <circle r="5" fill="#0A0A0A" stroke="#D4AF37" stroke-width="1.6"/>
+      <circle r="5" fill="#08080D" stroke="#22D3EE" stroke-width="1.6"/>
     </g>
     <g>
       <animateMotion dur="66s" begin="-44s" repeatCount="indefinite" rotate="auto"><mpath href="#ring3"/></animateMotion>
-      <circle r="5" fill="#0A0A0A" stroke="#D4AF37" stroke-width="1.6"/>
+      <circle r="5" fill="#08080D" stroke="#22D3EE" stroke-width="1.6"/>
     </g>
 
     <!-- middle ring nodes (3 planned) -->
     <g>
       <animateMotion dur="44s" repeatCount="indefinite" rotate="auto"><mpath href="#ring2"/></animateMotion>
-      <circle r="5" fill="#0A0A0A" stroke="#D4AF37" stroke-width="1.6"/>
+      <circle r="5" fill="#08080D" stroke="#22D3EE" stroke-width="1.6"/>
     </g>
     <g>
       <animateMotion dur="44s" begin="-15s" repeatCount="indefinite" rotate="auto"><mpath href="#ring2"/></animateMotion>
-      <circle r="5" fill="#0A0A0A" stroke="#D4AF37" stroke-width="1.6"/>
+      <circle r="5" fill="#08080D" stroke="#22D3EE" stroke-width="1.6"/>
     </g>
     <g>
       <animateMotion dur="44s" begin="-30s" repeatCount="indefinite" rotate="auto"><mpath href="#ring2"/></animateMotion>
-      <circle r="5" fill="#0A0A0A" stroke="#D4AF37" stroke-width="1.6"/>
+      <circle r="5" fill="#08080D" stroke="#22D3EE" stroke-width="1.6"/>
     </g>
 
     <!-- inner ring: the two shipped systems, glowing -->
     <g>
       <animateMotion dur="22s" repeatCount="indefinite" rotate="auto"><mpath href="#ring1"/></animateMotion>
       <circle r="11" fill="url(#nodeHalo)"/>
-      <circle r="5.5" fill="#F7E394" stroke="#FFF7D6" stroke-width="1.4"/>
-      <path d="M14 0 H20 M17 -3 V3" stroke="#FFF3C4" stroke-width="1.2"/>
+      <circle r="5.5" fill="#A5F3FC" stroke="#ECFEFF" stroke-width="1.4"/>
+      <path d="M14 0 H20 M17 -3 V3" stroke="#ECFEFF" stroke-width="1.2"/>
     </g>
     <g>
       <animateMotion dur="22s" begin="-11s" repeatCount="indefinite" rotate="auto"><mpath href="#ring1"/></animateMotion>
       <circle r="11" fill="url(#nodeHalo)"/>
-      <circle r="5.5" fill="#F7E394" stroke="#FFF7D6" stroke-width="1.4"/>
-      <path d="M14 0 H20 M17 -3 V3" stroke="#FFF3C4" stroke-width="1.2"/>
+      <circle r="5.5" fill="#A5F3FC" stroke="#ECFEFF" stroke-width="1.4"/>
+      <path d="M14 0 H20 M17 -3 V3" stroke="#ECFEFF" stroke-width="1.2"/>
     </g>
   </g>
 
@@ -96,14 +96,14 @@
     <animate attributeName="ry" values="48;58;48" dur="5.5s" repeatCount="indefinite"/>
   </ellipse>
   <g transform="translate(600 200)">
-    <path d="M0 -20 L17.3 -10 L17.3 10 L0 20 L-17.3 10 L-17.3 -10 Z" fill="#0A0A0A" stroke="#F7E394" stroke-width="1.6">
+    <path d="M0 -20 L17.3 -10 L17.3 10 L0 20 L-17.3 10 L-17.3 -10 Z" fill="#08080D" stroke="#A5F3FC" stroke-width="1.6">
       <animateTransform attributeName="transform" type="rotate" values="-6;6;-6" dur="12s" repeatCount="indefinite"/>
     </path>
-    <circle r="4.5" fill="#F7E394">
+    <circle r="4.5" fill="#A5F3FC">
       <animate attributeName="opacity" values="0.55;1;0.55" dur="3s" repeatCount="indefinite"/>
     </circle>
   </g>
 
   <!-- legend -->
-  <text x="600" y="412" text-anchor="middle" font-family="Verdana, Arial, sans-serif" font-size="11" letter-spacing="3" fill="#B99B3E">✦ UNIVERSE · ✦ DNA · AI STUDIO · WAR ROOM · CODE INTEL · CHALLENGES · KNOWLEDGE · TWIN</text>
+  <text x="600" y="412" text-anchor="middle" font-family="Verdana, Arial, sans-serif" font-size="11" letter-spacing="3" fill="#7DD3FC">✦ UNIVERSE · ✦ DNA · AI STUDIO · WAR ROOM · CODE INTEL · CHALLENGES · KNOWLEDGE · TWIN</text>
 </svg>

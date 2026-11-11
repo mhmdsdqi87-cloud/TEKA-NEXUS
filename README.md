@@ -345,7 +345,7 @@ This project is built by one person — **contributions are not just welcome, th
 | 🐛 Bug hunts | Report in [Issues](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues) — repro steps win hearts |
 | ⭐ Support | Star the repo, share it with one friend who's learning to code |
 
-Read our [Code of Conduct](CODE_OF_CONDUCT.md). Security issues → [`SECURITY.md`](SECURITY.md) (responsible disclosure).
+Read our [Code of Conduct](CODE_OF_CONDUCT.md). Questions and support → [`SUPPORT.md`](SUPPORT.md). Security issues → [`SECURITY.md`](SECURITY.md) (responsible disclosure). Cite the project via [`CITATION.cff`](CITATION.cff).
 
 <img src=".github/assets/divider.svg" width="100%">
 

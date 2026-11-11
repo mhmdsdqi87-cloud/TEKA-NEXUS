@@ -57,12 +57,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- dna + universe namespaces translated into Arabic, Chinese, Spanish, French
+  and Russian — the Phase-0 en fallback is retired; all 7 locales now resolve
+  both NEXUS 2.0 workspaces natively.
+- Community health set completed: SUPPORT.md, CITATION.cff, CODEOWNERS,
+  `.github/release.yml` and the issue-template config.
+
 ### Planned
 
 - NEXUS 2.0 Phase 2 — AI Autonomous Studio + War Room
 - Fake-activity engine (live feed simulation, online counters) — i18n-safe, client-only
-- Myket Android release v1.0.2 (versionCode 3) with force-close fixes
 - Academy boot-time optimization (the ~8s intro on slow connections)
+
+## [myket-v1.0.2] — 2026-11-08 — Android store build
+
+- versionCode 3 — the definitive Force Close fix: the shell moved from TWA to
+  a native WebView with zero external-browser dependency (verified on Poco X5
+  / Android 14 and Galaxy A51 / Android 12). Adds an offline error screen with
+  retry, pull-to-refresh, in-app deep links, DownloadManager downloads and
+  avatar file-chooser upload. Signed with the same release keystore, so it
+  installs over the previous build.
+
+## [myket-v1.0.1] — 2026-10-31 — Android store build
+
+- versionCode 2 — fixes the Myket rejection (Force Close on launch):
+  AndroidManifest now declares the INTERNET permission and the
+  package-visibility queries block required on Android 11+. Ships APK + AAB.
+
+## [myket-v1.0.0] — 2026-10-20 — Android store build
+
+- First Android build for the Myket store: TWA shell, packageId
+  `ir.teka.nexus`.
 
 ## [1.74.0] — 2026-11-10
 
@@ -217,7 +244,11 @@ the academy content engine (300 lessons in 4 tracks), the 12 arena modules,
 the social graph (projects, tasks, milestones, team chat, DM), the XP/coin
 economy and the PWA shell all landed in this window.
 
-[Unreleased]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.74.0...HEAD
+[Unreleased]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.75.0...HEAD
+[1.75.0]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.74.0...v1.75.0
+[myket-v1.0.2]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.2
+[myket-v1.0.1]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.1
+[myket-v1.0.0]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.0
 [1.74.0]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.73.0...v1.74.0
 [1.73.0]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.72.1...v1.73.0
 [1.72.1]: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/compare/v1.72.0...v1.72.1

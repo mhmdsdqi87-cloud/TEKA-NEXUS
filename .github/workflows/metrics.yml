@@ -1,0 +1,59 @@
+name: "📊 Real Metrics"
+
+# Refreshes the "📊 Repository metrics" block in README.md with REAL numbers
+# from GitHub's own Traffic API (views/clones of the last 14 days) plus
+# stars/forks/issues. Nothing sampled, nothing invented — if GitHub doesn't
+# report it, it isn't written.
+
+on:
+  schedule:
+    - cron: "17 3 * * *" # daily 03:17 UTC — off the busy minutes
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Collect real repository metrics
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -eu
+          api() { curl -s -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com$1"; }
+          STARS=$(api "/repos/$REPO" | jq '.stargazers_count')
+          FORKS=$(api "/repos/$REPO" | jq '.forks_count')
+          ISSUES=$(api "/repos/$REPO" | jq '.open_issues_count')
+          VJ=$(api "/repos/$REPO/traffic/views")
+          VIEWS=$(echo "$VJ" | jq '[.views[].count] | add // 0')
+          UVISIT=$(echo "$VJ" | jq '[.views[].uniques] | add // 0')
+          CJ=$(api "/repos/$REPO/traffic/clones")
+          CLONES=$(echo "$CJ" | jq '[.clones[].count] | add // 0')
+          UCLONE=$(echo "$CJ" | jq '[.clones[].uniques] | add // 0')
+          STAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          printf '%s\n' \
+            "<!-- TEKA:METRICS:START -->" \
+            "| 👀 Visitors (14d) | 📄 Views (14d) | 🧬 Cloners (14d) | 📥 Clones (14d) | ⭐ Stars | 🍴 Forks | 🐞 Open issues |" \
+            "|---:|---:|---:|---:|---:|---:|---:|" \
+            "| $UVISIT | $VIEWS | $UCLONE | $CLONES | $STARS | $FORKS | $ISSUES |" \
+            "" \
+            "<sub>Real numbers from GitHub's own traffic API · auto-refreshed daily · last update $STAMP · nothing sampled, nothing invented.</sub>" \
+            "<!-- TEKA:METRICS:END -->" > /tmp/metrics-block.md
+          python3 -c "import re;s=open('README.md',encoding='utf-8').read();b=open('/tmp/metrics-block.md',encoding='utf-8').read().rstrip('\n');s=(re.sub(r'<!-- TEKA:METRICS:START -->.*?<!-- TEKA:METRICS:END -->',lambda m:b,s,flags=re.S) if '<!-- TEKA:METRICS:START -->' in s else s.rstrip()+'\n\n'+b+'\n');open('README.md','w',encoding='utf-8').write(s)"
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No metric changes."
+          else
+            git add README.md
+            git commit -m "chore(metrics): refresh real traffic numbers [skip ci]"
+            git push
+          fi

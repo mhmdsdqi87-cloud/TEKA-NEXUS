@@ -1,0 +1,36 @@
+name: "👋 Welcome first-timers"
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: |
+            🌟 **Welcome to TEKA NEXUS!** Thanks for opening your first issue.
+
+            - 🐞 Bug? A short repro path helps a lot.
+            - 💡 Idea for the academy, arena or one of the eight systems? Tell us more — roadmap discussions are open.
+            - 🚀 Live platform: https://teka-nexus.vercel.app/
+            - 🤝 Contributing guide: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/blob/main/CONTRIBUTING.md
+          pr-message: |
+            🎉 **Your first pull request to TEKA NEXUS — thank you!**
+
+            A human (yes, the same human who built all of this) will review it soon. Quick checklist that makes reviews fast:
+
+            1. `bun run lint` passes
+            2. Tests updated or added where it makes sense
+            3. UI text changed? Check the 7 locales under `src/lib/i18n/`
+
+            This platform exists to prove that one person can start — and many can finish. You just became one of the many. ⭐

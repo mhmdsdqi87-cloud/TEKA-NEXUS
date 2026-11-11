@@ -351,6 +351,14 @@ Read our [Code of Conduct](CODE_OF_CONDUCT.md). Security issues → [`SECURITY.m
 
 ## 📊 Repository metrics
 
+<!-- TEKA:METRICS:START -->
+| 👀 Visitors (14d) | 📄 Views (14d) | 🧬 Cloners (14d) | 📥 Clones (14d) | ⭐ Stars | 🍴 Forks | 🐞 Open issues |
+|---:|---:|---:|---:|---:|---:|---:|
+| — | — | — | — | 3 | 0 | 0 |
+
+<sub>Real numbers from GitHub's own traffic API · auto-refreshed daily · nothing sampled, nothing invented.</sub>
+<!-- TEKA:METRICS:END -->
+
 <div align="center">
 
 <a href="https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS">

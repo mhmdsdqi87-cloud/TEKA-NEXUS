@@ -30,5 +30,8 @@ jobs:
         with:
           target_branch: output
           build_dir: dist
+          # [skip vercel] tells Vercel to NOT attempt a preview deployment of this
+          # assets-only branch (it contains just the snake SVGs, no Next.js app).
+          commit_message: "Deploy to GitHub pages [skip vercel]"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -28,7 +28,7 @@
 
 <br>
 
-[🚀 在线平台](https://teka-nexus.vercel.app/) · [📱 Android APK](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.1) · [🤝 参与贡献](CONTRIBUTING.md) · [🐛 问题反馈](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues) · [👤 GitHub](https://github.com/mhmdsdqi87-cloud) · [✉️ 联系作者](mailto:mhmdsdqi87@gmail.com)
+[🚀 在线平台](https://teka-nexus.vercel.app/) · [📱 Android APK](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.2) · [🤝 参与贡献](CONTRIBUTING.md) · [🐛 问题反馈](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues) · [👤 GitHub](https://github.com/mhmdsdqi87-cloud) · [✉️ 联系作者](mailto:mhmdsdqi87@gmail.com)
 
 <img src="public/screenshots/landing-wide.png" alt="TEKA NEXUS — 着陆页体验" width="880">
 

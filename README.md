@@ -28,7 +28,7 @@
 
 <br>
 
-[🚀 Live Platform](https://teka-nexus.vercel.app/) · [📱 Android APK](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.1) · [🤝 Contributing](CONTRIBUTING.md) · [🐛 Issues](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues) · [👤 GitHub](https://github.com/mhmdsdqi87-cloud) · [✉️ Contact](mailto:mhmdsdqi87@gmail.com)
+[🚀 Live Platform](https://teka-nexus.vercel.app/) · [📱 Android APK](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/releases/tag/myket-v1.0.2) · [🤝 Contributing](CONTRIBUTING.md) · [🐛 Issues](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/issues) · [👤 GitHub](https://github.com/mhmdsdqi87-cloud) · [✉️ Contact](mailto:mhmdsdqi87@gmail.com)
 
 <img src="public/screenshots/landing-wide.png" alt="TEKA NEXUS — the landing experience" width="880">
 
@@ -391,7 +391,7 @@ Read our [Code of Conduct](CODE_OF_CONDUCT.md). Security issues → [`SECURITY.m
 ## 📜 License & credits
 
 Built with stubborn hope — and more nights than sleep — by **Mohammad Sadeghi**.
-All product naming, design language and course content © 2025 Mohammad Sadeghi.
+All product naming, design language and course content © 2025-2026 Mohammad Sadeghi.
 Released under the [MIT License](LICENSE).
 
 📘 Release history: [CHANGELOG.md](CHANGELOG.md) · 🗺️ Deep roadmap: [docs/ROADMAP.md](docs/ROADMAP.md)

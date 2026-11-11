@@ -1,0 +1,11 @@
+# Issue templates: blank issues stay off so every report arrives structured.
+# Questions and ideas belong in Discussions, where they can be answered
+# publicly and stay searchable.
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/discussions
+    about: Ask questions and propose features in Discussions
+  - name: Security vulnerability
+    url: https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/blob/main/SECURITY.md
+    about: Report vulnerabilities responsibly via the private disclosure path — not in public issues

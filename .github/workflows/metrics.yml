@@ -1,9 +1,13 @@
 name: "📊 Real Metrics"
 
 # Refreshes the "📊 Repository metrics" block in README.md with REAL numbers
-# from GitHub's own Traffic API (views/clones of the last 14 days) plus
-# stars/forks/issues. Nothing sampled, nothing invented — if GitHub doesn't
-# report it, it isn't written.
+# from GitHub's own API (stars/forks/issues always; 14-day views/clones when
+# the token can read the Traffic API). Nothing sampled, nothing invented —
+# if GitHub doesn't report a number, the cell honestly says "n/a".
+#
+# Optional: to unlock the traffic columns, add a classic PAT (repo scope)
+# as the repository secret TRAFFIC_TOKEN — the workflow picks it up
+# automatically and falls back to GITHUB_TOKEN when absent.
 
 on:
   schedule:
@@ -21,7 +25,7 @@ jobs:
 
       - name: Collect real repository metrics
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.TRAFFIC_TOKEN || github.token }}
           REPO: ${{ github.repository }}
         run: |
           set -eu
@@ -29,12 +33,20 @@ jobs:
           STARS=$(api "/repos/$REPO" | jq '.stargazers_count')
           FORKS=$(api "/repos/$REPO" | jq '.forks_count')
           ISSUES=$(api "/repos/$REPO" | jq '.open_issues_count')
-          VJ=$(api "/repos/$REPO/traffic/views")
-          VIEWS=$(echo "$VJ" | jq '[.views[].count] | add // 0')
-          UVISIT=$(echo "$VJ" | jq '[.views[].uniques] | add // 0')
-          CJ=$(api "/repos/$REPO/traffic/clones")
-          CLONES=$(echo "$CJ" | jq '[.clones[].count] | add // 0')
-          UCLONE=$(echo "$CJ" | jq '[.clones[].uniques] | add // 0')
+          VJ=$(api "/repos/$REPO/traffic/views" || true)
+          if echo "$VJ" | jq -e '.views' >/dev/null 2>&1; then
+            VIEWS=$(echo "$VJ" | jq '[.views[].count] | add // 0')
+            UVISIT=$(echo "$VJ" | jq '[.views[].uniques] | add // 0')
+          else
+            VIEWS="n/a"; UVISIT="n/a"
+          fi
+          CJ=$(api "/repos/$REPO/traffic/clones" || true)
+          if echo "$CJ" | jq -e '.clones' >/dev/null 2>&1; then
+            CLONES=$(echo "$CJ" | jq '[.clones[].count] | add // 0')
+            UCLONE=$(echo "$CJ" | jq '[.clones[].uniques] | add // 0')
+          else
+            CLONES="n/a"; UCLONE="n/a"
+          fi
           STAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
           printf '%s\n' \
             "<!-- TEKA:METRICS:START -->" \
@@ -42,7 +54,7 @@ jobs:
             "|---:|---:|---:|---:|---:|---:|---:|" \
             "| $UVISIT | $VIEWS | $UCLONE | $CLONES | $STARS | $FORKS | $ISSUES |" \
             "" \
-            "<sub>Real numbers from GitHub's own traffic API · auto-refreshed daily · last update $STAMP · nothing sampled, nothing invented.</sub>" \
+            "<sub>Real numbers from GitHub's own API · auto-refreshed daily · last update $STAMP · nothing sampled, nothing invented.</sub>" \
             "<!-- TEKA:METRICS:END -->" > /tmp/metrics-block.md
           python3 -c "import re;s=open('README.md',encoding='utf-8').read();b=open('/tmp/metrics-block.md',encoding='utf-8').read().rstrip('\n');s=(re.sub(r'<!-- TEKA:METRICS:START -->.*?<!-- TEKA:METRICS:END -->',lambda m:b,s,flags=re.S) if '<!-- TEKA:METRICS:START -->' in s else s.rstrip()+'\n\n'+b+'\n');open('README.md','w',encoding='utf-8').write(s)"
 

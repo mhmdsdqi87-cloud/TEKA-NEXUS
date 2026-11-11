@@ -1,0 +1,93 @@
+// TEKA NEXUS — zh dictionary: "dna" namespace (NEXUS 2.0 Phase 1).
+// 「已计算」标签是数据诚实契约的一部分：派生出的数字始终如实标注，
+// 绝不冒充实测数据。
+
+import type { DnaDict } from "../en/dna";
+
+export const dna: DnaDict = {
+  title: "项目 DNA",
+  subtitle: "每个项目的完整数字身份 —— 身份、架构、路线图与经过验证的历史。",
+  searchPlaceholder: "搜索项目…",
+  error: "无法加载该项目的 DNA。",
+  noResults: "没有符合搜索条件的项目。",
+  empty: "还没有公开项目 —— 创建第一个项目，它的 DNA 就会开始生长。",
+  createFirst: "创建项目",
+  openAria: "打开 {name} 的 DNA",
+  updated: "已更新",
+  prevPage: "上一页",
+  nextPage: "下一页",
+  pageOf: "第 {page} 页，共 {pages} 页",
+
+  notFoundTitle: "DNA 不可用",
+  notFoundBody: "该项目不存在或为私有。私有 DNA 仅对项目成员可见。",
+  backToPicker: "全部项目",
+
+  privateBadge: "私有",
+  verifiedBadge: "平台验证记录",
+  created: "创建于",
+  linkRepo: "仓库",
+  linkDemo: "演示",
+  linkSite: "网站",
+  openWorkspace: "打开工作区",
+
+  countMembers: "成员",
+  countLikes: "点赞",
+  countUpdates: "动态",
+  countTasks: "任务",
+  countComments: "评论",
+  countRequests: "待处理申请",
+
+  archTitle: "架构图",
+  archRootLabel: "已声明的技术层",
+  archDeclaredNote: "完全依据项目声明的标签绘制 —— 不做任何推测。",
+  emptyStack: "尚未声明技术栈 —— 项目所有者可以在项目页添加标签。",
+  layerFrontend: "前端",
+  layerBackend: "后端",
+  layerData: "数据",
+  layerTools: "工具",
+  layerOther: "已声明（未分类）",
+
+  healthTitle: "健康指标",
+  calculatedBadge: "已计算",
+  healthTaskRate: "任务完成率",
+  healthFormulaTasks: "已完成 / 全部任务",
+  healthProgress: "路线图进度",
+  healthFormulaMilestones: "已完成 / 全部里程碑",
+  healthActivity: "活跃度（30 天）",
+  healthFormulaActivity: "真实活动事件",
+  healthMomentum: "势头",
+  healthFormulaMomentum: "活跃度 ÷ 活跃天数",
+  healthDisclaimer: "所有指标均由平台真实记录计算得出 —— 既非外部测量，也非 AI 预测。",
+  healthLastActivity: "最近活动：",
+
+  milestonesTitle: "路线图与里程碑",
+  milestoneAdd: "添加里程碑",
+  milestoneProgress: "{percent}% · {done}/{total} 已完成",
+  milestoneTitleLabel: "标题",
+  milestoneDueLabel: "截止日期（可选）",
+  milestoneSave: "保存里程碑",
+  cancel: "取消",
+  emptyMilestones: "还没有里程碑。贡献者可以添加第一个里程碑，开启路线图。",
+  overdue: "已逾期",
+  milestoneDone: "已完成",
+  milestoneCompleteAria: "将里程碑标记为已完成",
+  milestoneUncompleteAria: "取消里程碑的完成标记",
+  milestoneDeleteAria: "删除里程碑",
+
+  timelineTitle: "开发时间线",
+  timelineVerifiedNote: "仅限已验证记录",
+  emptyTimeline: "暂无记录在案的事件。",
+  timelineKinds: {
+    PROJECT_CREATED: "创建了项目",
+    MEMBER_JOINED: "新成员加入",
+    UPDATE_POSTED: "发布了动态",
+    MILESTONE_CREATED: "规划了里程碑",
+    MILESTONE_COMPLETED: "完成了里程碑",
+    TASK_COMPLETED: "完成了任务",
+  },
+
+  contributorsTitle: "贡献者",
+  contributorsNote: "附经过验证的贡献计数",
+  joined: "加入于",
+  verifiedEvents: "已验证事件",
+};

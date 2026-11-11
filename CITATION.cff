@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+title: TEKA NEXUS
+type: software
+authors:
+  - name: Mohammad Sadeghi
+    alias: mhmdsdqi87-cloud
+repository-code: "https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS"
+url: "https://teka-nexus.vercel.app/"
+abstract: >-
+  A social network for developers with a free 300-lesson coding academy and
+  12 coding-game modules — one installable PWA built with Next.js 16 and
+  TypeScript, available in seven languages.
+keywords:
+  - social-network
+  - coding-academy
+  - learn-to-code
+  - coding-games
+  - pwa
+  - nextjs
+  - typescript
+license: MIT
+version: 1.75.0
+date-released: "2026-11-11"
+message: >-
+  If you use TEKA NEXUS in research or teaching, please cite it using this
+  metadata.

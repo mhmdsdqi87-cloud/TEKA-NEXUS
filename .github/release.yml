@@ -1,0 +1,22 @@
+# Categorize pull requests in automatically generated release notes.
+# "dependencies" is the label already applied by .github/dependabot.yml;
+# "bug" and "enhancement" are the labels used by the issue templates and
+# the contributing flow.
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+  categories:
+    - title: Bug fixes
+      labels:
+        - bug
+    - title: New features and improvements
+      labels:
+        - enhancement
+        - feature
+    - title: Dependencies
+      labels:
+        - dependencies
+    - title: Other changes
+      labels:
+        - "*"

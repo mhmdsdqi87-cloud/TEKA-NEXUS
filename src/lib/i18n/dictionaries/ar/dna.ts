@@ -1,0 +1,93 @@
+// TEKA NEXUS — ar dictionary: "dna" namespace (NEXUS 2.0 Phase 1).
+// تسميات «محسوب» جزء من عقد الصدق في البيانات: كل رقم مشتق يُوسَم بصدق،
+// ولا يُقدَّم أبداً وكأنه قياس فعلي.
+
+import type { DnaDict } from "../en/dna";
+
+export const dna: DnaDict = {
+  title: "DNA المشروع",
+  subtitle: "الهوية الرقمية الكاملة لكل مشروع — الهوية، البنية، خارطة الطريق، والسجل الموثق.",
+  searchPlaceholder: "ابحث في المشاريع…",
+  error: "تعذّر تحميل DNA هذا المشروع.",
+  noResults: "لا يوجد مشروع مطابق لبحثك.",
+  empty: "لا توجد مشاريع عامة بعد — أنشئ أول مشروع وسيبدأ DNA الخاص به في النمو.",
+  createFirst: "أنشئ مشروعاً",
+  openAria: "افتح DNA المشروع {name}",
+  updated: "محدَّث",
+  prevPage: "السابق",
+  nextPage: "التالي",
+  pageOf: "صفحة {page} من {pages}",
+
+  notFoundTitle: "DNA غير متاح",
+  notFoundBody: "هذا المشروع غير موجود أو خاص. الـ DNA الخاص بالمشروع لا يظهر إلا لأعضائه.",
+  backToPicker: "كل المشاريع",
+
+  privateBadge: "خاص",
+  verifiedBadge: "سجلات موثقة من المنصة",
+  created: "أُنشئ",
+  linkRepo: "المستودع",
+  linkDemo: "عرض تجريبي",
+  linkSite: "الموقع",
+  openWorkspace: "افتح مساحة العمل",
+
+  countMembers: "الأعضاء",
+  countLikes: "الإعجابات",
+  countUpdates: "التحديثات",
+  countTasks: "المهام",
+  countComments: "التعليقات",
+  countRequests: "الطلبات المفتوحة",
+
+  archTitle: "خريطة البنية",
+  archRootLabel: "طبقات التقنية المعلنة",
+  archDeclaredNote: "مرسومة من الوسوم المعلنة للمشروع فقط — لا شيء مُستنتَج.",
+  emptyStack: "لم تُعلن أي تقنية بعد — يمكن للمالك إضافة وسوم من صفحة المشروع.",
+  layerFrontend: "الواجهة الأمامية",
+  layerBackend: "الواجهة الخلفية",
+  layerData: "البيانات",
+  layerTools: "الأدوات",
+  layerOther: "معلنة (غير مصنفة)",
+
+  healthTitle: "مؤشرات الصحة",
+  calculatedBadge: "محسوب",
+  healthTaskRate: "معدل إنجاز المهام",
+  healthFormulaTasks: "منجزة / إجمالي المهام",
+  healthProgress: "تقدم خارطة الطريق",
+  healthFormulaMilestones: "مكتملة / إجمالي المحطات",
+  healthActivity: "النشاط (30 يوماً)",
+  healthFormulaActivity: "أحداث نشاط حقيقية",
+  healthMomentum: "الزخم",
+  healthFormulaMomentum: "النشاط ÷ الأيام النشطة",
+  healthDisclaimer: "جميع المؤشرات محسوبة من سجلات حقيقية على المنصة — ليست قياسات خارجية ولا تنبؤات ذكاء اصطناعي.",
+  healthLastActivity: "آخر نشاط:",
+
+  milestonesTitle: "خارطة الطريق والمحطات",
+  milestoneAdd: "أضف محطة",
+  milestoneProgress: "{percent}% · {done}/{total} مكتملة",
+  milestoneTitleLabel: "العنوان",
+  milestoneDueLabel: "تاريخ الاستحقاق (اختياري)",
+  milestoneSave: "احفظ المحطة",
+  cancel: "إلغاء",
+  emptyMilestones: "لا توجد محطات بعد. يمكن للمساهمين إضافة أول محطة لبدء خارطة الطريق.",
+  overdue: "متأخرة",
+  milestoneDone: "مكتملة",
+  milestoneCompleteAria: "حدد المحطة كمكتملة",
+  milestoneUncompleteAria: "أزل علامة الاكتمال عن المحطة",
+  milestoneDeleteAria: "احذف المحطة",
+
+  timelineTitle: "الخط الزمني للتطوير",
+  timelineVerifiedNote: "سجلات موثقة فقط",
+  emptyTimeline: "لا توجد أحداث مسجلة بعد.",
+  timelineKinds: {
+    PROJECT_CREATED: "أُنشئ مشروع",
+    MEMBER_JOINED: "انضم عضو",
+    UPDATE_POSTED: "نُشر تحديث",
+    MILESTONE_CREATED: "خُططت محطة",
+    MILESTONE_COMPLETED: "اكتملت محطة",
+    TASK_COMPLETED: "اكتملت مهمة",
+  },
+
+  contributorsTitle: "المساهمون",
+  contributorsNote: "بعدد مساهمات موثق",
+  joined: "انضم",
+  verifiedEvents: "أحداث موثقة",
+};

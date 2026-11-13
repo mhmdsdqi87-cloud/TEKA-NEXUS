@@ -804,3 +804,45 @@ model ActivityLog {
 
   @@index([userId, createdAt])
 }
+
+// NEXUS KNOWLEDGE LIBRARY — verified, reusable technical implementations.
+// Public reference system for human developers and AI coding agents.
+// Lifecycle: draft -> under_review -> verified -> deprecated.
+// An entry ONLY becomes "verified" through scripts/library-verify.ts, which
+// executes its demo against its published code and checks expectedOutput.
+// Arrays are JSON strings (schema is shared across SQLite + Postgres).
+model LibraryEntry {
+  id               String    @id @default(cuid())
+  slug             String    @unique
+  title            String
+  category         String    // frontend|backend|fullstack|ai|api|database|security|devops|performance|patterns|i18n|web3
+  summary          String
+  language         String    // typescript|javascript|python|sql|bash
+  framework        String    @default("none")
+  difficulty       String    @default("intermediate") // beginner|intermediate|advanced
+  status           String    @default("draft") // draft|under_review|verified|deprecated
+  problem          String    // the concrete problem this solves
+  approach         String    // the documented solution approach
+  code             String    // complete standalone implementation module
+  demo             String    @default("") // self-contained snippet importing ./impl — run by the verify pipeline
+  expectedOutput   String    @default("") // stdout the demo must produce to pass
+  dependencies     String    @default("[]") // JSON [{name, version?}]
+  install          String    @default("")
+  usage            String    @default("")
+  securityNotes    String    @default("")
+  performanceNotes String    @default("")
+  limitations      String    @default("")
+  version          String    @default("1.0.0")
+  sourceAuthor     String    @default("TEKA NEXUS")
+  sourceUrl        String    @default("")
+  license          String    @default("MIT")
+  tags             String    @default("[]") // JSON array of strings
+  related          String    @default("[]") // JSON array of entry slugs
+  verifiedAt       DateTime?
+  verifier         String    @default("") // pipeline id, e.g. library-verify.ts@1
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([category, status])
+  @@index([status])
+}

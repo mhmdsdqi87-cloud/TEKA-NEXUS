@@ -1,0 +1,13 @@
+{
+  "name": "teka-nexus-library-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MCP server exposing the TEKA NEXUS Knowledge Library to AI coding agents",
+  "scripts": {
+    "dev": "bun --hot index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.24.0"
+  }
+}

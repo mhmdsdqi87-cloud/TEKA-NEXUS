@@ -58,6 +58,7 @@ const ProjectView = dynamic(() => import("@/views/project-view").then((m) => ({ 
 const TeamsView = dynamic(() => import("@/views/teams-view").then((m) => ({ default: m.TeamsView })), { loading: ViewLoader });
 const ProfileView = dynamic(() => import("@/views/profile-view").then((m) => ({ default: m.ProfileView })), { loading: ViewLoader });
 const NotificationsView = dynamic(() => import("@/views/notifications-view").then((m) => ({ default: m.NotificationsView })), { loading: ViewLoader });
+const LibraryView = dynamic(() => import("@/views/library-view").then((m) => ({ default: m.LibraryView })), { loading: ViewLoader });
 const DmView = dynamic(() => import("@/views/dm-view").then((m) => ({ default: m.DmView })), { loading: ViewLoader });
 const SettingsView = dynamic(() => import("@/views/settings-view").then((m) => ({ default: m.SettingsView })), { loading: ViewLoader });
 const SavedView = dynamic(() => import("@/views/saved-view").then((m) => ({ default: m.SavedView })), { loading: ViewLoader });
@@ -434,6 +435,9 @@ export default function Page() {
     case "about":
       content = <AboutView />;
       break;
+    case "library":
+      content = <LibraryView />;
+      break;
     case "home":
       content = <HomeView />;
       break;
@@ -502,7 +506,7 @@ export default function Page() {
   }
 
   const shellViews = new Set([
-    "home", "explore", "live", "universe", "dna", "workspaceHub", "projectNew", "project", "teams", "notifications", "dm", "profile", "settings", "saved", "academy", "academyPortal", "founder",
+    "library", "home", "explore", "live", "universe", "dna", "workspaceHub", "projectNew", "project", "teams", "notifications", "dm", "profile", "settings", "saved", "academy", "academyPortal", "founder",
     "arena", "boss", "skilltree", "pet", "cards", "war", "shop", "crime", "speedrun", "timemachine", "heatmap", "voice", "terminal",
   ]);
   const inShell = shellViews.has(view.name);

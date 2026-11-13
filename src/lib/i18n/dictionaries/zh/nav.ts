@@ -9,6 +9,7 @@ export const nav: NavDict = {
   founder: "创始人控制台",
   workspaceHub: "工作台",
   universe: "实时宇宙",
+  library: "知识库",
   projectDna: "项目 DNA",
   primaryNavAria: "主导航",
   mainAria: "导航",

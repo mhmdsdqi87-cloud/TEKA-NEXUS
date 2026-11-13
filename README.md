@@ -322,6 +322,7 @@ cd mini-services/chat-service && bun run dev
 
 - [x] 🌌 **Live Universe** — real-data WebGL globe (`v1.74.0`)
 - [x] 🧬 **Project DNA** — verified project identity (`v1.75.0`)
+- [x] 📚 **NEXUS Library** — verified reference implementations + public Knowledge API + MCP server + llms.txt
 - [ ] 🤖 **AI Autonomous Studio** — 6 agents, human approval checkpoints
 - [ ] ⚔️ **War Room** — decision records
 - [ ] 🧠 **Code Intelligence** — GitHub OAuth-only repo intelligence

@@ -8,6 +8,7 @@ export const nav = {
   founder: "Консоль основателя",
   workspaceHub: "Рабочие пространства",
   universe: "Живая вселенная",
+  library: "Библиотека",
   projectDna: "ДНК проекта",
   primaryNavAria: "Основная навигация",
   mainAria: "Основное содержимое",

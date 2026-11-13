@@ -19,6 +19,7 @@ export type View =
   | { name: "signup" }
   | { name: "onboarding" }
   | { name: "about" }
+  | { name: "library" }
   | { name: "arena" }
   | { name: "boss" }
   | { name: "skilltree" }

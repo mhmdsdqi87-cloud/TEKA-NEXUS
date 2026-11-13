@@ -10,6 +10,7 @@ export const nav = {
   founder: "Founder Console",
   workspaceHub: "Workspace",
   universe: "Live Universe",
+  library: "NEXUS Library",
   projectDna: "Project DNA",
   primaryNavAria: "Primary navigation",
   mainAria: "Main",

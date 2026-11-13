@@ -7,6 +7,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
+  BookOpen,
   Bell,
   Bookmark,
   ChevronDown,
@@ -254,6 +255,13 @@ function LeftNav() {
           label={t("nav.projectDna")}
           active={view.name === "dna"}
           onClick={go({ name: "dna" })}
+        />
+
+        <NavItem
+          icon={BookOpen}
+          label={t("nav.library")}
+          active={view.name === "library"}
+          onClick={go({ name: "library" })}
         />
 
         {/* ── ARENA — games promoted from the old TEKA OS (Task 23) ── */}

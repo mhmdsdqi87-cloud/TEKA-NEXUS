@@ -23,6 +23,7 @@ import { os } from "./os";
 import { arena } from "./arena";
 import { universe } from "./universe";
 import { dna } from "./dna";
+import { library } from "./library";
 
 export const fa = {
   common,
@@ -32,6 +33,7 @@ export const fa = {
   auth,
   onboarding,
   nav,
+  library,
   home,
   explore,
   saved,

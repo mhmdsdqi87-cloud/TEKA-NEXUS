@@ -1,6 +1,8 @@
 // TEKA NEXUS — en dictionary: "library" namespace.
 // NEXUS Knowledge Library view + public API labels. English is the base
-// dictionary; all other locales fall back to these strings until translated.
+// dictionary; every locale ships its own library.ts translation typed via
+// LibraryDict. No `as const` (mirrors universe/dna) so the dict type stays
+// string-based and translations typecheck.
 
 export const library = {
   title: "NEXUS Library",
@@ -59,6 +61,6 @@ export const library = {
     i18n: "Localization & i18n",
     web3: "Web3 & Blockchain",
   },
-} as const;
+};
 
 export type LibraryDict = typeof library;

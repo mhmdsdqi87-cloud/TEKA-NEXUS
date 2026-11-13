@@ -9,6 +9,7 @@ export const nav: NavDict = {
   founder: "Console fondateur",
   workspaceHub: "Espace de travail",
   universe: "Univers en direct",
+  library: "Bibliothèque",
   projectDna: "ADN de projet",
   primaryNavAria: "Navigation principale",
   mainAria: "Principale",

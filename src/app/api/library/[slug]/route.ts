@@ -23,11 +23,9 @@ function parseJsonArray(raw: string): string[] {
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await ctx.params;
+    // no include — LibraryEntry has no relations; related is resolved manually below
     const row = await db.libraryEntry.findUnique({
       where: { slug: slug.toLowerCase() },
-      include: {
-        // none — related is resolved manually below
-      },
     });
     if (!row) {
       return jsonError("not_found", `No library entry with slug: ${slug}`, 404);

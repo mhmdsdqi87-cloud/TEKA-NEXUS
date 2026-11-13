@@ -44,7 +44,7 @@ type ListItem = {
 
 type RelatedRef = { slug: string; title: string; status: string; category: string; language: string };
 
-type Detail = ListItem & {
+type Detail = Omit<ListItem, "related"> & {
   problem: string;
   approach: string;
   code: string;

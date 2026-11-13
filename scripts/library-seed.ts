@@ -50,7 +50,7 @@ async function main() {
       await db.libraryEntry.create({ data });
       created++;
     }
-    console.log(e.status ? "" : "", "seeded:", e.slug);
+    console.log("seeded:", e.slug);
   }
   console.log(`done — created ${created}, updated ${updated}, total ${LIBRARY_ENTRIES.length}`);
 }

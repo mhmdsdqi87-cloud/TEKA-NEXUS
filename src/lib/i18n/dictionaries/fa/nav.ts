@@ -9,6 +9,7 @@ export const nav: NavDict = {
   founder: "کنسول بنیان‌گذار",
   workspaceHub: "ورک‌اسپیس",
   universe: "گیتی زنده",
+  library: "کتابخانه",
   projectDna: "DNA پروژه",
   primaryNavAria: "ناوبری اصلی",
   mainAria: "اصلی",

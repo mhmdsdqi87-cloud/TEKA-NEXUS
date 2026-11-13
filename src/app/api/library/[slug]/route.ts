@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { CATALOG_SOURCE, catalogDetail } from "@/lib/library-catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +22,8 @@ function parseJsonArray(raw: string): string[] {
 }
 
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
+  const { slug } = await ctx.params;
   try {
-    const { slug } = await ctx.params;
     // no include — LibraryEntry has no relations; related is resolved manually below
     const row = await db.libraryEntry.findUnique({
       where: { slug: slug.toLowerCase() },
@@ -74,7 +75,14 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ slug: stri
       { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" } },
     );
   } catch (err) {
-    console.error("[api/library/slug]", err);
-    return jsonError("internal", "Library is temporarily unavailable.", 500);
+    console.error("[api/library/slug] database unavailable — serving seed catalog:", err);
+    const catalog = catalogDetail(slug.toLowerCase());
+    if (!catalog) {
+      return jsonError("not_found", `No library entry with slug: ${slug}`, 404);
+    }
+    return NextResponse.json(
+      { ok: true, data: catalog, meta: { source: CATALOG_SOURCE } },
+      { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" } },
+    );
   }
 }

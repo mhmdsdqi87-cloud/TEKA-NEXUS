@@ -401,6 +401,25 @@ Read our [Code of Conduct](CODE_OF_CONDUCT.md). Questions and support → [`SUPP
 
 </div>
 
+<img src=".github/assets/divider.svg" width="100%">
+
+## 🛠️ Repository infrastructure — shipped & verified
+
+Everything below is live in this repo **right now** — nothing on this list is aspirational. If any row ever goes stale, that's a bug: open an issue and we'll fix it the same day.
+
+| System | Status | What it does |
+|---|---|---|
+| 📊 Real-metrics pipeline | ✅ built | Daily cron refreshes the metrics block above from GitHub's own API — stars, forks, open issues, plus real 14-day views & clones via a scoped `TRAFFIC_TOKEN` secret |
+| 🐍 Contribution snake | ✅ built | [`snake.yml`](.github/workflows/snake.yml) draws the eat-the-graph animation daily onto the `output` branch |
+| 🤝 Welcome workflow | ✅ built | [`welcome.yml`](.github/workflows/welcome.yml) greets every first-time issue author and contributor |
+| 🤖 Dependabot | ✅ built | Monthly freshness for GitHub Actions — first bump already merged |
+| 💬 Discussions | ✅ built | Q&A · Ideas · Announcements categories open for every visitor — real answers, marked accepted |
+| 🧭 Community docs | ✅ built | [`SUPPORT.md`](SUPPORT.md) · [`CODEOWNERS`](.github/CODEOWNERS) · [`CITATION.cff`](CITATION.cff) · issue templates · categorized release notes |
+| 🖼️ Social preview | ✅ built | [`public/og.png`](public/og.png) (1440×736) ships with the repo — one click away in Settings → Social preview |
+| 🚀 Release pipeline | ✅ built | Tag-driven releases with categorized notes — v1.75.0 shipped |
+
+<sub>Verified 2026-11-13 · every number in this README comes from GitHub's own counters — nothing sampled, nothing invented.</sub>
+
 ## 📜 License & credits
 
 Built with stubborn hope — and more nights than sleep — by **Mohammad Sadeghi**.

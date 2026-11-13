@@ -68,7 +68,7 @@ Read-only, no auth, JSON. Every response is exactly one of:
 
 | Param | Values | Default |
 |---|---|---|
-| `q` | free text (keyword scoring: title > tags > summary > code) | — |
+| `q` | free text — keyword scoring (title > tags > summary > code) **plus** curated multilingual concept expansion (semantic-lite, `src/lib/library-search.ts`) | — |
 | `category` | frontend · backend · fullstack · ai · api · database · security · devops · performance · patterns · i18n · web3 | all |
 | `language` | typescript · javascript · python · sql · bash | all |
 | `framework` | e.g. `none`, `next` | all |
@@ -81,6 +81,15 @@ Unknown filter values return `400 { ok:false, error:{ code:"bad_request" } }` �
 the API does not silently ignore mistakes. With `q`, results are relevance-ranked
 and `meta.total` is the scored set size. **The API never fabricates results:**
 zero matches is a valid, clearly-shaped response.
+
+**Semantic search (honest by design):** a natural-language query like
+«اگر سرویس پرداخت قطع شد نباید برنامه از کار بیفتد» triggers curated concepts
+(`fault-tolerance`, `circuit-breaker`, …) whose terms are then scored against
+each entry — so the circuit breaker is found without any keyword overlap. No
+embeddings, no model calls: the concept map is versioned in
+`src/lib/library-search.ts`, matched concepts are returned in
+`meta.search.concepts` (and shown as chips in the UI), and zero matches stay
+zero.
 
 List items omit the source code (lean payloads). Caching:
 `Cache-Control: public, s-maxage=30, stale-while-revalidate=60`.
@@ -128,7 +137,23 @@ The integration claim is backed by `test-client.ts`: if it passes, the tools
 work end-to-end; if it fails, the integration is not working and should not be
 advertised.
 
+### Production endpoint — hosted in the app itself
+
+`POST /api/mcp` (e.g. `https://teka-nexus.vercel.app/api/mcp`) — the same six
+tools, compiled into the Next.js app and speaking MCP streamable HTTP in
+**stateless JSON mode**: one JSON-RPC 2.0 message per POST
+(`initialize`, `notifications/*` → `202`, `ping`, `tools/list`, `tools/call`),
+no sessions, no SSE. This is what makes MCP production-hostable on Vercel
+without a side-car process. Data comes from the shared library core
+(`src/lib/library-core.ts`) — database first, seed-catalog fallback, identical
+contract to `/api/library`. Protocol engine: `src/lib/mcp-library-server.ts`,
+unit-tested in `tests/mcp-library-server.test.ts`.
+
 ## Contributing an entry
+
+**Two paths — both funnel into the same honest verification rule.**
+
+Path 1 — PR workflow:
 
 1. Add a complete seed to `scripts/library-entries.ts` (all metadata fields —
    entries missing `demo`/`expectedOutput` can only ever be `draft`).
@@ -139,6 +164,23 @@ advertised.
    manually reviewed.
 4. Security-relevant entries must state limitations explicitly (e.g. the SSRF
    guard documents redirect re-validation and egress-firewall pairing).
+
+Path 2 — public submission API (no PR needed):
+
+1. `POST /api/library/submit` — the same fields as a seed entry, validated by
+   zod (length caps, enum checks, honeypot field, per-IP rate limit). The
+   response carries a submission id.
+2. A maintainer reviews it in the Library UI's review dashboard
+   (token-gated: `LIBRARY_REVIEW_TOKEN` env var, `X-Review-Token` header) or
+   via `GET /api/library/submissions` +
+   `POST /api/library/submissions/{id}/review`
+   (`action: under_review | approve | reject` + reviewer + note).
+3. **Accept ≠ verified.** An approved submission becomes a `LibraryEntry`
+   with status `under_review`, credited to the submitter (`sourceAuthor`).
+   It only reaches `verified` when `scripts/library-verify.ts` executes its
+   demo against the exact expected output. Rejections carry the review note.
+4. State machine and validation are unit-tested in
+   `tests/library-submissions.test.ts`.
 
 ## For builders — reusing TEKA NEXUS code
 

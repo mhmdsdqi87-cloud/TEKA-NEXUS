@@ -844,3 +844,44 @@ model LibraryEntry {
   @@index([category, status])
   @@index([status])
 }
+
+// Contributor submissions for the NEXUS Knowledge Library (public workflow).
+// Lifecycle: submitted → under_review → accepted|rejected.
+// "accepted" creates a LibraryEntry with status "under_review" — the entry
+// only becomes "verified" when scripts/library-verify.ts executes its demo
+// successfully. Acceptance credits the submitter as sourceAuthor.
+model LibrarySubmission {
+  id               String    @id @default(cuid())
+  title            String
+  category         String    // same enum as LibraryEntry
+  summary          String
+  language         String    // same enum as LibraryEntry
+  framework        String    @default("none")
+  difficulty       String    @default("intermediate")
+  problem          String
+  approach         String
+  code             String
+  demo             String    @default("")
+  expectedOutput   String    @default("")
+  install          String    @default("")
+  usage            String    @default("")
+  securityNotes    String    @default("")
+  performanceNotes String    @default("")
+  limitations      String    @default("")
+  version          String    @default("1.0.0")
+  license          String    @default("MIT")
+  tags             String    @default("[]") // JSON array of strings
+  sourceUrl        String    @default("")
+  submitterHandle  String    // GitHub handle / name — credited on acceptance
+  status           String    @default("submitted") // submitted|under_review|accepted|rejected
+  reviewNote       String    @default("")
+  reviewer         String    @default("")
+  entrySlug        String    @default("") // set when accepted → slug of the created LibraryEntry
+  submittedIp      String    @default("") // best-effort abuse signal; never exposed via the API
+  submittedAt      DateTime  @default(now())
+  reviewedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([status, createdAt])
+}

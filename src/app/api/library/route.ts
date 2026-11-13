@@ -5,18 +5,14 @@
 //   { ok: true,  data: Entry[], meta: {...} }
 //   { ok: false, error: { code, message } }
 // List responses omit the full source code — fetch /api/library/{slug} for it.
-// Search is keyword+field scoring (title > tags > summary > code). No semantic
-// search yet: this endpoint never fabricates results and reports zero hits
-// honestly.
+// Search = deterministic keyword scoring + curated multilingual concept
+// expansion (semantic-lite, see src/lib/library-search.ts). Matched concepts
+// are reported in meta.search.concepts. This endpoint never fabricates
+// results and reports zero hits honestly.
 
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import {
-  CATALOG_SOURCE,
-  catalogListItems,
-  scoreCatalogEntry,
-  type CatalogListItem,
-} from "@/lib/library-catalog";
+
+import { listLibraryEntries } from "@/lib/library-core";
 
 export const dynamic = "force-dynamic";
 
@@ -28,46 +24,10 @@ const LANGUAGES = new Set(["typescript", "javascript", "python", "sql", "bash"])
 const DIFFICULTIES = new Set(["beginner", "intermediate", "advanced"]);
 const STATUSES = new Set(["draft", "under_review", "verified", "deprecated"]);
 
-const STATUS_RANK: Record<string, number> = { verified: 0, under_review: 1, draft: 2, deprecated: 3 };
 const LIMIT_MAX = 50;
-
-type Row = {
-  slug: string; title: string; category: string; summary: string; language: string;
-  framework: string; difficulty: string; status: string; version: string; license: string;
-  sourceAuthor: string; tags: string; related: string; verifiedAt: Date | null; updatedAt: Date;
-};
 
 function jsonError(code: string, message: string, status: number) {
   return NextResponse.json({ ok: false, error: { code, message } }, { status });
-}
-
-function parseTags(raw: string): string[] {
-  try {
-    const v = JSON.parse(raw);
-    return Array.isArray(v) ? v.map(String) : [];
-  } catch {
-    return [];
-  }
-}
-
-function toListItem(r: Row) {
-  return {
-    slug: r.slug,
-    title: r.title,
-    category: r.category,
-    summary: r.summary,
-    language: r.language,
-    framework: r.framework,
-    difficulty: r.difficulty,
-    status: r.status,
-    verifiedAt: r.verifiedAt?.toISOString() ?? null,
-    version: r.version,
-    license: r.license,
-    sourceAuthor: r.sourceAuthor,
-    tags: parseTags(r.tags),
-    related: parseTags(r.related),
-    updatedAt: r.updatedAt.toISOString(),
-  };
 }
 
 export async function GET(req: NextRequest) {
@@ -83,149 +43,39 @@ export async function GET(req: NextRequest) {
 
   const filters: Record<string, string> = {};
 
-  try {
-    const where: Record<string, unknown> = {};
-    if (category) {
-      if (!CATEGORIES.has(category)) return jsonError("bad_request", `unknown category: ${category}`, 400);
-      where.category = category;
-      filters.category = category;
-    }
-    if (language) {
-      if (!LANGUAGES.has(language)) return jsonError("bad_request", `unknown language: ${language}`, 400);
-      where.language = language;
-      filters.language = language;
-    }
-    if (framework) {
-      where.framework = framework;
-      filters.framework = framework;
-    }
-    if (difficulty) {
-      if (!DIFFICULTIES.has(difficulty)) return jsonError("bad_request", `unknown difficulty: ${difficulty}`, 400);
-      where.difficulty = difficulty;
-      filters.difficulty = difficulty;
-    }
-    if (status) {
-      if (!STATUSES.has(status)) return jsonError("bad_request", `unknown status: ${status}`, 400);
-      where.status = status;
-      filters.status = status;
-    } else {
-      where.status = { not: "deprecated" }; // deprecated entries are opt-in only
-    }
-
-    const [total, rows] = await Promise.all([
-      db.libraryEntry.count({ where }),
-      db.libraryEntry.findMany({
-        where,
-        select: {
-          slug: true, title: true, category: true, summary: true, language: true,
-          framework: true, difficulty: true, status: true, version: true, license: true,
-          sourceAuthor: true, tags: true, related: true, verifiedAt: true, updatedAt: true,
-          code: !!q, // code needed only for scoring when searching
-        },
-        take: 500,
-      }),
-    ]);
-
-    let entries: Record<string, unknown>[] = rows;
-    if (q) {
-      const needle = q.toLowerCase();
-      const scored = rows
-        .map((r) => {
-          let s = 0;
-          if (r.title.toLowerCase().includes(needle)) s += 10;
-          if (r.title.toLowerCase().split(/\s+/).some((w) => w.startsWith(needle))) s += 6;
-          if (r.tags.toLowerCase().includes(needle)) s += 5;
-          if (r.summary.toLowerCase().includes(needle)) s += 3;
-          if (r.code && r.code.toLowerCase().includes(needle)) s += 1;
-          return { r, s };
-        })
-        .filter(({ s }) => s > 0)
-        .sort((a, b) => b.s - a.s || a.r.title.localeCompare(b.r.title));
-      entries = scored.map(({ r }) => {
-        const { code: _code, ...rest } = r as Record<string, unknown> & { code?: string };
-        return rest;
-      });
-    } else {
-      entries.sort(
-        (a, b) =>
-          (STATUS_RANK[String(a.status)] ?? 9) - (STATUS_RANK[String(b.status)] ?? 9) ||
-          String(b.updatedAt).localeCompare(String(a.updatedAt)),
-      );
-    }
-
-    const page = entries.slice(offset, offset + limit);
-    return NextResponse.json(
-      {
-        ok: true,
-        data: page.map(toListItem as (r: Record<string, unknown>) => ReturnType<typeof toListItem>),
-        meta: {
-          total: q ? page.length : total, // with q, the scored set is the result set
-          count: page.length,
-          limit,
-          offset,
-          filters,
-          source: "database",
-          search: q ? { q, note: "keyword scoring over title/tags/summary/code" } : undefined,
-        },
-      },
-      { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } },
-    );
-  } catch (err) {
-    console.error("[api/library] database unavailable — serving seed catalog:", err);
-    return serveCatalogList(q, status, filters, limit, offset);
+  if (category) {
+    if (!CATEGORIES.has(category)) return jsonError("bad_request", `unknown category: ${category}`, 400);
+    filters.category = category;
   }
-}
-
-// Database fallback: serve the seed catalog (scripts/library-entries.ts) with
-// identical shapes and identical filter/search semantics. Every catalog entry
-// is an honest "draft" — only the verify pipeline can promote entries once the
-// database is provisioned. meta.source tells callers which path served them.
-function serveCatalogList(
-  q: string,
-  status: string,
-  filters: Record<string, string>,
-  limit: number,
-  offset: number,
-) {
-  let items: CatalogListItem[] = catalogListItems();
-  if (status) items = items.filter((e) => e.status === status); // catalog entries are all "draft"
-  if (filters.category) items = items.filter((e) => e.category === filters.category);
-  if (filters.language) items = items.filter((e) => e.language === filters.language);
-  if (filters.framework) items = items.filter((e) => e.framework === filters.framework);
-  if (filters.difficulty) items = items.filter((e) => e.difficulty === filters.difficulty);
-
-  let entries: CatalogListItem[];
-  if (q) {
-    const needle = q.toLowerCase();
-    entries = items
-      .map((e) => ({ e, s: scoreCatalogEntry(e, needle) }))
-      .filter(({ s }) => s > 0)
-      .sort((a, b) => b.s - a.s || a.e.title.localeCompare(b.e.title))
-      .map(({ e }) => e);
-  } else {
-    entries = [...items].sort(
-      (a, b) =>
-        (STATUS_RANK[a.status] ?? 9) - (STATUS_RANK[b.status] ?? 9) ||
-        b.updatedAt.localeCompare(a.updatedAt) ||
-        a.title.localeCompare(b.title),
-    );
+  if (language) {
+    if (!LANGUAGES.has(language)) return jsonError("bad_request", `unknown language: ${language}`, 400);
+    filters.language = language;
+  }
+  if (framework) filters.framework = framework;
+  if (difficulty) {
+    if (!DIFFICULTIES.has(difficulty)) return jsonError("bad_request", `unknown difficulty: ${difficulty}`, 400);
+    filters.difficulty = difficulty;
+  }
+  if (status) {
+    if (!STATUSES.has(status)) return jsonError("bad_request", `unknown status: ${status}`, 400);
+    filters.status = status;
   }
 
-  const page = entries.slice(offset, offset + limit);
+  const result = await listLibraryEntries({ q, category, language, framework, difficulty, status, limit, offset });
+
   return NextResponse.json(
     {
       ok: true,
-      data: page,
+      data: result.page,
       meta: {
-        total: q ? page.length : entries.length,
-        count: page.length,
+        total: result.total,
+        count: result.page.length,
         limit,
         offset,
         filters,
-        source: CATALOG_SOURCE,
-        note:
-          "Served from the seed catalog — the database is unreachable or not provisioned yet. Statuses are honest drafts; run scripts/library-seed.ts and scripts/library-verify.ts against your DATABASE_URL to enable the full pipeline.",
-        search: q ? { q, note: "keyword scoring over title/tags/summary/code" } : undefined,
+        source: result.source,
+        ...(result.note ? { note: result.note } : {}),
+        ...(result.search ? { search: result.search } : {}),
       },
     },
     { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } },

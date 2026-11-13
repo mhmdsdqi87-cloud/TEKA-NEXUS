@@ -333,6 +333,18 @@ cd mini-services/chat-service && bun run dev
 - [ ] More tracks: Git, SQL, React, full **Security** curriculum
 - [ ] 🇷🇺 Russian scholarship chapter — bilingual (ru/en) admissions dossier
 
+## 🧾 Build log
+
+Engineering session notes — what was recently built, fixed, and verified.
+
+### 2026-11 · reliability, hygiene, deployment pipeline
+
+- **Browser-verified end-to-end** — every product view (Home, Explore, Projects, Workspace, Academy portal, Live Universe, Project DNA, the full Arena family, Skill Tree, Code Pet, Coder Cards, Red vs Blue, Coin Shop, Teams, Notifications, Messages, Saved, Live) loads with **zero page errors**; the whole user journey was exercised live: registration → 4-step onboarding → academy lesson playback → project publish → project workspace.
+- **Repo hygiene ([#18](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/pull/18))** — removed three one-off debug scripts (`.tmp-*.ts`), untracked local sandbox tooling (`.zscripts/`), and hardened `.gitignore` (`.tmp-*`, `.zscripts/`) so local artifacts can never be committed again.
+- **Deployment pipeline hardening** — a project-level *Ignored Build Step* on Vercel skips the assets-only `output` branch; bot commits carry skip keywords; background builds no longer produce failed-deployment noise.
+- **Function Storage cleanup** — 163 stale/failed deployments removed across all projects (183 → 20); all six live sites verified serving `200` afterwards.
+- **Community space** — Discussions enabled: an architecture reference ([#19](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/discussions/19)) and a public roadmap thread ([#20](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/discussions/20)). Questions welcome in Q&A.
+
 ## 🤝 Contributing
 
 This project is built by one person — **contributions are not just welcome, they are the future**.

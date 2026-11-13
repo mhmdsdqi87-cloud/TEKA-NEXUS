@@ -1213,4 +1213,403 @@ export function useRequireAuth(opts: GuardOptions): void {
     tags: ["react", "nextjs", "auth", "routing", "guard"],
     related: ["scrypt-password-hashing", "hmac-api-key-rotation"],
   },
+
+  {
+    slug: "boot-env-guard",
+    title: "Boot-time environment guard with dotenv override",
+    category: "patterns",
+    summary:
+      "Detects a stale shell environment variable at boot, reloads .env with override semantics, and reports one honest boot line — so a deployment never boots against the wrong database silently.",
+    language: "typescript",
+    framework: "none",
+    difficulty: "intermediate",
+    problem:
+      "A deployment inherits environment variables from the shell. When a stale value (an old SQLite DATABASE_URL, say) is already exported, plain dotenv refuses to replace it and the app boots against the wrong database — every data request fails while the static shell keeps working, and nobody sees why until the 50th request.",
+    approach:
+      "Guard the critical variable at boot: if it is missing or fails a required protocol check, reload .env with override:true (plain dotenv will NOT replace inherited vars — override is the whole point), re-read, and emit exactly one boot line carrying the detected protocol and whether a correction happened. The environment and the .env loader are injected, so the guard is unit-testable without touching a real shell.",
+    code: `// Boot-time environment guard — stop stale shell vars from silently
+// overriding your real .env connection strings.
+// Distilled from the TEKA NEXUS boot guard (next.config.ts), which fixed a
+// production incident where a stale file: DATABASE_URL survived into boot.
+export interface EnvGuardOptions {
+  key: string;                                // variable to guard, e.g. "DATABASE_URL"
+  env?: Record<string, string | undefined>;   // injectable environment (tests)
+  loadDotenv?: () => void;                    // injectable .env loader — must use override:true
+  requiredPrefix?: string;                    // e.g. "postgres"; empty value fails when set
+  onReport?: (line: string) => void;          // injectable reporter (tests / boot log)
+}
+
+export interface EnvGuardResult {
+  ok: boolean;        // final value satisfies the requirement
+  corrected: boolean; // the .env loader ran and the value changed
+  protocol: string;   // segment before "://", "" when unset
+  value: string;      // final value ("" when unset)
+}
+
+export function guardEnv(opts: EnvGuardOptions): EnvGuardResult {
+  const env = opts.env ?? process.env;
+  const report = opts.onReport ?? ((line: string) => console.log(line));
+  const protocolOf = (v: string | undefined) => (v ? (v.split("://")[0] ?? "") : "");
+
+  let value = env[opts.key] ?? "";
+  let corrected = false;
+
+  const bad = () =>
+    opts.requiredPrefix ? !value.startsWith(opts.requiredPrefix) : value === "";
+
+  if (bad() && opts.loadDotenv) {
+    // override:true is CRITICAL — plain dotenv refuses to replace inherited
+    // variables, which is exactly how a stale shell value survives into boot.
+    opts.loadDotenv();
+    value = env[opts.key] ?? "";
+    corrected = true;
+  }
+
+  const result: EnvGuardResult = {
+    ok: !bad(),
+    corrected: corrected,
+    protocol: protocolOf(value),
+    value: value,
+  };
+  report("[env-guard] " + opts.key + " protocol=" + (result.protocol || "(none)") + " corrected=" + result.corrected + " ok=" + result.ok);
+  return result;
+}`,
+    demo: `import { guardEnv } from "./impl";
+
+// Simulate a stale shell export plus a .env holding the real URL.
+const fakeEnv: Record<string, string | undefined> = { DATABASE_URL: "file:./stale.db" };
+const lines: string[] = [];
+const loadDotenv = () => { fakeEnv.DATABASE_URL = "postgresql://real.example/db"; };
+
+const fixed = guardEnv({
+  key: "DATABASE_URL",
+  env: fakeEnv,
+  loadDotenv: loadDotenv,
+  requiredPrefix: "postgres",
+  onReport: (l) => lines.push(l),
+});
+console.log("corrected=" + fixed.corrected + " ok=" + fixed.ok + " protocol=" + fixed.protocol);
+
+// No loader wired in: the guard must report honestly, never guess.
+const broken = guardEnv({
+  key: "MISSING_VAR",
+  env: {},
+  requiredPrefix: "postgres",
+  onReport: (l) => lines.push(l),
+});
+console.log("corrected=" + broken.corrected + " ok=" + broken.ok + " protocol=" + broken.protocol);
+console.log("reports=" + lines.length);`,
+    expectedOutput: `corrected=true ok=true protocol=postgresql
+corrected=false ok=false protocol=
+reports=2`,
+    dependencies: [],
+    install: "No dependencies — copy the module. In next.config.ts wire loadDotenv to dotenv.config({ override: true }).",
+    usage: `import { guardEnv } from "./boot-env-guard";
+
+// At the very top of next.config.ts (or your service entry):
+guardEnv({
+  key: "DATABASE_URL",
+  requiredPrefix: "postgres",
+  loadDotenv: () => config({ path: ".env", quiet: true, override: true }),
+});`,
+    securityNotes:
+      "The boot line logs the protocol only, never the value — connection strings stay out of logs. Keep .env out of version control; guardEnv reads it, it does not relax that rule.",
+    performanceNotes:
+      "Runs exactly once at boot; the check itself is a string prefix test with zero runtime cost afterwards.",
+    limitations:
+      "Prefix-level validation only — it cannot verify credentials or reachability. It guards one variable per call; guard several by calling it per key. It cannot fix a .env that is itself wrong.",
+    version: "1.0.0",
+    license: "MIT",
+    tags: ["env", "boot", "dotenv", "config", "deployment", "patterns"],
+    related: ["api-error-envelope", "idempotent-seed-upsert"],
+  },
+  {
+    slug: "sandboxed-demo-verifier",
+    title: "Sandboxed code verifier with exact-output matching",
+    category: "devops",
+    summary:
+      "The promotion core behind a trustworthy 'verified' badge: execute published code in isolation, normalize stdout, and compare byte-for-byte with the expected output — statuses are computed, never claimed.",
+    language: "typescript",
+    framework: "bun",
+    difficulty: "advanced",
+    problem:
+      "Reference-code libraries rot: entries claim to work, badges are self-reported, and consumers discover the truth at runtime. The only promotion rule that stays honest over time is mechanical — run the published code in a clean sandbox and require its stdout to match the expected output exactly.",
+    approach:
+      "Split the verifier into a pure, testable core plus a thin sandbox wrapper. The core (this entry): normalize() collapses CRLF and trailing whitespace and trims the edges; evaluate() turns one run result into a verdict — timeout, stderr output, or an exact-match comparison that reports the first differing character. The production wrapper (see usage) writes the published module and its demo into a fresh mkdtemp directory, spawns the demo with Bun.spawn under a hard timeout, then calls evaluate(). Nothing promotes itself.",
+    code: `// Sandbox verifier core — exact-output promotion logic.
+// Distilled from TEKA NEXUS scripts/library-verify.ts, which gates the
+// "verified" status of every NEXUS Library entry.
+export type RunResult = { out: string; err: string; timedOut: boolean };
+
+export interface Verdict {
+  verdict: "verified" | "failed";
+  detail: string;
+}
+
+// Comparison semantics: CRLF folded to LF, per-line trailing whitespace
+// removed, string edges trimmed. Everything else must match exactly.
+export function normalize(s: string): string {
+  return s
+    .replace(/\\r\\n/g, "\\n")
+    .split("\\n")
+    .map((l) => l.trimEnd())
+    .join("\\n")
+    .trim();
+}
+
+export function evaluate(run: RunResult, expected: string): Verdict {
+  if (run.timedOut) {
+    return { verdict: "failed", detail: "demo exceeded the time budget" };
+  }
+  if (run.err.trim()) {
+    return { verdict: "failed", detail: "demo wrote to stderr: " + run.err.slice(0, 200) };
+  }
+  const got = normalize(run.out);
+  const want = normalize(expected);
+  if (got !== want) {
+    const first = [...got].findIndex((ch, i) => ch !== want[i]);
+    return { verdict: "failed", detail: "output mismatch at char " + (first < 0 ? want.length : first) };
+  }
+  return { verdict: "verified", detail: "stdout matched expected output exactly" };
+}`,
+    demo: `import { evaluate, normalize } from "./impl";
+
+const pass = evaluate({ out: "alpha\\r\\nbeta\\n", err: "", timedOut: false }, "alpha\\nbeta");
+console.log(pass.verdict + ":" + pass.detail);
+
+const mismatch = evaluate({ out: "alpha\\nbeta!", err: "", timedOut: false }, "alpha\\nbeta");
+console.log(mismatch.verdict + ":" + mismatch.detail);
+
+const timeout = evaluate({ out: "", err: "", timedOut: true }, "anything");
+console.log(timeout.verdict + ":" + timeout.detail);
+
+const ok = normalize("x \\r\\ny\\n") === "x\\ny" && normalize("x\\ny\\n") === "x\\ny";
+console.log("normalize-crlf-and-trailing:" + ok);`,
+    expectedOutput: `verified:stdout matched expected output exactly
+failed:output mismatch at char 10
+failed:demo exceeded the time budget
+normalize-crlf-and-trailing:true`,
+    dependencies: [],
+    install: "No dependencies. The sandbox wrapper uses Bun.spawn and node:fs/promises mkdtemp (both built into Bun).",
+    usage: `import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { evaluate } from "./sandboxed-demo-verifier";
+
+// Production wrapper: run the demo in a fresh temp dir with a hard timeout.
+async function verifyOne(code: string, demo: string, expected: string) {
+  const dir = await mkdtemp(join(tmpdir(), "verify-"));
+  try {
+    await writeFile(join(dir, "impl.ts"), code, "utf8");
+    await writeFile(join(dir, "demo.ts"), demo, "utf8");
+    const proc = Bun.spawn(["bun", "run", join(dir, "demo.ts")], {
+      cwd: dir, stdout: "pipe", stderr: "pipe",
+    });
+    const timer = setTimeout(() => proc.kill(), 20_000);
+    const out = await new Response(proc.stdout).text();
+    const err = await new Response(proc.stderr).text();
+    await proc.exited;
+    clearTimeout(timer);
+    return evaluate({ out, err, timedOut: proc.exitCode !== 0 && !out }, expected);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+}`,
+    securityNotes:
+      "Never run untrusted submissions outside a sandbox. The production wrapper executes each demo in a fresh temp directory with a hard timeout; deny network access at the platform level if your runner supports it. stderr from the demo is truncated before it reaches logs.",
+    performanceNotes:
+      "One temp directory and one child process per candidate — the pipeline over a dozen entries completes in seconds. The core itself is O(n) over the output.",
+    limitations:
+      "Exact-match comparison is intentionally strict — output must be deterministic, so nondeterministic demos (time, randomness, ports) must inject their own clocks/seeds. Exit-code heuristics for timeout detection live in the wrapper, not the core.",
+    version: "1.0.0",
+    license: "MIT",
+    tags: ["testing", "verification", "sandbox", "bun", "quality", "devops"],
+    related: ["safe-json-from-llm", "api-error-envelope"],
+  },
+  {
+    slug: "idempotent-seed-upsert",
+    title: "Idempotent seed upsert that never touches pipeline-owned fields",
+    category: "database",
+    summary:
+      "Re-runnable seeding by natural key: refresh content, create what is missing, count honestly — and never clobber fields owned by another pipeline, like verification status.",
+    language: "typescript",
+    framework: "none",
+    difficulty: "intermediate",
+    problem:
+      "Seeders that blindly upsert destroy data: re-running one after a verification pipeline has promoted a row would reset status fields and wipe evidence. Seeders that only insert duplicate on every run. You need both directions safe and an honest run report.",
+    approach:
+      "Treat a typed seed array as the source of truth. For each row, fetch the existing row by its natural key (slug). Missing → CREATE with pipeline-owned fields at their honest defaults. Present → UPDATE content fields only, explicitly preserving pipeline-owned fields (status, verifiedAt, verifier). Unchanged content → count, do not write. The store is injected behind a tiny interface, so the seeder is testable against a Map and portable to Prisma, Redis, or anything else.",
+    code: `// Idempotent seed upsert — content is mine, pipeline fields are theirs.
+// Distilled from TEKA NEXUS scripts/library-seed.ts, whose rule is:
+// "seeding does NOT touch status/verifiedAt/verifier — those belong to
+//  the verification pipeline (or a human reviewer)."
+export interface SeedRow {
+  slug: string;
+  title: string;
+  body: string;
+}
+
+export interface StoreRow extends SeedRow {
+  status: string;
+  verifiedAt: string | null;
+}
+
+export interface Kv {
+  get(slug: string): Promise<StoreRow | null>;
+  put(row: StoreRow): Promise<void>;
+}
+
+export interface SeedReport {
+  created: number;
+  updated: number;
+  unchanged: number;
+  total: number;
+}
+
+export async function seedUpsert(rows: SeedRow[], store: Kv): Promise<SeedReport> {
+  const report: SeedReport = { created: 0, updated: 0, unchanged: 0, total: rows.length };
+  for (const r of rows) {
+    const existing = await store.get(r.slug);
+    if (!existing) {
+      // Create with honest defaults — pipeline-owned fields start empty.
+      await store.put({ ...r, status: "draft", verifiedAt: null });
+      report.created++;
+    } else if (existing.title !== r.title || existing.body !== r.body) {
+      // Update content ONLY — status/verifiedAt are preserved on purpose.
+      await store.put({ ...existing, title: r.title, body: r.body });
+      report.updated++;
+    } else {
+      report.unchanged++;
+    }
+  }
+  return report;
+}`,
+    demo: `import { seedUpsert, type Kv, type StoreRow } from "./impl";
+
+const db = new Map<string, StoreRow>();
+db.set("alpha", { slug: "alpha", title: "Alpha v1", body: "old", status: "verified", verifiedAt: "2026-01-01" });
+
+const memory: Kv = {
+  get: async (slug) => db.get(slug) ?? null,
+  put: async (row) => void db.set(row.slug, row),
+};
+
+const seeds = [
+  { slug: "alpha", title: "Alpha v2", body: "new body" }, // content changed
+  { slug: "beta", title: "Beta", body: "first" },         // missing
+  { slug: "gamma", title: "Gamma", body: "same" },        // missing
+];
+const r1 = await seedUpsert(seeds, memory);
+const r2 = await seedUpsert(seeds, memory); // identical rerun
+
+const alpha = db.get("alpha")!;
+console.log("report1:" + r1.created + "c/" + r1.updated + "u/" + r1.unchanged + "s");
+console.log("report2:" + r2.created + "c/" + r2.updated + "u/" + r2.unchanged + "s");
+console.log("status-preserved:" + alpha.status + ":" + alpha.verifiedAt);`,
+    expectedOutput: `report1:2c/1u/0s
+report2:0c/0u/3s
+status-preserved:verified:2026-01-01`,
+    dependencies: [],
+    install: "No dependencies — copy the module and adapt the Kv adapter to your client (Prisma: get = findUnique, put = upsert-style update/create).",
+    usage: `import { PrismaClient } from "@prisma/client";
+import { seedUpsert } from "./idempotent-seed-upsert";
+
+const db = new PrismaClient();
+const report = await seedUpsert(SEEDS, {
+  get: async (slug) => db.libraryEntry.findUnique({ where: { slug } }),
+  put: async (row) => {
+    const { slug, ...data } = row;
+    await db.libraryEntry.upsert({ where: { slug }, update: data, create: data });
+  },
+});
+console.log("seeded:", report);`,
+    securityNotes:
+      "Seeds are code — review them like code and never seed from untrusted sources. The Kv adapter runs with your client's privileges; scope it to the seeded table.",
+    performanceNotes:
+      "One read + at most one write per row; unchanged rows cost only the read. Batched variants can group reads with findMany when the seed set is large.",
+    limitations:
+      "Content equality compares the fields you give it — extend SeedRow for more columns and widen the comparison. Deletes are out of scope: rows removed from the seed stay in the store by design (deprecate, do not delete).",
+    version: "1.0.0",
+    license: "MIT",
+    tags: ["database", "seeding", "idempotent", "prisma", "patterns"],
+    related: ["cursor-pagination", "api-error-envelope"],
+  },
+  {
+    slug: "db-singleton-client",
+    title: "Singleton database client with globalThis caching",
+    category: "database",
+    summary:
+      "One database client per process — cached on globalThis so dev hot-reloads and serverless cold starts reuse the same bounded connection pool instead of multiplying connections.",
+    language: "typescript",
+    framework: "prisma",
+    difficulty: "beginner",
+    problem:
+      "Module instances do not survive hot reload: every code change in development rebuilds the module and constructs a fresh Prisma client. Serverless cold starts do the same in production. Both multiply open connections until the database refuses new ones — the classic 'too many connections' outage.",
+    approach:
+      "Store one client instance on globalThis in EVERY environment (not only dev — production cold starts need it too). The factory runs at most once per process; query logging is enabled only in development, where visibility matters and log volume does not cost lambda memory. The client is injectable and framework-agnostic: the factory can construct Prisma, Redis, or any pooled client.",
+    code: `// Singleton DB client — one client = one bounded connection pool.
+// Distilled from TEKA NEXUS src/lib/db.ts, which keeps a single Prisma
+// client across dev hot reloads and serverless cold starts.
+export interface ClientOptions {
+  log?: string[];
+}
+
+export interface DbClient {
+  id: number;
+  queries: string[];
+  log?: string[];
+}
+
+const globalForDb = globalThis as unknown as { __appDbClient?: DbClient };
+let nextId = 1;
+
+export function getClient(make: () => DbClient, dev: boolean): DbClient {
+  const cached = globalForDb.__appDbClient;
+  if (cached) return cached;
+  const client = make();
+  if (dev) client.log = ["query", "error", "warn"]; // visibility in dev only
+  globalForDb.__appDbClient = client;
+  return client;
+}`,
+    demo: `import { getClient, type DbClient } from "./impl";
+
+// Simulate two hot reloads and a production cold start: the factory is
+// expensive, so count how many times it actually constructs a client.
+let constructed = 0;
+const factory = (): DbClient => {
+  constructed++;
+  return { id: constructed, queries: [] };
+};
+
+const a = getClient(factory, true);
+const b = getClient(factory, true); // "second module instance" — same process
+const c = getClient(factory, false); // production mode — still the same pool
+
+console.log("constructed:" + constructed);
+console.log("same-instance:" + (a === b && b === c));
+console.log("dev-logging:" + (a.log ?? []).join(","));`,
+    expectedOutput: `constructed:1
+same-instance:true
+dev-logging:query,error,warn`,
+    dependencies: [],
+    install: "No dependencies — copy the module. With Prisma: make = () => new PrismaClient({ log: dev ? ['query','error','warn'] : ['error','warn'] }).",
+    usage: `import { PrismaClient } from "@prisma/client";
+import { getClient } from "./db-singleton-client";
+
+const isDev = process.env.NODE_ENV === "development";
+export const db = getClient(
+  () => new PrismaClient({ log: isDev ? ["query", "error", "warn"] : ["error", "warn"] }),
+  isDev,
+);`,
+    securityNotes:
+      "The cached client carries the connection credentials in memory — do not serialize or expose it (e.g. through debug endpoints). Query logging in production is disabled on purpose: logs are a leak surface and a memory cost.",
+    performanceNotes:
+      "Zero overhead after first construction — one property lookup on globalThis. Bounds the connection pool to exactly one client per process, which is what serverless platforms want.",
+    limitations:
+      "One client per process, not per tenant — multi-tenant setups with separate credentials need one cache slot per credential. Tests that rely on fresh clients must clear the globalThis slot between cases.",
+    version: "1.0.0",
+    license: "MIT",
+    tags: ["database", "prisma", "serverless", "connection-pool", "patterns"],
+    related: ["cursor-pagination", "idempotent-seed-upsert"],
+  },
 ];

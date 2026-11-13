@@ -346,6 +346,13 @@ Engineering session notes — what was recently built, fixed, and verified.
 - **Function Storage cleanup** — 163 stale/failed deployments removed across all projects (183 → 20); all six live sites verified serving `200` afterwards.
 - **Community space** — Discussions enabled: an architecture reference ([#19](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/discussions/19)) and a public roadmap thread ([#20](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/discussions/20)). Questions welcome in Q&A.
 
+### 2026-11 · Knowledge Library: catalog resilience + builder expansion
+
+- **Catalog fallback ([#26](https://github.com/mhmdsdqi87-cloud/TEKA-NEXUS/pull/26))** — the Library API and `llms.txt` answered `internal error` in production because the `LibraryEntry` table had not been pushed to the production Postgres yet. All three endpoints now fall back to the seed catalog with identical shapes and identical search semantics, honest `draft` labels, and `meta.source: "catalog"` — a fresh deployment works before anyone touches the database.
+- **Builder expansion** — 4 new entries distilled from the platform's own code, each pipeline-verified: [`boot-env-guard`](scripts/library-entries.ts) (from the boot guard in `next.config.ts`), `sandboxed-demo-verifier` (from `scripts/library-verify.ts`), `idempotent-seed-upsert` (from `scripts/library-seed.ts`), and `db-singleton-client` (from `src/lib/db.ts`). Builders now reuse the exact patterns TEKA NEXUS itself runs on.
+- **Pipeline proof** — 15 entries verified by real execution, 0 failed, 1 honestly stays `draft` (no runnable demo). The pipeline even caught an escaping bug in a new entry before merge — statuses are computed, never claimed.
+- **Builders guide** — [`docs/NEXUS-LIBRARY.md`](docs/NEXUS-LIBRARY.md) gained a "For builders" section: copy an entry, call the API, or plug your AI agent in via `llms.txt` / MCP.
+
 ## 🤝 Contributing
 
 This project is built by one person — **contributions are not just welcome, they are the future**.

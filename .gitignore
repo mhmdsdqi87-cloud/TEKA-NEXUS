@@ -68,3 +68,5 @@ server.log
 # Local sandbox runtime artifacts (never ship these)
 .zscripts/dev.pid
 .zscripts/*.png
+.zscripts/
+.tmp-*

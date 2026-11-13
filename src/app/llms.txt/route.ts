@@ -6,10 +6,20 @@
 
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import {
+  CATALOG_SOURCE,
+  catalogLlmsRows,
+  type CatalogLlmsRow,
+} from "@/lib/library-catalog";
 
 export const dynamic = "force-dynamic";
 
 const STATUS_RANK: Record<string, number> = { verified: 0, under_review: 1, draft: 2, deprecated: 3 };
+
+type LlmsEntry = CatalogLlmsRow;
+
+const byRank = (a: LlmsEntry, b: LlmsEntry) =>
+  (STATUS_RANK[a.status] ?? 9) - (STATUS_RANK[b.status] ?? 9) || a.slug.localeCompare(b.slug);
 
 export async function GET() {
   try {
@@ -22,12 +32,27 @@ export async function GET() {
       },
     });
 
-    const entries = [...rows].sort(
-      (a, b) => (STATUS_RANK[a.status] ?? 9) - (STATUS_RANK[b.status] ?? 9) || a.slug.localeCompare(b.slug),
-    );
-
+    const entries = [...rows].sort(byRank);
     const verifiedCount = entries.filter((e) => e.status === "verified").length;
+    return buildLlmsDoc(entries, verifiedCount, null);
+  } catch (err) {
+    console.error("[llms.txt] database unavailable — serving seed catalog:", err);
+    const entries = catalogLlmsRows().sort(byRank);
+    return buildLlmsDoc(entries, 0, [
+      "> NOTE: served from the seed catalog (meta source: " + CATALOG_SOURCE + ") — the database is",
+      "> unreachable or not provisioned yet. Every entry is honestly \"draft\" until the",
+      "> pipeline (scripts/library-seed.ts + scripts/library-verify.ts) runs against a",
+      "> provisioned database. Nothing is invented to fill the gap.",
+    ]);
+  }
+}
 
+function buildLlmsDoc(
+  entries: LlmsEntry[],
+  verifiedCount: number,
+  note: string[] | null,
+): NextResponse {
+  {
     const lines: string[] = [
       "# TEKA NEXUS Library",
       "",
@@ -35,6 +60,7 @@ export async function GET() {
       "> Part of TEKA NEXUS — a developer platform built by one human, in the open.",
       "",
       `Entries: ${entries.length} (${verifiedCount} verified by the automated pipeline, ${entries.length - verifiedCount} draft/under review).`,
+      ...(note ?? []),
       "",
       "## How to use this library",
       "",
@@ -88,12 +114,6 @@ export async function GET() {
         "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
       },
-    });
-  } catch (err) {
-    console.error("[llms.txt]", err);
-    return new NextResponse("# TEKA NEXUS Library\n\nTemporary failure — retry shortly.\n", {
-      status: 503,
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
     });
   }
 }

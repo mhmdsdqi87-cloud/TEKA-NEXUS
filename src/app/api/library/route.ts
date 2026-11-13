@@ -11,6 +11,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import {
+  CATALOG_SOURCE,
+  catalogListItems,
+  scoreCatalogEntry,
+  type CatalogListItem,
+} from "@/lib/library-catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -65,18 +71,19 @@ function toListItem(r: Row) {
 }
 
 export async function GET(req: NextRequest) {
-  try {
-    const sp = req.nextUrl.searchParams;
-    const q = (sp.get("q") ?? "").trim().slice(0, 120);
-    const category = sp.get("category") ?? "";
-    const language = sp.get("language") ?? "";
-    const framework = sp.get("framework") ?? "";
-    const difficulty = sp.get("difficulty") ?? "";
-    const status = sp.get("status") ?? "";
-    const limit = Math.min(Math.max(Number(sp.get("limit")) || 20, 1), LIMIT_MAX);
-    const offset = Math.max(0, Number(sp.get("offset")) || 0);
+  const sp = req.nextUrl.searchParams;
+  const q = (sp.get("q") ?? "").trim().slice(0, 120);
+  const category = sp.get("category") ?? "";
+  const language = sp.get("language") ?? "";
+  const framework = sp.get("framework") ?? "";
+  const difficulty = sp.get("difficulty") ?? "";
+  const status = sp.get("status") ?? "";
+  const limit = Math.min(Math.max(Number(sp.get("limit")) || 20, 1), LIMIT_MAX);
+  const offset = Math.max(0, Number(sp.get("offset")) || 0);
 
-    const filters: Record<string, string> = {};
+  const filters: Record<string, string> = {};
+
+  try {
     const where: Record<string, unknown> = {};
     if (category) {
       if (!CATEGORIES.has(category)) return jsonError("bad_request", `unknown category: ${category}`, 400);
@@ -157,13 +164,70 @@ export async function GET(req: NextRequest) {
           limit,
           offset,
           filters,
+          source: "database",
           search: q ? { q, note: "keyword scoring over title/tags/summary/code" } : undefined,
         },
       },
       { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } },
     );
   } catch (err) {
-    console.error("[api/library]", err);
-    return jsonError("internal", "Library is temporarily unavailable.", 500);
+    console.error("[api/library] database unavailable — serving seed catalog:", err);
+    return serveCatalogList(q, status, filters, limit, offset);
   }
+}
+
+// Database fallback: serve the seed catalog (scripts/library-entries.ts) with
+// identical shapes and identical filter/search semantics. Every catalog entry
+// is an honest "draft" — only the verify pipeline can promote entries once the
+// database is provisioned. meta.source tells callers which path served them.
+function serveCatalogList(
+  q: string,
+  status: string,
+  filters: Record<string, string>,
+  limit: number,
+  offset: number,
+) {
+  let items: CatalogListItem[] = catalogListItems();
+  if (status) items = items.filter((e) => e.status === status); // catalog entries are all "draft"
+  if (filters.category) items = items.filter((e) => e.category === filters.category);
+  if (filters.language) items = items.filter((e) => e.language === filters.language);
+  if (filters.framework) items = items.filter((e) => e.framework === filters.framework);
+  if (filters.difficulty) items = items.filter((e) => e.difficulty === filters.difficulty);
+
+  let entries: CatalogListItem[];
+  if (q) {
+    const needle = q.toLowerCase();
+    entries = items
+      .map((e) => ({ e, s: scoreCatalogEntry(e, needle) }))
+      .filter(({ s }) => s > 0)
+      .sort((a, b) => b.s - a.s || a.e.title.localeCompare(b.e.title))
+      .map(({ e }) => e);
+  } else {
+    entries = [...items].sort(
+      (a, b) =>
+        (STATUS_RANK[a.status] ?? 9) - (STATUS_RANK[b.status] ?? 9) ||
+        b.updatedAt.localeCompare(a.updatedAt) ||
+        a.title.localeCompare(b.title),
+    );
+  }
+
+  const page = entries.slice(offset, offset + limit);
+  return NextResponse.json(
+    {
+      ok: true,
+      data: page,
+      meta: {
+        total: q ? page.length : entries.length,
+        count: page.length,
+        limit,
+        offset,
+        filters,
+        source: CATALOG_SOURCE,
+        note:
+          "Served from the seed catalog — the database is unreachable or not provisioned yet. Statuses are honest drafts; run scripts/library-seed.ts and scripts/library-verify.ts against your DATABASE_URL to enable the full pipeline.",
+        search: q ? { q, note: "keyword scoring over title/tags/summary/code" } : undefined,
+      },
+    },
+    { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } },
+  );
 }

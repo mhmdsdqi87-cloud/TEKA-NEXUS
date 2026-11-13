@@ -140,6 +140,27 @@ advertised.
 4. Security-relevant entries must state limitations explicitly (e.g. the SSRF
    guard documents redirect re-validation and egress-firewall pairing).
 
+## For builders — reusing TEKA NEXUS code
+
+Everything in this library is MIT-licensed and written for reuse. Three honest ways to take it:
+
+| Way | What you get |
+|---|---|
+| **Copy an entry** | Complete standalone source + problem/approach docs + security notes; keep the attribution line so the next reader finds the rest |
+| **Call the API** | `GET /api/library?q=...&status=verified` — stable JSON contract, no auth, pagination + filters |
+| **Plug in an agent** | `GET /llms.txt` for a machine-readable index, or connect the MCP server (`mini-services/library-mcp`, port 3040) |
+
+**Where the entries come from.** The newest entries are distilled from the platform's own code — builders get the exact patterns TEKA NEXUS itself runs on:
+
+| Entry | Distilled from |
+|---|---|
+| `boot-env-guard` | the boot-time DATABASE_URL guard in `next.config.ts` |
+| `sandboxed-demo-verifier` | the promotion pipeline in `scripts/library-verify.ts` |
+| `idempotent-seed-upsert` | the seeder in `scripts/library-seed.ts` |
+| `db-singleton-client` | the Prisma singleton in `src/lib/db.ts` |
+
+**Verify before you trust.** Statuses are computed, never claimed: `scripts/library-verify.ts` executes each entry's demo against its published code and requires an exact output match. Current pipeline result: **15 verified, 0 failed, 1 honestly draft** (no runnable demo). When the database is not provisioned yet, the API serves the seed catalog with honest `draft` labels and `meta.source: "catalog"` — the fallback never pretends a status it did not compute.
+
 ## Honest limitations (current)
 
 - Search is keyword + field-weight scoring. No semantic/vector search yet —

@@ -116,7 +116,7 @@ fun maybeAskForRating() {
 
     AlertDialog.Builder(this)
         .setTitle("از تکا خوشت آمده؟")
-        .setMessage("در مایکت به ما امتیاز بده 🌟")
+        .setMessage("در مایکت به ما امتیاز بده")
         .setPositiveButton("امتیاز در مایکت") { _, _ ->
             startActivity(
                 Intent(Intent.ACTION_VIEW, Uri.parse("myket://comment?id=APP_PACKAGE_NAME"))

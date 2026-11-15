@@ -8,6 +8,8 @@ export const projectNew: ProjectNewDict = {
     title: "Connexion requise",
     description: "Vous avez besoin d’un compte TEKA NEXUS pour lancer un projet.",
     goLogin: "Aller à la connexion",
+    guestHint:
+      "Vous pouvez remplir le formulaire dès maintenant — votre brouillon est enregistré sur cet appareil et sera prêt à être publié une fois connecté.",
   },
   title: "Lancer un projet",
   subtitle: "Dites au monde ce que vous construisez.",

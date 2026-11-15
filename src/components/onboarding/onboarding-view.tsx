@@ -44,7 +44,7 @@ import {
   staggerChild,
 } from "@/components/shared/motion";
 import { useApp, type SessionUser } from "@/lib/store";
-import { post } from "@/lib/api";
+import { consumePostAuthRedirect, post } from "@/lib/api";
 import { useT, useLabeled } from "@/lib/i18n";
 import { AVATAR_GRADIENTS, AVATAR_GRADIENT_KEYS, GOALS, LIMITS, PROJECT_CATEGORIES, SKILLS } from "@/lib/constants";
 import { cn, normalizeUrlInput } from "@/lib/utils";
@@ -153,7 +153,10 @@ export function OnboardingView() {
       });
       setUser(res.user);
       toast.success(t("onboarding.toastWelcome"));
-      navigate({ name: "home" });
+      // Honor a stashed post-auth redirect (e.g. the user was on their way to
+      // publish a project when they were asked to create an account first).
+      const redirect = consumePostAuthRedirect();
+      navigate(redirect === "projectNew" ? { name: "projectNew" } : { name: "home" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("onboarding.err.save"));
     } finally {

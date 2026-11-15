@@ -24,7 +24,7 @@ import {
   staggerParent,
 } from "@/components/shared/motion";
 import { useApp, type SessionUser } from "@/lib/store";
-import { post, setSessionToken } from "@/lib/api";
+import { consumePostAuthRedirect, post, setSessionToken } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 import { triggerEnterPortal } from "@/components/auth/enter-portal";
 import { cn } from "@/lib/utils";
@@ -109,6 +109,7 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
         setSessionToken(res.token);
         setUser(res.user);
         triggerEnterPortal(res.user.displayName);
+        // Keep any stashed post-auth redirect — onboarding completion honors it.
         navigate({ name: "onboarding" });
       } else {
         const res = await post<{ user: SessionUser; token: string }>("/api/auth/login", {
@@ -118,7 +119,14 @@ export function AuthView({ mode }: { mode: "login" | "signup" }) {
         setSessionToken(res.token);
         setUser(res.user);
         triggerEnterPortal(res.user.displayName);
-        navigate(res.user.onboardingCompleted ? { name: "home" } : { name: "onboarding" });
+        if (res.user.onboardingCompleted) {
+          // Return to the flow that asked for auth (e.g. publishing a project)
+          // instead of dropping the user on home.
+          const redirect = consumePostAuthRedirect();
+          navigate(redirect === "projectNew" ? { name: "projectNew" } : { name: "home" });
+        } else {
+          navigate({ name: "onboarding" });
+        }
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";

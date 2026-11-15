@@ -71,9 +71,13 @@ const AUTHOptional_VIEWS = new Set(["landing", "login", "signup", "onboarding"])
 const AUTH_REQUIRED_VIEWS = new Set([
   "arena", "boss", "skilltree", "pet", "cards", "war", "shop", "crime",
   "speedrun", "timemachine", "heatmap", "voice", "terminal",
-  "home", "projectNew", "teams", "notifications", "dm", "settings", "saved",
+  "home", "teams", "notifications", "dm", "settings", "saved",
   "universe", "dna",
 ]);
+// "projectNew" is deliberately NOT auth-required: guests must be able to open
+// the launch form (Myket review feedback — the section was unreachable for
+// signed-out users, which read as "the button does nothing"). The view itself
+// carries a guest notice and hands off to login only at publish time.
 
 // ── SSR SEO block ──────────────────────────────────────────────
 // The app is a client-side SPA: crawlers and screen readers get this

@@ -7,6 +7,8 @@ export const projectNew = {
     title: "Sign in required",
     description: "You need a TEKA NEXUS account to launch a project.",
     goLogin: "Go to login",
+    guestHint:
+      "You can fill the form right away — your draft is saved on this device and will be ready to publish once you sign in.",
   },
   title: "Launch a project",
   subtitle: "Tell the world what you’re building.",

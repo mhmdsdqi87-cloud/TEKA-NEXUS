@@ -40,6 +40,44 @@ export function setSessionToken(token: string | null): void {
   }
 }
 
+// ── Post-auth redirect ──────────────────────────────────────────────────────
+// Guest-accessible actions that require an account at the final step (e.g.
+// publishing a project) stash the destination here before handing off to the
+// auth screens; login/onboarding completion sends the user back so the flow
+// completes instead of dumping them on home. sessionStorage — per-tab scope,
+// survives the redirect round-trip, self-cleans when the tab closes.
+const POST_AUTH_REDIRECT_KEY = "teka:post-auth-redirect:v1";
+
+export function setPostAuthRedirect(view: string): void {
+  try {
+    window.sessionStorage.setItem(POST_AUTH_REDIRECT_KEY, view);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+export function peekPostAuthRedirect(): string | null {
+  try {
+    return window.sessionStorage.getItem(POST_AUTH_REDIRECT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function consumePostAuthRedirect(): string | null {
+  const v = peekPostAuthRedirect();
+  if (v) setPostAuthRedirectSafeClear();
+  return v;
+}
+
+function setPostAuthRedirectSafeClear(): void {
+  try {
+    window.sessionStorage.removeItem(POST_AUTH_REDIRECT_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 // ── Resilience (fixes the "بعد یکم گشتن، نت ضعیفه" symptom) ────────────────
 // Transient server-side hiccups (serverless cold starts, pooler blips, 502s)
 // must not surface as "اتصال به سرور برقرار نشد" toasts. We:

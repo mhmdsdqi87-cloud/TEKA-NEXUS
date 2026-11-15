@@ -31,12 +31,11 @@ import { toast } from "sonner";
 
 import { cn, normalizeUrlInput } from "@/lib/utils";
 import { useApp } from "@/lib/store";
-import { AI_TIMEOUT_MS, post } from "@/lib/api";
+import { AI_TIMEOUT_MS, post, setPostAuthRedirect } from "@/lib/api";
 import { useT, useLabeled } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n/store";
 import { LIMITS, PROJECT_CATEGORIES, PROJECT_COVER_GALLERY, PROJECT_STATUSES, SKILLS } from "@/lib/constants";
 
-import { EmptyState } from "@/components/shared/atoms";
 import { BackgroundPicker } from "@/components/shared/background-picker";
 import { HoverLift, SPRING, staggerChild, staggerParent, TapScale } from "@/components/shared/motion";
 import { Button } from "@/components/ui/button";
@@ -218,22 +217,27 @@ export function ProjectNewView() {
   }, []);
 
   // ── Draft autosave (debounced, never while submitting) ──
+  // One serializer shared by the autosave effect and the explicit "save before
+  // handing off to login" path, so both always write the same shape.
+  const draftPayload = useCallback(
+    () => ({ name, tagline, description, category, status, visibility, tags, skills, repositoryUrl, demoUrl, websiteUrl, coverImage, bgImage, savedAt: Date.now() }),
+    [name, tagline, description, category, status, visibility, tags, skills, repositoryUrl, demoUrl, websiteUrl, coverImage, bgImage],
+  );
+  const writeDraft = useCallback(() => {
+    try {
+      window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draftPayload()));
+    } catch {
+      /* storage unavailable */
+    }
+  }, [draftPayload]);
+
   useEffect(() => {
     if (submitting) return;
     const hasContent =
       name.trim() || tagline.trim() || description.trim() || tags.length || skills.length ||
       repositoryUrl.trim() || demoUrl.trim() || websiteUrl.trim() || coverImage || bgImage;
     if (!hasContent) return;
-    const id = window.setTimeout(() => {
-      try {
-        window.localStorage.setItem(
-          DRAFT_KEY,
-          JSON.stringify({ name, tagline, description, category, status, visibility, tags, skills, repositoryUrl, demoUrl, websiteUrl, coverImage, bgImage, savedAt: Date.now() }),
-        );
-      } catch {
-        /* storage unavailable */
-      }
-    }, 800);
+    const id = window.setTimeout(() => writeDraft(), 800);
     return () => window.clearTimeout(id);
   }, [name, tagline, description, category, status, visibility, tags, skills, repositoryUrl, demoUrl, websiteUrl, coverImage, bgImage, submitting]);
 
@@ -302,27 +306,16 @@ export function ProjectNewView() {
     toast.success(t("projectNew.ai.applied"));
   };
 
-  if (!user) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className="py-10"
-      >
-        <EmptyState
-          icon={Lock}
-          title={t("projectNew.auth.title")}
-          description={t("projectNew.auth.description")}
-          action={
-            <Button className="btn-hero" onClick={() => navigate({ name: "login" })}>
-              {t("projectNew.auth.goLogin")}
-            </Button>
-          }
-        />
-      </motion.div>
-    );
-  }
+  // ── Guest hand-off (Myket review fix) ──
+  // The form is fully browsable signed-out; publishing is the one step that
+  // needs an account. Save the draft, remember the destination, go to login.
+  // After the user returns (login or signup→onboarding), the draft is restored
+  // from localStorage and the flow continues where it left off.
+  const handleGuestSignIn = useCallback(() => {
+    writeDraft();
+    setPostAuthRedirect("projectNew");
+    navigate({ name: "login" });
+  }, [writeDraft, navigate]);
 
   const addTag = () => {
     const v = tagInput.trim().toLowerCase().replace(/\s+/g, "-");
@@ -420,6 +413,14 @@ export function ProjectNewView() {
       toast.error(t("projectNew.toasts.fixFields"));
       return;
     }
+    if (!user) {
+      // Validation passed — keep everything, let auth complete the publish.
+      writeDraft();
+      setPostAuthRedirect("projectNew");
+      toast.info(t("projectNew.auth.description"));
+      navigate({ name: "login" });
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await post<{ project: { slug: string } }>("/api/projects", {
@@ -469,6 +470,27 @@ export function ProjectNewView() {
         <p className="text-sm text-muted-foreground mt-1">{t("projectNew.subtitle")}</p>
       </div>
 
+      {/* Guest notice — the form stays fully browsable; only publishing needs an account. */}
+      {!user && (
+        <div
+          role="note"
+          className="glass-card mb-6 max-w-3xl rounded-2xl border-amber-400/25 bg-amber-400/[0.05] p-4 flex flex-col gap-3 sm:flex-row sm:items-center"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10">
+            <Lock className="h-4 w-4 text-amber-300" aria-hidden="true" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-amber-100">{t("projectNew.auth.title")}</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{t("projectNew.auth.guestHint")}</p>
+          </div>
+          <TapScale>
+            <Button type="button" size="sm" className="btn-hero h-9 shrink-0" onClick={handleGuestSignIn}>
+              {t("projectNew.auth.goLogin")}
+            </Button>
+          </TapScale>
+        </div>
+      )}
+
       <motion.form
         onSubmit={handleSubmit}
         noValidate
@@ -477,7 +499,8 @@ export function ProjectNewView() {
         animate="show"
         className="glass-card rounded-2xl p-5 md:p-8 max-w-3xl flex flex-col gap-7"
       >
-        {/* AI copilot */}
+        {/* AI copilot — signed-in feature (the assist endpoint requires a session) */}
+        {user && (
         <motion.div variants={staggerChild} className="flex flex-col gap-3">
           <button
             type="button"
@@ -596,6 +619,7 @@ export function ProjectNewView() {
             </div>
           )}
         </motion.div>
+        )}
 
         {/* Name + live slug preview */}
         <motion.div variants={staggerChild} className="flex flex-col gap-2">

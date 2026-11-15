@@ -28,6 +28,7 @@ import {
   Scale,
   ShieldCheck,
   Sparkles,
+  Star,
   Swords,
   TerminalSquare,
   Timer,
@@ -42,6 +43,7 @@ import { COURSES_META, metaLessons } from "@/lib/academy/meta";
 import { LOCALES } from "@/lib/i18n/locales";
 import { ARENA_GAMES } from "@/components/os/app-registry";
 import { AnimatedNumber } from "@/components/shared/motion";
+import { myketCommentUrl, myketEnabled, openMyketIntent } from "@/lib/myket";
 import { cn } from "@/lib/utils";
 
 /* ────────────────────────────── copy (fa/en) ────────────────────────────── */
@@ -86,6 +88,9 @@ const COPY = {
     russiaTitle: "به امید تحصیل در روسیه",
     russiaNote: "این نامه به روسی نوشته شده — به همان زبانی که آرزو دارم یک روز، درس‌هایم را به آن ادامه بدهم.",
     missionTitle: "چرا این پروژه مهم است؟",
+    myketTitle: "از تکا خوشت آمده؟",
+    myketNote: "در مایکت به ما امتیاز بده — یک ستاره، سوختِ نسخه‌های بعدی است.",
+    myketCta: "امتیاز در مایکت",
     mission:
       "TEKA NEXUS چیزی را «اثبات» نمی‌کند و بی‌نقص نیست؛ نامه‌ای زنده است از یک خودآموخته، به هر کسی که یک روز به او شانس بدهد. هر روز از آن چیزی یاد می‌گیرم، هر هفته چیزی در آن می‌شکنم و درستش می‌کنم. این رزومه‌ی زنده‌ی من است — با همه‌ی ترک‌ها و وصله‌هایش؛ و شاید روزی سندی باشد برای یک حرف ساده: که شروع کردن، از داشتن شرایط مهم‌تر است.",
     openTo: "این پروژه نمونه‌کار من است — نه سندی از دانستن، بلکه نشانه‌ای از خواستن. اگر روزی دری باز شد — تحصیلی یا حرفه‌ای — پشتش ایستاده‌ام؛ آماده‌ی کار کردن، بیشتر از هر کسی که تا امروز شانس را داشته است.",
@@ -130,6 +135,9 @@ const COPY = {
     russiaTitle: "In hope of studying in Russia",
     russiaNote: "This letter is written in Russian — the language I hope to one day continue my studies in.",
     missionTitle: "Why this project matters",
+    myketTitle: "Enjoying TEKA?",
+    myketNote: "Rate us on Myket — a star fuels the next release.",
+    myketCta: "Rate on Myket",
     mission:
       "TEKA NEXUS proves nothing and is far from flawless — it is a living letter from a self-taught developer to anyone who one day gives him a chance. I learn from it every day, break something almost weekly, and repair what I break. It is my living résumé — cracks and patches included — and maybe, one day, evidence of a simple idea: that starting matters more than having the right conditions.",
     openTo: "This project is my portfolio — not proof of knowing, but evidence of wanting. If a door ever opens — academic or professional — I'll be standing behind it, ready to work harder than anyone who ever had the chance.",
@@ -494,6 +502,29 @@ export function AboutView() {
               <p className="mt-2 text-center text-xs text-emerald-300" aria-live="polite">{t.copied}</p>
             )}
           </div>
+
+          {/* Myket rate intent — rendered only when the store id is configured
+              (NEXT_PUBLIC_MYKET_PACKAGE_NAME); the WebView wrapper forwards the
+              myket://comment link to the Myket client (docs/MYKET-RELEASE.md). */}
+          {myketEnabled && (
+            <div className="glass-card mt-4 flex flex-col gap-3 rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] p-4 sm:flex-row sm:items-center">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400/15 to-orange-400/15 text-amber-300">
+                <Star size={20} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium text-white/85">{t.myketTitle}</div>
+                <p className="mt-0.5 text-xs text-white/45">{t.myketNote}</p>
+              </div>
+              <Button
+                size="sm"
+                className="btn-hero h-9 shrink-0"
+                onClick={() => openMyketIntent(myketCommentUrl())}
+              >
+                <Star size={14} aria-hidden="true" />
+                {t.myketCta}
+              </Button>
+            </div>
+          )}
         </section>
 
         {/* ── stack ── */}

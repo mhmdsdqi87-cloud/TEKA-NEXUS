@@ -8,6 +8,8 @@ export const projectNew: ProjectNewDict = {
     title: "需要登录",
     description: "你需要 TEKA NEXUS 账号才能发布项目。",
     goLogin: "前往登录",
+    guestHint:
+      "你可以立即填写表单——草稿会保存在此设备上，登录后即可发布。",
   },
   title: "发布一个项目",
   subtitle: "向世界展示你正在构建的东西。",

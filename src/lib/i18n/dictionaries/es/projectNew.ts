@@ -8,6 +8,8 @@ export const projectNew: ProjectNewDict = {
     title: "Inicio de sesión requerido",
     description: "Necesitas una cuenta de TEKA NEXUS para lanzar un proyecto.",
     goLogin: "Ir al inicio de sesión",
+    guestHint:
+      "Puedes rellenar el formulario ahora mismo: tu borrador se guarda en este dispositivo y quedará listo para publicar cuando inicies sesión.",
   },
   title: "Lanzar un proyecto",
   subtitle: "Cuéntale al mundo qué estás construyendo.",

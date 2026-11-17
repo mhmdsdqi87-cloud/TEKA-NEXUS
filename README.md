@@ -374,9 +374,9 @@ Read our [Code of Conduct](CODE_OF_CONDUCT.md). Questions and support → [`SUPP
 <!-- TEKA:METRICS:START -->
 | 👀 Visitors (14d) | 📄 Views (14d) | 🧬 Cloners (14d) | 📥 Clones (14d) | ⭐ Stars | 🍴 Forks | 🐞 Open issues |
 |---:|---:|---:|---:|---:|---:|---:|
-| 10 | 56 | 351 | 851 | 3 | 0 | 0 |
+| 10 | 56 | 418 | 982 | 3 | 0 | 0 |
 
-<sub>Real numbers from GitHub's own API · auto-refreshed daily · last update 2026-11-16 11:41 UTC · nothing sampled, nothing invented.</sub>
+<sub>Real numbers from GitHub's own API · auto-refreshed daily · last update 2026-11-17 12:04 UTC · nothing sampled, nothing invented.</sub>
 <!-- TEKA:METRICS:END -->
 
 <div align="center">
